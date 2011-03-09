@@ -1,0 +1,1 @@
+host=localhost port=5432 dbname=kohovolit user=kv_user password=kv_user_password
