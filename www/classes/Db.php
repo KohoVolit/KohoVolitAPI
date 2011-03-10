@@ -40,7 +40,7 @@ class Db
 		self::$connection = pg_connect(file_get_contents("conf/db/$user", true));
 		
 		if (!self::$connection)
-			throw new Exception('Could not connect to database.', 500);
+			throw new Exception('Could not connect to database.', 503);
 	}
 
 	/**

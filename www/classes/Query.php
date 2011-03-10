@@ -7,11 +7,21 @@ class Query
 {
 	private $query;
 	private $params;
+	private $db_user;
+	private $inside_transaction;
 	
-	public function __construct()
+	public function __construct($db_user = 'kv_user')
 	{
 		$this->query = '';
 		$this->params = array();
+		$this->db_user = $db_user;
+		$this->inside_transaction = false;
+	}
+	
+	public function __destruct()
+	{
+		if ($this->inside_transaction)
+			return $this->rollbackTransaction();
 	}
 	
 	public function getQuery()
@@ -59,11 +69,35 @@ class Query
 		return count($this->params);
 	}
 
-	public function execute($user = 'kv_user')
+	public function execute()
 	{
-		return Db::query($this->query, $this->params, $user);
+		return Db::query($this->query, $this->params, $this->db_user);
+	}
+
+	public function startTransaction()
+	{
+		if ($this->inside_transaction)
+			throw new Exception('Database transactions cannot be nested.', 500);
+		$this->inside_transaction = true;
+		return Db::query('begin', null, $this->db_user);
 	}
 	
+	public function commitTransaction()
+	{
+		if (!$this->inside_transaction)
+			throw new Exception('Commiting transaction outside of any transaction.', 500);
+		$this->inside_transaction = false;
+		return Db::query('commit', null, $this->db_user);
+	}
+	
+	public function rollbackTransaction()
+	{
+		if (!$this->inside_transaction)
+			throw new Exception('Rolling back transaction outside of any transaction.', 500);
+		$this->inside_transaction = false;
+		return Db::query('rollback', null, $this->db_user);
+	}
+
 	public function buildSelect($table, $columns, $filter, $ro_columns, $w_columns)
 	{
 		$this->query = "select $columns from $table";
