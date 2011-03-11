@@ -98,14 +98,14 @@ class Query
 		return Db::query('rollback', null, $this->db_user);
 	}
 
-	public function buildSelect($table, $columns, $filter, $ro_columns, $w_columns)
+	public function buildSelect($table, $columns, $filter, $allowed_columns)
 	{
 		$this->query = "select $columns from $table";
 		$this->params = array();
-		$this->addWhereCondition($filter, $ro_columns, $w_columns);
+		$this->addWhereCondition($filter, $allowed_columns);
 	}
 	
-	public function buildInsert($table, $data, $ret_column, $ro_columns, $w_columns)
+	public function buildInsert($table, $data, $ret_column, $allowed_columns, $ro_columns = array())
 	{
 		$this->params = array();		
 		$columns = array();
@@ -115,7 +115,7 @@ class Query
 		{
 			if (in_array($column, $ro_columns))
 				throw new Exception("Trying to write to read-only column <em>$column</em> in table <em>" . strtoupper($table) . '</em>.', 400);				
-			if (!in_array($column, $w_columns)) continue;
+			if (!in_array($column, $allowed_columns)) continue;
 			
 			$columns[] = $column;
 			if (is_null($value))
@@ -132,7 +132,7 @@ class Query
 			$this->query .= " returning $ret_column";
 	}
 
-	public function buildUpdate($table, $filter, $data, $ret_column, $ro_columns, $w_columns)
+	public function buildUpdate($table, $filter, $data, $ret_column, $allowed_columns, $ro_columns = array())
 	{
 		$this->query = "update $table set";
 		$this->params = array();
@@ -141,7 +141,7 @@ class Query
 		{
 			if (in_array($column, $ro_columns))
 				throw new Exception("Trying to write to read-only column <em>$column</em> in table <em>" . strtoupper($table) . '</em>.', 400);								
-			if (!in_array($column, $w_columns)) continue;
+			if (!in_array($column, $allowed_columns)) continue;
 			
 			if (is_null($value))
 				$this->query .= " $column = null,";
@@ -153,27 +153,27 @@ class Query
 		}
 		$this->query = rtrim($this->query, ',');
 
-		$this->addWhereCondition($filter, $ro_columns, $w_columns);
+		$this->addWhereCondition($filter, $allowed_columns);
 		
 		if (!empty($ret_column))
 			$this->query .= " returning $ret_column";
 	}
 
-	public function buildDelete($table, $filter, $ret_column, $ro_columns, $w_columns)
+	public function buildDelete($table, $filter, $ret_column, $allowed_columns)
 	{
 		$this->query = "delete from $table";
 		$this->params = array();
-		$this->addWhereCondition($filter, $ro_columns, $w_columns);
+		$this->addWhereCondition($filter, $allowed_columns);
 		if (!empty($ret_column))
 			$this->query .= " returning $ret_column";
 	}
 	
-	private function addWhereCondition($filter, $ro_columns, $w_columns)
+	private function addWhereCondition($filter, $allowed_columns)
 	{
 		$this->query .= ' where true';
 		foreach ((array)$filter as $column => $value)
 		{
-			if (!in_array($column, (array)$ro_columns) && !in_array($column, (array)$w_columns)) continue;
+			if (!in_array($column, (array)$allowed_columns)) continue;
 
 			if (is_null($value))
 				$this->query .= " and $column is null";
