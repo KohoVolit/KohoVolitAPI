@@ -5,11 +5,22 @@
  */
 class ApiServer
 {
+	private static $put_request_data;
+	
 	/**
 	 * ...
 	 */
 	public static function processHttpRequest()
 	{
+		$request_method = strtoupper($_SERVER['REQUEST_METHOD']);
+		
+		// data of PUT request can be read only once, store them for multiple use
+		if ($request_method == 'PUT')
+		{
+			parse_str(file_get_contents('php://input'), $input);
+			self::$put_request_data = $input['data'];
+		}
+
 		self::logRequest();
 		
 		// include the underlying class of the requested API function
@@ -26,7 +37,6 @@ class ApiServer
 				$value = null;
 
 		// call the proper method of the API function class depending on the HTTP request method
-		$request_method = strtoupper($_SERVER['REQUEST_METHOD']);
 		switch ($request_method)
 		{
 			case 'GET':
@@ -41,8 +51,7 @@ class ApiServer
 				break;
 
 			case 'PUT':
-				parse_str(file_get_contents('php://input'), $input);
-				$data = unserialize($input['data']);
+				$data = unserialize(self::$put_request_data);
 				if (method_exists($api_class, 'update'))
 					return $api_class::update($params, $data);
 				break;
@@ -192,10 +201,7 @@ class ApiServer
 		if ($method == 'POST')
 			$data = $_POST['data'];
 		else if ($method == 'PUT')
-		{
-			parse_str(file_get_contents('php://input'), $input);
-			$data = $input['data'];
-		}
+			$data = self::$put_request_data;
 
 		if ($project == 'kohovolit')
 			return Db::query('insert into api_log(method, function_, query, data_, format, referrer) values ($1, $2, $3, $4, $5, $6)',
