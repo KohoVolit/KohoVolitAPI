@@ -1,17 +1,21 @@
 <?php
 
+include 'Attribute.php';
+
 /**
  * Class MpAttribute provides information about MPs' additional attributes through API and implements CRUD operations on database table MP_ATTRIBUTE.
  *
- * Columns of table MP_ATTRIBUTE are: <em>mp_id, name_, value_, lang, since, until</em>. All columns are allowed to write to.
+ * Columns of table MP_ATTRIBUTE are: <em>mp_id</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
-class MpAttribute
+class MpAttribute extends Attribute
 {
-	/// read-only columns of the table MP_ATTRIBUTE
-	private static $roColumns = array();
-
-	/// columns of the table MP_ATTRIBUTE allowed to write to
-	private static $wColumns = array('mp_id', 'name_', 'value_', 'lang', 'since', 'until');
+	/**
+	 * Add a table specific column to the list of common columns of all attribute tables.
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns[] = 'mp_id';
+	}
 
 	/**
 	 * Retrieve MP(s)' attributes according to given parameters.
@@ -24,16 +28,7 @@ class MpAttribute
 	 */
 	public static function retrieve($params)
 	{
-		$query = new Query();
-		$query->buildSelect('mp_attribute', '*', $params, self::$roColumns, self::$wColumns);
-		if (!empty($params['datetime']))
-		{
-			$query->appendParam($params['datetime']);
-			$n = $query->getParamsCount();
-			$query->appendQuery(' and since <= $' . $n . ' and until > $' . $n);
-		}		
-		$attrs = $query->execute();
-		return array('mp_attribute' => $attrs);
+		return parent::retrieveAttr($params, 'mp_attribute');
 	}
 
 	/**
@@ -45,16 +40,7 @@ class MpAttribute
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$query->startTransaction();		
-		foreach ((array)$data as $attr)
-		{
-			$query->buildInsert('mp_attribute', $attr, null, self::$roColumns, self::$wColumns);
-			$query->execute();
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return count($data);
+		return parent::createAttr($data, 'mp_attribute');
 	}
 
 	/**
@@ -67,10 +53,7 @@ class MpAttribute
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('mp_attribute', $params, $data, 'mp_id', self::$roColumns, self::$wColumns);
-		$res = $query->execute();
-		return count($res);
+		return parent::updateAttr($params, $data, 'mp_attribute');
 	}
 
 	/**
@@ -82,11 +65,10 @@ class MpAttribute
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('mp_attribute', $params, 'mp_id', self::$roColumns, self::$wColumns);
-		$res = $query->execute();
-		return count($res);
+		return parent::deleteAttr($params, 'mp_attribute');
 	}
 }
+
+MpAttribute::initColumnNames();
 
 ?>

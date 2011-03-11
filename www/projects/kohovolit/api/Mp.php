@@ -3,15 +3,15 @@
 /**
  * Class Mp provides information about MPs through API and implements CRUD operations on database table MP.
  *
- * Columns of table MP are: <em>id, first_name, middle_names, last_name, disambiguation, sex, pre_title, post_title, born_on, died_on, email, webpage, address, phone, source, source_code</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and read-only.
+ * Columns of table MP are: <em>id, first_name, middle_names, last_name, disambiguation, sex, pre_title, post_title, born_on, died_on, email, webpage, address, phone, source, source_code</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
 class Mp
 {
-	/// read-only columns of the table MP
-	private static $roColumns = array('id');
+	/// columns of the table MP
+	private static $tableColumns = array('id', 'first_name', 'middle_names', 'last_name', 'disambiguation', 'sex', 'pre_title', 'post_title', 'born_on', 'died_on', 'email', 'webpage', 'address', 'phone', 'source', 'source_code');
 
-	/// columns of the table MP allowed to write to
-	private static $wColumns = array('first_name', 'middle_names', 'last_name', 'disambiguation', 'sex', 'pre_title', 'post_title', 'born_on', 'died_on', 'email', 'webpage', 'address', 'phone', 'source', 'source_code');
+	/// read-only columns
+	private static $roColumns = array('id');
 
 	/**
 	 * Retrieve MP(s) according to given parameters.
@@ -23,7 +23,7 @@ class Mp
 	public static function retrieve($params)
 	{
 		$query = new Query();
-		$query->buildSelect('mp', '*', $params, self::$roColumns, self::$wColumns);
+		$query->buildSelect('mp', '*', $params, self::$tableColumns);
 		$mps = $query->execute();
 		return array('mp' => $mps);
 	}
@@ -42,7 +42,7 @@ class Mp
 		$query->startTransaction();		
 		foreach ((array)$data as $mp)
 		{
-			$query->buildInsert('mp', $mp, 'id', self::$roColumns, self::$wColumns);
+			$query->buildInsert('mp', $mp, 'id', self::$tableColumns, self::$roColumns);
 			$res = $query->execute();
 			$ids[] = $res[0]['id'];
 			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
@@ -62,7 +62,7 @@ class Mp
 	public static function update($params, $data)
 	{
 		$query = new Query('kv_admin');
-		$query->buildUpdate('mp', $params, $data, 'id', self::$roColumns, self::$wColumns);
+		$query->buildUpdate('mp', $params, $data, 'id', self::$tableColumns, self::$roColumns);
 		$res = $query->execute();
 		$ids = array();
 		foreach ((array)$res as $line)
@@ -80,7 +80,7 @@ class Mp
 	public static function delete($params)
 	{
 		$query = new Query('kv_admin');
-		$query->buildDelete('mp', $params, 'id', self::$roColumns, self::$wColumns);
+		$query->buildDelete('mp', $params, 'id', self::$tableColumns);
 		$res = $query->execute();
 		$ids = array();
 		foreach ((array)$res as $line)
