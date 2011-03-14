@@ -5,27 +5,27 @@
  *
  * Columns of table PARTY are: <em>id, name_, short_name, description, country_code</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
-class Party
+class Party extends Entity
 {
-	/// columns of the table PARTY
-	private static $tableColumns = array('id', 'name_', 'short_name', 'description', 'country_code');
-
-	/// read-only columns
-	private static $roColumns = array('id');
+	/**
+	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'country_code');
+		self::$roColumns = array('id');
+	}
 
 	/**
-	 * Retrieve party(s) according to given parameters.
+	 * Read party(s) according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the parties to select. Only parties satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of parties with structure <code>array('party' => array(array('id' => 8, 'name_' => 'The Labour Party', 'short_name' => 'Lab', ...), ...))</code>.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		$query = new Query();
-		$query->buildSelect('party', '*', $params, self::$tableColumns);
-		$parties = $query->execute();
-		return array('party' => $parties);
+		return parent::readEntity($params, 'party');
 	}
 
 	/**
@@ -37,18 +37,7 @@ class Party
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$ids = array();
-		$query->startTransaction();
-		foreach ((array)$data as $party)
-		{
-			$query->buildInsert('party', $party, 'id', self::$tableColumns, self::$roColumns);
-			$res = $query->execute();
-			$ids[] = $res[0]['id'];
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return $ids;
+		return parent::createEntity($params, 'party', 'id');
 	}
 
 	/**
@@ -61,13 +50,7 @@ class Party
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('party', $params, $data, 'id', self::$tableColumns, self::$roColumns);
-		$res = $query->execute();
-		$ids = array();
-		foreach ((array)$res as $line)
-			$ids[] = $line['id'];
-		return $ids;
+		return parent::updateEntity($params, $data, 'party', 'id');
 	}
 
 	/**
@@ -79,14 +62,10 @@ class Party
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('party', $params, 'id', self::$tableColumns);
-		$res = $query->execute();
-		$ids = array();
-		foreach ((array)$res as $line)
-			$ids[] = $line['id'];
-		return $ids;
+		return parent::deleteEntity($params, 'party', 'id');
 	}
 }
+
+Party::initColumnNames();
 
 ?>

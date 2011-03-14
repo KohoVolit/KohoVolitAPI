@@ -5,27 +5,27 @@
  *
  * Columns of table CONSTITUENCY are: <em>id, name_, short_name, description, parliament_code</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
-class Constituency
+class Constituency extends Entity
 {
-	/// columns of the table CONSTITUENCY
-	private static $tableColumns = array('id', 'name_', 'short_name', 'description', 'parliament_code');
-
-	/// read-only columns
-	private static $roColumns = array('id');
+	/**
+	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'parliament_code');
+		self::$roColumns = array('id');
+	}
 
 	/**
-	 * Retrieve constituency(s) according to given parameters.
+	 * Read constituency(s) according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the constituencies to select. Only constituencies satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of constituencies with structure <code>array('constituency' => array(array('id' => 123, 'name_' => 'Praha 9', 'short_name' => '9', 'description' => null, 'cz/praha'), ...))</code>.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		$query = new Query();
-		$query->buildSelect('constituency', '*', $params, self::$tableColumns);
-		$constituencies = $query->execute();
-		return array('constituency' => $constituencies);
+		return parent::readEntity($params, 'constituency');
 	}
 
 	/**
@@ -37,18 +37,7 @@ class Constituency
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$ids = array();
-		$query->startTransaction();		
-		foreach ((array)$data as $constituency)
-		{
-			$query->buildInsert('constituency', $constituency, 'id', self::$tableColumns, self::$roColumns);
-			$res = $query->execute();
-			$ids[] = $res[0]['id'];
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return $ids;
+		return parent::createEntity($params, 'constituency', 'id');
 	}
 
 	/**
@@ -61,13 +50,7 @@ class Constituency
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('constituency', $params, $data, 'id', self::$tableColumns, self::$roColumns);
-		$res = $query->execute();
-		$ids = array();
-		foreach ((array)$res as $line)
-			$ids[] = $line['id'];
-		return $ids;
+		return parent::updateEntity($params, $data, 'constituency', 'id');
 	}
 
 	/**
@@ -79,14 +62,10 @@ class Constituency
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('constituency', $params, 'id', self::$tableColumns);
-		$res = $query->execute();
-		$ids = array();
-		foreach ((array)$res as $line)
-			$ids[] = $line['id'];
-		return $ids;
+		return parent::deleteEntity($params, 'constituency', 'id');
 	}
 }
+
+Constituency::initColumnNames();
 
 ?>

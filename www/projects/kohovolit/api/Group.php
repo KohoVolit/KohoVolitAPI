@@ -5,27 +5,27 @@
  *
  * Columns of table GROUP are: <em>id, name_, short_name, group_kind_code, term_id, constituency_id, parliament_code, subgroup_of</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
-class Group
+class Group extends Entity
 {
-	/// columns of the table GROUP
-	private static $tableColumns = array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'constituency_id', 'parliament_code', 'subgroup_of');	
-
-	/// read-only columns
-	private static $roColumns = array('id');
+	/**
+	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns = array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'constituency_id', 'parliament_code', 'subgroup_of');	
+		self::$roColumns = array('id');
+	}
 
 	/**
-	 * Retrieve group(s) according to given parameters.
+	 * Read group(s) according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the groups to select. Only groups satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of groups with structure <code>array('group' => array(array('id' => 6, 'name_' => 'Committee on Environment', 'short_name' => 'ENV', 'group_kind_code' => 'committee', ...), ...))</code>.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		$query = new Query();
-		$query->buildSelect('group', '*', $params, self::$tableColumns);
-		$groups = $query->execute();
-		return array('group' => $groups);
+		return parent::readEntity($params, 'group_');
 	}
 
 	/**
@@ -37,18 +37,7 @@ class Group
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$ids = array();
-		$query->startTransaction();		
-		foreach ((array)$data as $group)
-		{
-			$query->buildInsert('group', $group, 'id', self::$tableColumns, self::$roColumns);
-			$res = $query->execute();
-			$ids[] = $res[0]['id'];
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return $ids;
+		return parent::createEntity($params, 'group_', 'id');
 	}
 
 	/**
@@ -61,13 +50,7 @@ class Group
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('group', $params, $data, 'id', self::$tableColumns, self::$roColumns);
-		$res = $query->execute();
-		$ids = array();
-		foreach ((array)$res as $line)
-			$ids[] = $line['id'];
-		return $ids;
+		return parent::updateEntity($params, $data, 'group_', 'id');
 	}
 
 	/**
@@ -79,14 +62,10 @@ class Group
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('group', $params, 'id', self::$tableColumns);
-		$res = $query->execute();
-		$ids = array();
-		foreach ((array)$res as $line)
-			$ids[] = $line['id'];
-		return $ids;
+		return parent::deleteEntity($params, 'group_', 'id');
 	}
 }
+
+Group::initColumnNames();
 
 ?>

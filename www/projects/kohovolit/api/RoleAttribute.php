@@ -1,7 +1,5 @@
 <?php
 
-include 'classes/kohovolit/Attribute.php';
-
 /**
  * Class RoleAttribute provides information about MP roles' additional attributes through API and implements CRUD operations on database table ROLE_ATTRIBUTE.
  *
@@ -18,7 +16,7 @@ class RoleAttribute extends Attribute
 	}
 
 	/**
-	 * Retrieve MP role(s)' attributes according to given parameters.
+	 * Read MP role(s)' attributes according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
@@ -26,9 +24,9 @@ class RoleAttribute extends Attribute
 	 *
 	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		return parent::retrieveAttr($params, 'role_attribute');
+		return parent::readAttribute($params, 'role_attribute');
 	}
 
 	/**
@@ -40,7 +38,7 @@ class RoleAttribute extends Attribute
 	 */
 	public static function create($data)
 	{
-		return parent::createAttr($data, 'role_attribute');
+		return parent::createAttribute($data, 'role_attribute');
 	}
 
 	/**
@@ -53,7 +51,7 @@ class RoleAttribute extends Attribute
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateAttr($params, $data, 'role_attribute');
+		return parent::updateAttribute($params, $data, 'role_attribute');
 	}
 
 	/**
@@ -65,7 +63,7 @@ class RoleAttribute extends Attribute
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteAttr($params, 'role_attribute');
+		return parent::deleteAttribute($params, 'role_attribute');
 	}
 }
 

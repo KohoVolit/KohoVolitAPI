@@ -5,24 +5,27 @@
  *
  * Columns of table COUNTRY are: <em>code, name_, short_name, description</em>. All columns are allowed to write to.
  */
-class Country
+class Country extends Entity
 {
-	/// columns of the table COUNTRY
-	private static $tableColumns = array('code', 'name_', 'short_name', 'description');
+	/**
+	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns = arrayarray('code', 'name_', 'short_name', 'description');
+		self::$roColumns = array();
+	}
 
 	/**
-	 * Retrieve country(s) according to given parameters.
+	 * Read country(s) according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the countries to select. Only countries satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of countries with structure <code>array('country' => array(array('code' => 'sk', 'name_' => 'Slovak republic', 'short_name' => 'Slovakia', ...), array('code' => 'eu', 'name_' => 'European Union', 'short_name' => 'EU', ...), ...))</code>.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		$query = new Query();
-		$query->buildSelect('country', '*', $params, self::$tableColumns);
-		$countries = $query->execute();
-		return array('country' => $countries);
+		return parent::readEntity($params, 'country');
 	}
 
 	/**
@@ -34,18 +37,7 @@ class Country
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$codes = array();
-		$query->startTransaction();
-		foreach ((array)$data as $country)
-		{
-			$query->buildInsert('country', $country, 'code', self::$tableColumns);
-			$res = $query->execute();
-			$codes[] = $res[0]['code'];
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return $codes;
+		return parent::createEntity($params, 'country', 'code');
 	}
 
 	/**
@@ -58,13 +50,7 @@ class Country
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('country', $params, $data, 'code', self::$tableColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::updateEntity($params, $data, 'country', 'code');
 	}
 
 	/**
@@ -76,14 +62,10 @@ class Country
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('country', $params, 'code', self::$tableColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::deleteEntity($params, 'country', 'code');
 	}
 }
+
+Country::initColumnNames();
 
 ?>

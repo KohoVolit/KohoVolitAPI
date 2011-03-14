@@ -5,24 +5,27 @@
  *
  * Columns of table GROUP_KIND are: <em>code, name_, short_name, description, subkind_of</em>. All columns are allowed to write to.
  */
-class GroupKind
+class GroupKind extends Entity
 {
-	/// columns of the table GROUP_KIND
-	private static $tableColumns = array('code', 'name_', 'short_name', 'description', 'subkind_of');
+	/**
+	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns = array('code', 'name_', 'short_name', 'description', 'subkind_of');
+		self::$roColumns = array();
+	}
 
 	/**
-	 * Retrieve group kind(s) according to given parameters.
+	 * Read group kind(s) according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the group kinds to select. Only group kinds satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of group kinds with structure <code>array('group' => array(array('code' => 'committee', 'name_' => 'Committee', 'short_name' => 'Cmt', ...), ...))</code>.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		$query = new Query();
-		$query->buildSelect('group_kind', '*', $params, self::$tableColumns);
-		$group_kinds = $query->execute();
-		return array('group_kind' => $group_kinds);
+		return parent::readEntity($params, 'group_kind');
 	}
 
 	/**
@@ -34,18 +37,7 @@ class GroupKind
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$codes = array();
-		$query->startTransaction();
-		foreach ((array)$data as $group_kind)
-		{
-			$query->buildInsert('group_kind', $group_kind, 'code', self::$tableColumns);
-			$res = $query->execute();
-			$codes[] = $res[0]['code'];
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return $codes;
+		return parent::createEntity($params, 'group_kind', 'code');
 	}
 
 	/**
@@ -58,13 +50,7 @@ class GroupKind
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('group_kind', $params, $data, 'code', self::$tableColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::updateEntity($params, $data, 'group_kind', 'code');
 	}
 
 	/**
@@ -76,14 +62,10 @@ class GroupKind
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('group_kind', $params, 'code', self::$tableColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::deleteEntity($params, 'group_kind', 'code');
 	}
 }
+
+GroupKind::initColumnNames();
 
 ?>

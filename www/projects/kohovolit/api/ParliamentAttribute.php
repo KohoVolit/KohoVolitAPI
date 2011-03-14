@@ -1,7 +1,5 @@
 <?php
 
-include 'classes/kohovolit/Attribute.php';
-
 /**
  * Class ParliamentAttribute provides information about parliaments' additional attributes through API and implements CRUD operations on database table PARLIAMENT_ATTRIBUTE.
  *
@@ -18,7 +16,7 @@ class ParliamentAttribute extends Attribute
 	}
 
 	/**
-	 * Retrieve parliament(s)' attributes according to given parameters.
+	 * Read parliament(s)' attributes according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
@@ -26,9 +24,9 @@ class ParliamentAttribute extends Attribute
 	 *
 	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		return parent::retrieveAttr($params, 'parliament_attribute');
+		return parent::readAttribute($params, 'parliament_attribute');
 	}
 
 	/**
@@ -40,7 +38,7 @@ class ParliamentAttribute extends Attribute
 	 */
 	public static function create($data)
 	{
-		return parent::createAttr($data, 'parliament_attribute');
+		return parent::createAttribute($data, 'parliament_attribute');
 	}
 
 	/**
@@ -53,7 +51,7 @@ class ParliamentAttribute extends Attribute
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateAttr($params, $data, 'parliament_attribute');
+		return parent::updateAttribute($params, $data, 'parliament_attribute');
 	}
 
 	/**
@@ -65,7 +63,7 @@ class ParliamentAttribute extends Attribute
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteAttr($params, 'parliament_attribute');
+		return parent::deleteAttribute($params, 'parliament_attribute');
 	}
 }
 

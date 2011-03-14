@@ -1,7 +1,5 @@
 <?php
 
-include 'classes/kohovolit/Attribute.php';
-
 /**
  * Class TermAttribute provides information about terms' additional attributes through API and implements CRUD operations on database table TERM_ATTRIBUTE.
  *
@@ -18,7 +16,7 @@ class TermAttribute extends Attribute
 	}
 
 	/**
-	 * Retrieve term(s)' attributes according to given parameters.
+	 * Read term(s)' attributes according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
@@ -26,9 +24,9 @@ class TermAttribute extends Attribute
 	 *
 	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		return parent::retrieveAttr($params, 'term_attribute');
+		return parent::readAttribute($params, 'term_attribute');
 	}
 
 	/**
@@ -40,7 +38,7 @@ class TermAttribute extends Attribute
 	 */
 	public static function create($data)
 	{
-		return parent::createAttr($data, 'term_attribute');
+		return parent::createAttribute($data, 'term_attribute');
 	}
 
 	/**
@@ -53,7 +51,7 @@ class TermAttribute extends Attribute
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateAttr($params, $data, 'term_attribute');
+		return parent::updateAttribute($params, $data, 'term_attribute');
 	}
 
 	/**
@@ -65,7 +63,7 @@ class TermAttribute extends Attribute
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteAttr($params, 'term_attribute');
+		return parent::deleteAttribute($params, 'term_attribute');
 	}
 }
 

@@ -40,8 +40,8 @@ class ApiServer
 		switch ($request_method)
 		{
 			case 'GET':
-				if (method_exists($api_class, 'retrieve'))
-					return $api_class::retrieve($params);
+				if (method_exists($api_class, 'read'))
+					return $api_class::read($params);
 				break;
 
 			case 'POST':

@@ -5,13 +5,19 @@
  *
  * Columns of table OFFICE are: <em>mp_id, address, phone, since, until</em>. All columns are allowed to write to.
  */
-class Office
+class Office extends Entity
 {
-	/// columns of the table OFFICE
-	private static $tableColumns = array('mp_id', 'address', 'phone', 'since', 'until');
+	/**
+	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns = array('mp_id', 'address', 'phone', 'since', 'until');
+		self::$roColumns = array();
+	}
 
 	/**
-	 * Retrieve MP office(s) according to given parameters.
+	 * Read MP office(s) according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the offices to select. Only offices satisfying all prescribed column values are returned.
 	 *
@@ -19,18 +25,9 @@ class Office
 	 *
 	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only offices valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get offices valid at this moment.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		$query = new Query();
-		$query->buildSelect('office', '*', $params, self::$tableColumns);
-		if (!empty($params['datetime']))
-		{
-			$query->appendParam($params['datetime']);
-			$n = $query->getParamsCount();
-			$query->appendQuery(' and since <= $' . $n . ' and until > $' . $n);
-		}		
-		$offices = $query->execute();
-		return array('office' => $offices);
+		return parent::readEntity($params, 'office', true);
 	}
 
 	/**
@@ -42,16 +39,7 @@ class Office
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$query->startTransaction();		
-		foreach ((array)$data as $office)
-		{
-			$query->buildInsert('office', $office, null, self::$tableColumns);
-			$query->execute();
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return count($data);
+		return parent::createEntity($params, 'office');
 	}
 
 	/**
@@ -64,10 +52,7 @@ class Office
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('office', $params, $data, '1', self::$tableColumns);
-		$res = $query->execute();
-		return count($res);
+		return parent::updateEntity($params, $data, 'office');
 	}
 
 	/**
@@ -79,11 +64,10 @@ class Office
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('office', $params, '1', self::$tableColumns);
-		$res = $query->execute();
-		return count($res);
+		return parent::deleteEntity($params, 'office');
 	}
 }
+
+Office::initColumnNames();
 
 ?>

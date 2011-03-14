@@ -5,7 +5,7 @@
  */
 class Scrape
 {
-	public static function retrieve($params)
+	public static function read($params)
 	{
 		$parliament = $params['parliament'];
 		if (file_exists($parliament_class_file = "api/$parliament/ScrapeParliament.php"))
@@ -13,7 +13,7 @@ class Scrape
 		else
 			throw new Exception("The API function <em>Scrape</em> is not implemented for parliament <em>$parliament</em>.", 400);
 
-		return ScrapeParliament::retrieve($params);
+		return ScrapeParliament::read($params);
 	}	
 }
 

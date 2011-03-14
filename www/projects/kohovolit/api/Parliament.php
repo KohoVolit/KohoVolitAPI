@@ -5,24 +5,27 @@
  *
  * Columns of table PARLIAMENT are: <em>code, name_, short_name, description, parliament_kind_code, country_code, default_language</em>. All columns are allowed to write to.
  */
-class Parliament
+class Parliament extends Entity
 {
-	/// columns of the table PARLIAMENT
-	private static $tableColumns = array('code', 'name_', 'short_name', 'description', 'parliament_kind_code', 'country_code', 'default_language');
+	/**
+	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns = array('code', 'name_', 'short_name', 'description', 'parliament_kind_code', 'country_code', 'default_language');
+		self::$roColumns = array();
+	}
 
 	/**
-	 * Retrieve parliament(s) according to given parameters.
+	 * Read parliament(s) according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the parliaments to select. Only parliaments satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of parliaments with structure <code>array('parliament' => array(array('code' => 'sk/nrsr', 'name_' => 'Národná rada Slovenskej Republiky', 'short_name' => 'NRSR', null, 'national-lower', ...), ...))</code>.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		$query = new Query();
-		$query->buildSelect('parliament', '*', $params, self::$tableColumns);
-		$parliaments = $query->execute();
-		return array('parliament' => $parliaments);
+		return parent::readEntity($params, 'parliament');
 	}
 
 	/**
@@ -34,18 +37,7 @@ class Parliament
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$codes = array();
-		$query->startTransaction();		
-		foreach ((array)$data as $parliament)
-		{
-			$query->buildInsert('parliament', $parliament, 'code', self::$tableColumns, self::$roColumns);
-			$res = $query->execute();
-			$codes[] = $res[0]['code'];
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return $codes;
+		return parent::createEntity($params, 'parliament', 'code');
 	}
 
 	/**
@@ -58,13 +50,7 @@ class Parliament
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('parliament', $params, $data, 'code', self::$tableColumns, self::$roColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::updateEntity($params, $data, 'parliament', 'code');
 	}
 
 	/**
@@ -76,14 +62,10 @@ class Parliament
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('parliament', $params, 'code', self::$tableColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::deleteEntity($params, 'parliament', 'code');
 	}
 }
+
+Parliament::initColumnNames();
 
 ?>

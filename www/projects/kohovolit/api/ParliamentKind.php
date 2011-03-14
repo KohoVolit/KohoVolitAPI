@@ -5,24 +5,27 @@
  *
  * Columns of table PARLIAMENT_KIND are: <em>code, name_, short_name, description</em>. All columns are allowed to write to.
  */
-class ParliamentKind
+class ParliamentKind extends Entity
 {
-	/// columns of the table PARLIAMENT_KIND
-	private static $tableColumns = array('code', 'name_', 'short_name', 'description');
+	/**
+	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns = array('code', 'name_', 'short_name', 'description');
+		self::$roColumns = array();
+	}
 
 	/**
-	 * Retrieve parliament kind(s) according to given parameters.
+	 * Read parliament kind(s) according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the parliament kinds to select. Only parliament kinds satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of parliament kinds with structure <code>array('parliament_kind' => array(array('code' => 'regional', 'name_' => 'Regional parliament', 'short_name' => 'Regional', ...), ...))</code>.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		$query = new Query();
-		$query->buildSelect('parliament_kind', '*', $params, self::$tableColumns);
-		$parliament_kinds = $query->execute();
-		return array('parliament_kind' => $parliament_kinds);
+		return parent::readEntity($params, 'parliament_kind');
 	}
 
 	/**
@@ -34,18 +37,7 @@ class ParliamentKind
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$codes = array();
-		$query->startTransaction();		
-		foreach ((array)$data as $parliament_kind)
-		{
-			$query->buildInsert('parliament_kind', $parliament_kind, 'code', self::$tableColumns, self::$roColumns);
-			$res = $query->execute();
-			$codes[] = $res[0]['code'];
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return $codes;
+		return parent::createEntity($params, 'parliament_kind', 'code');
 	}
 
 	/**
@@ -58,13 +50,7 @@ class ParliamentKind
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('parliament_kind', $params, $data, 'code', self::$tableColumns, self::$roColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::updateEntity($params, $data, 'parliament_kind', 'code');
 	}
 
 	/**
@@ -76,14 +62,10 @@ class ParliamentKind
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('parliament_kind', $params, 'code', self::$tableColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::deleteEntity($params, 'parliament_kind', 'code');
 	}
 }
+
+ParliamentKind::initColumnNames();
 
 ?>

@@ -49,7 +49,7 @@ class ApiClient
 	/**
 	 * ...
 	 */
-	public function retrieve($function, $params = null)
+	public function read($function, $params = null)
 	{
 		$url = $this->makeUrl($function, $params);
 		$curl_options = array(CURLOPT_URL => $url);

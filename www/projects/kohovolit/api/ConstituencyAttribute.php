@@ -1,7 +1,5 @@
 <?php
 
-include 'classes/kohovolit/Attribute.php';
-
 /**
  * Class ConstituencyAttribute provides information about constituencies' additional attributes through API and implements CRUD operations on database table CONSTITUENCY_ATTRIBUTE.
  *
@@ -18,7 +16,7 @@ class ConstituencyAttribute extends Attribute
 	}
 
 	/**
-	 * Retrieve constituency(s)' attributes according to given parameters.
+	 * Read constituency(s)' attributes according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
@@ -26,9 +24,9 @@ class ConstituencyAttribute extends Attribute
 	 *
 	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		return parent::retrieveAttr($params, 'constituency_attribute');
+		return parent::readAttribute($params, 'constituency_attribute');
 	}
 
 	/**
@@ -40,7 +38,7 @@ class ConstituencyAttribute extends Attribute
 	 */
 	public static function create($data)
 	{
-		return parent::createAttr($data, 'constituency_attribute');
+		return parent::createAttribute($data, 'constituency_attribute');
 	}
 
 	/**
@@ -53,7 +51,7 @@ class ConstituencyAttribute extends Attribute
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateAttr($params, $data, 'constituency_attribute');
+		return parent::updateAttribute($params, $data, 'constituency_attribute');
 	}
 
 	/**
@@ -65,7 +63,7 @@ class ConstituencyAttribute extends Attribute
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteAttr($params, 'constituency_attribute');
+		return parent::deleteAttribute($params, 'constituency_attribute');
 	}
 }
 

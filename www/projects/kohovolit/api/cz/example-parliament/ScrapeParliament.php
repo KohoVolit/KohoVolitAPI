@@ -5,7 +5,7 @@
  */
 class ScrapeParliament
 {
-	public static function retrieve($params)
+	public static function read($params)
 	{
 		$page = $params['page'];
 		switch ($page)

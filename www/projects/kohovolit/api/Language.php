@@ -5,24 +5,27 @@
  *
  * Columns of table LANGUAGE are: <em>code, name_, short_name, description, locale</em>. All columns are allowed to write to.
  */
-class Language
+class Language extends Entity
 {
-	/// columns of the table LANGUAGE
-	private static $tableColumns = array('code', 'name_', 'short_name', 'description', 'locale');
+	/**
+	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 */
+	public static function initColumnNames()
+	{
+		self::$tableColumns = array('code', 'name_', 'short_name', 'description', 'locale');
+		self::$roColumns = array();
+	}
 
 	/**
-	 * Retrieve language(s) according to given parameters.
+	 * Read language(s) according to given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the languages to select. Only languages satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of languages with structure <code>array('language' => array(array('code' => 'en', 'name_' => 'in English', 'short_name' => 'English', ...), ...))</code>.
 	 */
-	public static function retrieve($params)
+	public static function read($params)
 	{
-		$query = new Query();
-		$query->buildSelect('language', '*', $params, self::$tableColumns);
-		$languages = $query->execute();
-		return array('language' => $languages);
+		return parent::readEntity($params, 'language_');
 	}
 
 	/**
@@ -34,18 +37,7 @@ class Language
 	 */
 	public static function create($data)
 	{
-		$query = new Query('kv_admin');
-		$codes = array();
-		$query->startTransaction();
-		foreach ((array)$data as $language)
-		{
-			$query->buildInsert('language', $language, 'code', self::$tableColumns);
-			$res = $query->execute();
-			$codes[] = $res[0]['code'];
-			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
-		}
-		$query->commitTransaction();
-		return $codes;
+		return parent::createEntity($params, 'language_', 'code');
 	}
 
 	/**
@@ -58,13 +50,7 @@ class Language
 	 */
 	public static function update($params, $data)
 	{
-		$query = new Query('kv_admin');
-		$query->buildUpdate('language', $params, $data, 'code', self::$tableColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::updateEntity($params, $data, 'language_', 'code');
 	}
 
 	/**
@@ -76,14 +62,10 @@ class Language
 	 */
 	public static function delete($params)
 	{
-		$query = new Query('kv_admin');
-		$query->buildDelete('language', $params, 'code', self::$tableColumns);
-		$res = $query->execute();
-		$codes = array();
-		foreach ((array)$res as $line)
-			$codes[] = $line['code'];
-		return $codes;
+		return parent::deleteEntity($params, 'language_', 'code');
 	}
 }
+
+Language::initColumnNames();
 
 ?>
