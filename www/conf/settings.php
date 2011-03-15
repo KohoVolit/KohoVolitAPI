@@ -1,6 +1,7 @@
 <?php
 
 set_include_path(
+	'/var/www/api.kohovolit.eu' . PATH_SEPARATOR .
 	'/var/www/api.kohovolit.eu/classes' . PATH_SEPARATOR .
 	'/var/www/api.kohovolit.eu/classes/kohovolit' . PATH_SEPARATOR .
 	get_include_path());
