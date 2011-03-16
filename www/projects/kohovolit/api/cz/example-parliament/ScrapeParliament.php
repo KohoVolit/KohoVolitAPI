@@ -1,10 +1,17 @@
 <?php
 
 /**
- * ...
+ * This class downloads and parses data from given resources for one parliament.
  */
 class ScrapeParliament
 {
+	/**
+	 * Downloads and parses data from a given resource.
+	 *
+	 * \param $params An array of pairs <em>param => value</em> specifying the resource to scrape. The resource is specified by a \e resource parameter.
+	 *
+	 * \return An array of data parsed from the resource.
+	 */
 	public static function read($params)
 	{
 		$page = $params['page'];
@@ -17,7 +24,7 @@ class ScrapeParliament
 				return self::scrapeGroup($params);
 				
 			default:
-				throw new Exception("Scraping of the page <em>$page</em> is not implemented for parliament <em>$parliament</em>.", 400);
+				throw new Exception("Scraping of the resource <em>$resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
 	}
 	
@@ -26,7 +33,7 @@ class ScrapeParliament
 		// ...scrape Mp's website to an associative array $result...
 		$result['foo'] = 'bar';
 		
-		return $result
+		return $result;
 	}
 	
 	private static function scrapeGroup($params)
@@ -34,7 +41,7 @@ class ScrapeParliament
 		// ...scrape Group's website to an associative array $result...
 		$result['foo'] = 'bar';
 		
-		return $result
+		return $result;
 	}
 }
 

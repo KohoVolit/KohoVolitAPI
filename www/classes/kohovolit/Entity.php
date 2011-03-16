@@ -12,9 +12,6 @@ abstract class Entity
 
 	/// read-only columns
 	protected static $roColumns;
-
-	/// Must be defined in a derived class to initialize column names of the table to work with.
-	abstract protected static function initColumnNames();
 	
 	/**
 	 * Read entity(s) according to given parameters.
