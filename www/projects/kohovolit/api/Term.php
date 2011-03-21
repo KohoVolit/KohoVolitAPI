@@ -37,7 +37,7 @@ class Term extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'term', 'id');
+		return parent::createEntity($data, 'term', 'id');
 	}
 
 	/**

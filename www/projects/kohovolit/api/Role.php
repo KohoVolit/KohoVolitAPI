@@ -37,7 +37,7 @@ class Role extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'role_', 'code');
+		return parent::createEntity($data, 'role_', 'code');
 	}
 
 	/**

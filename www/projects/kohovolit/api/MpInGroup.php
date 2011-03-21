@@ -39,7 +39,7 @@ class MpInGroup extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'mp_in_group');
+		return parent::createEntity($data, 'mp_in_group');
 	}
 
 	/**

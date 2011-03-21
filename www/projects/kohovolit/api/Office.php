@@ -39,7 +39,7 @@ class Office extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'office');
+		return parent::createEntity($data, 'office');
 	}
 
 	/**

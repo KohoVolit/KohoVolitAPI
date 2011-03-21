@@ -37,7 +37,7 @@ class Language extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'language_', 'code');
+		return parent::createEntity($data, 'language_', 'code');
 	}
 
 	/**

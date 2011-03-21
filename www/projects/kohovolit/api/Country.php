@@ -37,7 +37,7 @@ class Country extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'country', 'code');
+		return parent::createEntity($data, 'country', 'code');
 	}
 
 	/**

@@ -70,15 +70,16 @@ class ScrapeParliament
 		$out['id'] = $mp_id;
 		$out['term_id'] = $term_id;
 
+
 		// pole udaju o poslanci
 		$name_full = str_replace('&nbsp;', ' ', ScraperUtils::getFirstString($html, "<h2>", "</h2>"));
-		preg_match('/([\S\. ]+\.)? ?(\S+) ([^, ]+),? ?([^\.]+\.)?/u', $name_full, $matches);
-		if (!empty($matches[1]))
-			$out['pre_title'] = $matches[1];
+		preg_match('/([^,]+\.)? ?(\S+) ([^,]+)(, *.+)?/u', $name_full, $matches);
+		$out['pre_title'] = $matches[1];
 		$out['first_name'] = $matches[2];
-		$out['last_name'] = $matches[3];
-		if (!empty($matches[4]))
-			$out['post_title'] = $matches[4];
+		$last_name_ar = explode(' ', $matches[3]);
+		$out['last_name'] = $last_name_ar[0];
+		$out['disambiguation'] = rtrim($last_name_ar[1], '.');
+		$out['post_title'] = ltrim($matches[4], ', ');
 
 		//poslanec vs. poslankyne
 		if (strpos($html, 'Narozena') > 0)
@@ -101,14 +102,12 @@ class ScrapeParliament
 		$out['died_on'] = Utils::dateToIso($died_on_cs, 'cs');
 
 		// kraj
-		$out['constituency'] = ScraperUtils::getFirstString($html, "Volební kraj:", "<br />");
-		if (!empty($out['constituency']))
-			$out['constituency'] = trim($out['constituency']);
+		$out['constituency'] = trim(ScraperUtils::getFirstString($html, "Volební kraj:", "<br />"));
 
 		// asistenti
 		$assistants = ScraperUtils::getFirstString($html, "Asistent:", "</dl>");
 		$a_ar = ScraperUtils::returnSubstrings($assistants, '<dd>', '</dd>');
-		$j = 1;
+		$j = 0;
 		foreach ($a_ar as $row)
 			$out['assistant'][$j++] = str_replace('&nbsp;', ' ', $row);
 
@@ -137,12 +136,10 @@ class ScrapeParliament
 		}
 
 		// e-mail
-		$out['email'] = ScraperUtils::getFirstString($html, 'mailto:','">');
+		$out['email'] = trim(ScraperUtils::getFirstString($html, 'mailto:','">'));
 
 		// www
-		$out['www'] = ScraperUtils::getFirstString($html, 'href="http://','">Další informace (vlastní stránka)');
-		if (!empty($out['www']))
-			$out['www'] = trim($out['www'], '/');
+		$out['www'] = trim(ScraperUtils::getFirstString($html, 'href="http://','">Další informace (vlastní stránka)'), '/');
 		
 		// clenstva poslance
 		if (isset($params['list_memberships']))
@@ -248,9 +245,7 @@ class ScrapeParliament
 		else
 		{
 			$out['name'] = trim($matches[1]);
-			$short_name = ScraperUtils::getFirstString($html, 'title="' . $out['name'] . '">', '</a>');
-			if (!empty($short_name))
-				$out['short_name'] = $short_name;
+			$out['short_name'] = trim(ScraperUtils::getFirstString($html, 'title="' . $out['name'] . '">', '</a>'));
 		}
 
 		// group members
@@ -260,16 +255,18 @@ class ScrapeParliament
 			foreach ($group_ar as $row)
 			{
 				$r_ar = str_replace('&nbsp;', ' ', ScraperUtils::returnSubstrings($row, '<td', '/td>'));
-				preg_match('/id=([0-9]+)[^>]*">(\S+) ([^, ]+)<\/a>,? *(\S+)?</u', $r_ar[1], $matches);
+				preg_match('/ - viz /u', $r_ar[1], $matches);	// preskoc odkazy na poslankyne, co zmenili meno
+				if (!empty($matches)) continue;
+				preg_match('/id=([0-9]+)[^>]*">(\S+) ([^<]+)<\/a>(, *[^<]+)?\.?</u', $r_ar[1], $matches);
 				$mp_id = $matches[1];
 				$out['mp'][$mp_id]['id'] = $mp_id;
 				$pre_title = trim(ScraperUtils::getFirstString($r_ar[0],'>','<'));
-				if (!empty($pre_title))
-					$out['mp'][$mp_id]['pre_title'] = $pre_title;
+				$out['mp'][$mp_id]['pre_title'] = $pre_title;
 				$out['mp'][$mp_id]['first_name'] = $matches[2];
-				$out['mp'][$mp_id]['last_name'] = $matches[3];
-				if (!empty($matches[4]))
-					$out['mp'][$mp_id]['post_title'] = $matches[4];
+				$last_name_ar = explode(' ', $matches[3]);
+				$out['mp'][$mp_id]['last_name'] = $last_name_ar[0];
+				$out['mp'][$mp_id]['disambiguation'] = trim($last_name_ar[1]);
+				$out['mp'][$mp_id]['post_title'] = ltrim($matches[4], ', ');
 
 				// constituencies
 				unset($matches);
@@ -339,8 +336,8 @@ class ScrapeParliament
 					{
 						$out['mp'][$mp_id]['group'][$group_id]['id'] = $group_id;
 						$out['mp'][$mp_id]['group'][$group_id]['kind'] = 'delegation';
-						$out['mp'][$mp_id]['group'][$group_id]['short_name'] = ScraperUtils::getFirstString($p, '">', '<');
 						$out['mp'][$mp_id]['group'][$group_id]['name'] = str_replace('&nbsp;', ' ', ScraperUtils::getFirstString($p, 'title="', '"'));
+						$out['mp'][$mp_id]['group'][$group_id]['short_name'] = ScraperUtils::getFirstString($p, '">', '<');
 					}
 				}
 			}

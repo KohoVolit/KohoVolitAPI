@@ -37,7 +37,7 @@ class GroupKind extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'group_kind', 'code');
+		return parent::createEntity($data, 'group_kind', 'code');
 	}
 
 	/**

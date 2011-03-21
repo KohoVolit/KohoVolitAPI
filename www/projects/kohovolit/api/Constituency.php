@@ -37,7 +37,7 @@ class Constituency extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'constituency', 'id');
+		return parent::createEntity($data, 'constituency', 'id');
 	}
 
 	/**

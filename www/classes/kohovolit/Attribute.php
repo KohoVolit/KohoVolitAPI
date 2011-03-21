@@ -19,7 +19,7 @@
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 * \param $table_name Name of database table with attributes, eg. 'mp_attribute'.
 	 *
-	 * \return An array of attributes, eg. <code>array('mp_attribute' => array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...))</code>.
+	 * \return An array of attributes, eg. <code>array('mp_attribute' => array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...))</code> sorted by \e <entity_id> than by \e name_ than by \e lang all ascending and then by \e since descending.
 	 *
 	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
 	 */
@@ -32,7 +32,8 @@
 			$query->appendParam($params['datetime']);
 			$n = $query->getParamsCount();
 			$query->appendQuery(' and since <= $' . $n . ' and until > $' . $n);
-		}		
+		}
+		$query->appendQuery(' order by ' . end(self::$tableColumns) . ', name_, lang, since desc');
 		$attrs = $query->execute();
 		return array($table_name => $attrs);
 	}

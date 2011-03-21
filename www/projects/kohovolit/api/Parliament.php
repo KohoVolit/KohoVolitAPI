@@ -37,7 +37,7 @@ class Parliament extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'parliament', 'code');
+		return parent::createEntity($data, 'parliament', 'code');
 	}
 
 	/**

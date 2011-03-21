@@ -37,7 +37,7 @@ class Group extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'group_', 'id');
+		return parent::createEntity($data, 'group_', 'id');
 	}
 
 	/**

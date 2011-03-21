@@ -37,7 +37,7 @@ class Party extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($params, 'party', 'id');
+		return parent::createEntity($data, 'party', 'id');
 	}
 
 	/**
