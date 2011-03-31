@@ -98,7 +98,6 @@ class ScrapeParliament
   * example: Scrape?parliament=cz/senat&resource=mp
   * 	Scrape?parliament=cz/senat&resource=mp&date=20.2.2002
   */
-  //*** chybny vypis
   private static function scrapeMp($params)
   {
     //set date
@@ -121,20 +120,20 @@ class ScrapeParliament
 	  throw new Exception('The senator does not have a legitimate mandate during this period',404);
 	} else {
 	  $name = ScraperUtils::name2array(trim(strip_tags(str_replace("\xc2\xa0",' ',str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'<h1 class="h1-back-sen">','</h1>'))))));
-	  $result['name'] = $name;
+	  $result['mp']['name'] = $name;
 	  $foto_part = ScraperUtils::getFirstString($html,'<div class="foto">','/>');
-	  $result['photo'] = 'http://senat.cz/'. ScraperUtils::getFirstString($foto_part,'img src="../','"');
-	  $result['party'] = trim(strip_tags(ScraperUtils::getFirstString($html,'Pol. příslušnost:','</dd>')));
-	  $result['party_en'] = trim(strip_tags(ScraperUtils::getFirstString($html_en,'Political affiliation:','</dd>')));
-	  $result['region_code'] = trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'Volební obvod:</dt><dd>č.','</dd>'))));
-	  $result['candidate_list'] = trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'Zvolen za:','v roce'))));
-	  $result['election_year'] = trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'v roce','</dd>'))));
+	  $result['mp']['photo'] = 'http://senat.cz/'. ScraperUtils::getFirstString($foto_part,'img src="../','"');
+	  $result['mp']['party'] = trim(strip_tags(ScraperUtils::getFirstString($html,'Pol. příslušnost:','</dd>')));
+	  $result['mp']['party_en'] = trim(strip_tags(ScraperUtils::getFirstString($html_en,'Political affiliation:','</dd>')));
+	  $result['mp']['region_code'] = trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'Volební obvod:</dt><dd>č.','</dd>'))));
+	  $result['mp']['candidate_list'] = trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'Zvolen za:','v roce'))));
+	  $result['mp']['election_year'] = trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'v roce','</dd>'))));
 	  $mandate = explode('-',trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'Mandát:','</dd>')))));
 	  $m_date = new DateTime(trim($mandate[0]));
-	  $result['mandate_since'] = $m_date->format('Y-m-d');
+	  $result['mp']['mandate_since'] = $m_date->format('Y-m-d');
 	  $m_date = new DateTime(trim($mandate[1]));
-	  $result['mandate_until'] = $m_date->format('Y-m-d');
-	  $result['website'] = trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'WWW:','</dd>'))));
+	  $result['mp']['mandate_until'] = $m_date->format('Y-m-d');
+	  $result['mp']['website'] = trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'WWW:','</dd>'))));
 	  $text_part = ScraperUtils::getFirstString($html,'<h3>Členství:</h3>','</div>');
 	  $groups = ScraperUtils::returnSubstrings($text_part,'<li>','</li>');
 	  $text_part_en = ScraperUtils::getFirstString($html_en,'<h3>Membership:</h3>','</div>');
@@ -143,41 +142,41 @@ class ScrapeParliament
 	  if (isset($groups[0])) {
 	    foreach ((array) $groups as $group) {
 		  $group_id = ScraperUtils::getFirstString($group,'par_2=','">');
-		  $result['group']['group_'.$group_id]['group_id'] = $group_id;
-		  $result['group']['group_'.$group_id]['name'] = ScraperUtils::getFirstString($group,'">','</a>');
-		  $result['group']['group_'.$group_id]['name_en'] = ScraperUtils::getFirstString($groups_en[$i],'">','</a>');
-		  $result['group']['group_'.$group_id]['role'] = ScraperUtils::getFirstString($group,'(',')');
-		  $result['group']['group_'.$group_id]['role_en'] = ScraperUtils::getFirstString($groups_en[$i],'(',')');
+		  $result['mp']['group']['group_'.$group_id]['group_id'] = $group_id;
+		  $result['mp']['group']['group_'.$group_id]['name'] = ScraperUtils::getFirstString($group,'">','</a>');
+		  $result['mp']['group']['group_'.$group_id]['name_en'] = ScraperUtils::getFirstString($groups_en[$i],'">','</a>');
+		  $result['mp']['group']['group_'.$group_id]['role'] = ScraperUtils::getFirstString($group,'(',')');
+		  $result['mp']['group']['group_'.$group_id]['role_en'] = ScraperUtils::getFirstString($groups_en[$i],'(',')');
 		  $i++;
 		}
 	  }
 	  $address = explode('<br />',ScraperUtils::getFirstString($html,'Adresa senátorské kanceláře:','</dd>'));
 	  if (strlen(strip_tags($address[0])) > 1) {
 	    foreach ((array) $address as $a) {
-	      $result['office_address'] .= trim(strip_tags($a),', ') . ', ';
+	      $result['mp']['office_address'] .= trim(strip_tags($a),', ') . ', ';
 		}
-		$result['office_address'] = trim(trim($result['office_address']),',');
+		$result['mp']['office_address'] = trim(trim($result['office_address']),',');
 	  }
 	  $assistents = explode(', ',trim(trim(strip_tags(ScraperUtils::getFirstString($html,'Asistenti senátora:','</dd>'))),','));
 	  if ($assistents[0] != '') {
 	    $a = 1;
-	    foreach($assistents as $assistent) {
-		  $result['assistent']['assistent_'.$a] = trim(str_replace('&nbsp;',' ',$assistent));
+	    foreach ((array) $assistents as $assistent) {
+		  $result['mp']['assistent']['assistent_'.$a] = trim(str_replace('&nbsp;',' ',$assistent));
 		  $a++;
 		}
 	  }
 	  $phones = explode(', ',trim(strip_tags(ScraperUtils::getFirstString($html,'Telefony:','</dd>'))));
 	  if ($phones[0] != '') {
 	    $a = 1;
-	    foreach($phones as $phone) {
-		  $result['phone']['phone_'.$a] = trim(str_replace('&nbsp;',' ',$phone));
+	    foreach ((array) $phones as $phone) {
+		  $result['mp']['phone']['phone_'.$a] = trim(str_replace('&nbsp;',' ',$phone));
 		  $a++;
 		}
 	  }
 	  $emails = explode(' &nbsp;',trim(strip_tags(ScraperUtils::getFirstString($html,'e-maily:','</dd>'))));
 	  if ($emails[0] != '') {
 	    $a = 1;
-	    foreach($emails as $email) {
+	    foreach ((array) $emails as $email) {
 		  $result['email']['email_'.$a] = trim(str_replace('&nbsp;',' ',$email));
 		  $a++;
 		}
@@ -201,7 +200,7 @@ class ScrapeParliament
 	$text_part = ScraperUtils::getFirstString($html,'<h2>Aktuální nastavení je','</ul>');
 	  $term_lines = ScraperUtils::returnSubstrings($text_part,'<li','</li>');
 	  if (strlen($term_lines[0]) > 1) {
-	    foreach($term_lines as $line) {
+	    foreach ((array) $term_lines as $line) {
 		  $line = str_replace('&nbsp;',' ',$line);
 		  $term_code = ScraperUtils::getFirstString($line,'>','.');
 		  $term['term_code'] = $term_code;
@@ -333,7 +332,7 @@ class ScrapeParliament
 			$group_name = ScraperUtils::getFirstString($group,'>','</h3>');
 			$mps = ScraperUtils::returnSubstrings($group,'<td>','</td>');
 			if (strlen($mps[0]) > 1) {
-			  foreach($mps as $mp) {
+			  foreach ((array) $mps as $mp) {
 				$result['division']['mp']['mp_'.$i]['vote_code'] = substr($mp,0,1);
 				$result['division']['mp']['mp_'.$i]['vote'] = $vote2code[$result['mp']['mp_'.$i]['vote_code']];
 				$name = trim(substr($mp,1));
@@ -428,8 +427,8 @@ class ScrapeParliament
 	//extract info
 	$name = ScraperUtils::getFirstString($html,'<h1 class="h1-back-sen">','</h1>');
 	if ($name != 'Odkaz na tuto stránku má nesprávné parametry nebo bylo zadáno datum mimo funkční období odkazovaného orgánu Senátu.') {
-		$result['name'] = $name;
-		$result['name_en'] = ScraperUtils::getFirstString($html_en,'<h1 class="h1-back-sen">','</h1>');
+		$result['group']['name'] = $name;
+		$result['group']['name_en'] = ScraperUtils::getFirstString($html_en,'<h1 class="h1-back-sen">','</h1>');
 		$text_part = ScraperUtils::getFirstString($html,'<h1 class="h1-back-sen">','počet členů');
 		$text_part_en = ScraperUtils::getFirstString($html_en,'<h1 class="h1-back-sen">','number of members');
 		$blocks = ScraperUtils::returnSubstrings($text_part,'<div>','</div>');
@@ -447,12 +446,12 @@ class ScrapeParliament
 			$lines = ScraperUtils::returnSubstrings($block,'<li class="bez">','</li>');
 			foreach ((array) $lines as $line) {
 				$source_code = ScraperUtils::getFirstString($line,'par_3=','"');
-				$result['mp']['mp_'.$source_code]['source_code'] = $source_code;
+				$result['group']['mp']['mp_'.$source_code]['source_code'] = $source_code;
 				$name = explode(' ',strip_tags($line));
-				$result['mp']['mp_'.$source_code]['first_name'] = $name[0];
-				$result['mp']['mp_'.$source_code]['last_name'] = end($name);
-				$result['mp']['mp_'.$source_code]['role'] = $role;
-				$result['mp']['mp_'.$source_code]['role_en'] = $role_en;
+				$result['group']['mp']['mp_'.$source_code]['first_name'] = $name[0];
+				$result['group']['mp']['mp_'.$source_code]['last_name'] = end($name);
+				$result['group']['mp']['mp_'.$source_code]['role'] = $role;
+				$result['group']['mp']['mp_'.$source_code]['role_en'] = $role_en;
 				$m++;
 			}
 			$i++;
@@ -462,12 +461,12 @@ class ScrapeParliament
 		//check number of members
 		$number = ScraperUtils::getFirstString($html,'počet členů:&nbsp;<strong>','<strong>');
 		if ($m == $number) {
-		  $result['number'] = $m;
+		  $result['group']['number'] = $m;
 		} else {
 		  throw new Exception('Numbers of MPs are incorrect!',503);
 		}
 	} else {
-	  $result['number'] = 0;
+	  $result['group']['number'] = 0;
 	}
 	return $result;
   }
