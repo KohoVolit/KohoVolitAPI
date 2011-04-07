@@ -43,7 +43,7 @@ class Log
 	
 		$this->file = fopen($filename, 'w');
 		if ($this->file === false)
-			throw Exception("Cannot open log file '$filename' for write.", 500);
+			throw new Exception("Cannot open log file '$filename' for write.", 500);
 		
 		// set immediate write to the file without buffering
 		set_file_buffer($this->file, 0);
