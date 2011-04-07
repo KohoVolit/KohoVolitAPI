@@ -17,7 +17,8 @@ create table parliament
 	description text,
 	parliament_kind_code varchar references parliament_kind on delete restrict on update cascade,
 	country_code varchar references country on delete restrict on update cascade,
-	default_language varchar references language_ on delete restrict on update cascade
+	default_language varchar references language_ on delete restrict on update cascade,
+	last_updated_on timestamp
 );
 
 create table term
@@ -26,11 +27,12 @@ create table term
 	name_ varchar not null,
 	short_name varchar,
 	description text,
-	parliament_kind_code varchar references parliament_kind on delete restrict on update cascade,
+	country_code varchar not null references country on delete restrict on update cascade,
+	parliament_kind_code varchar not null references parliament_kind on delete restrict on update cascade,
 	since timestamp not null default '-infinity',
 	until timestamp not null default 'infinity',
-	unique (name_, parliament_kind_code),
-	check (since < until)
+	unique (name_, country_code, parliament_kind_code),
+	check (since <= until)
 );
 
 create table constituency
@@ -46,28 +48,28 @@ create table constituency
 --attributes
 create table parliament_kind_attribute
 (
-	parliament_kind_code varchar references parliament_kind on delete restrict on update cascade,
+	parliament_kind_code varchar references parliament_kind on delete cascade on update cascade,
 	primary key (parliament_kind_code, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table parliament_attribute
 (
-	parliament_code varchar references parliament on delete restrict on update cascade,
+	parliament_code varchar references parliament on delete cascade on update cascade,
 	primary key (parliament_code, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table term_attribute
 (
-	term_id integer references term on delete restrict on update cascade,
+	term_id integer references term on delete cascade on update cascade,
 	primary key (term_id, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table constituency_attribute
 (
-	constituency_id integer references constituency on delete restrict on update cascade,
+	constituency_id integer references constituency on delete cascade on update cascade,
 	primary key (constituency_id, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);

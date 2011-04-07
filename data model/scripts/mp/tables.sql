@@ -18,7 +18,7 @@ create table mp
 	address varchar,
 	phone varchar,
 	unique (last_name, first_name, middle_names, disambiguation),
-	check (born_on < died_on)
+	check (born_on <= died_on)
 );
 
 create table office
@@ -29,13 +29,13 @@ create table office
 	since timestamp default '-infinity',
 	until timestamp default 'infinity',
 	primary key (mp_id, address, since),
-	check (since < until)
+	check (since <= until)
 );
 
 -- attributes
 create table mp_attribute
 (
-	mp_id integer references mp on delete restrict on update cascade,
+	mp_id integer references mp on delete cascade on update cascade,
 	primary key (mp_id, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);
