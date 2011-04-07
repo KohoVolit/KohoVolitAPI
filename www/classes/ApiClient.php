@@ -1,7 +1,5 @@
 <?php
 
-namespace KV;
-
 /**
  * ...
  */
@@ -123,7 +121,6 @@ class ApiClient
 		curl_setopt_array($ch, $curl_options);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: ' . $this->mime_type));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 		$response = curl_exec($ch);
 		$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);

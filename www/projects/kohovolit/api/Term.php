@@ -3,7 +3,7 @@
 /**
  * Class Term provides information about parliament terms of office through API and implements CRUD operations on database table TERM.
  *
- * Columns of table TERM are: <em>id, name_, short_name, description, parliament_kind_code, since, until</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Columns of table TERM are: <em>id, name_, short_name, description, country_code, parliament_kind_code, since, until</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
 class Term extends Entity
 {
@@ -12,7 +12,7 @@ class Term extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'parliament_kind_code', 'since', 'until');
+		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'country_code', 'parliament_kind_code', 'since', 'until');
 		self::$roColumns = array('id');
 	}
 

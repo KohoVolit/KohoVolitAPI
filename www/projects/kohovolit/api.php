@@ -1,6 +1,7 @@
 <?php
 
 require '../../conf/settings.php';
+include './conf/settings.php';
 
 try
 {

@@ -3,7 +3,7 @@
 /**
  * Class Group provides information about groups of MPs (eg. committees, commissions, etc.) through API and implements CRUD operations on database table GROUP.
  *
- * Columns of table GROUP are: <em>id, name_, short_name, group_kind_code, term_id, constituency_id, parliament_code, subgroup_of</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Columns of table GROUP are: <em>id, name_, short_name, group_kind_code, term_id, parliament_code, subgroup_of</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
 class Group extends Entity
 {
@@ -12,7 +12,7 @@ class Group extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'constituency_id', 'parliament_code', 'subgroup_of');	
+		self::$tableColumns = array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'parliament_code', 'subgroup_of');	
 		self::$roColumns = array('id');
 	}
 

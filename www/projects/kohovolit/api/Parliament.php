@@ -3,7 +3,7 @@
 /**
  * Class Parliament provides information about parliaments through API and implements CRUD operations on database table PARLIAMENT.
  *
- * Columns of table PARLIAMENT are: <em>code, name_, short_name, description, parliament_kind_code, country_code, default_language</em>. All columns are allowed to write to.
+ * Columns of table PARLIAMENT are: <em>code, name_, short_name, description, parliament_kind_code, country_code, default_language, last_updated_on</em>. All columns are allowed to write to.
  */
 class Parliament extends Entity
 {
@@ -12,7 +12,7 @@ class Parliament extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('code', 'name_', 'short_name', 'description', 'parliament_kind_code', 'country_code', 'default_language');
+		self::$tableColumns = array('code', 'name_', 'short_name', 'description', 'parliament_kind_code', 'country_code', 'default_language', 'last_updated_on');
 		self::$roColumns = array();
 	}
 

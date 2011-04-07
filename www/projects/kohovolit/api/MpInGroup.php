@@ -3,7 +3,7 @@
 /**
  * Class MpInGroup provides information about memberships of MPs in groups through API and implements CRUD operations on database table MP_IN_GROUP.
  *
- * Columns of table MP_IN_GROUP are: <em>mp_id, group_id, role_code, party_id, since, until</em>. All columns are allowed to write to.
+ * Columns of table MP_IN_GROUP are: <em>mp_id, group_id, role_code, party_id, constituency_id, since, until</em>. All columns are allowed to write to.
  */
 class MpInGroup extends Entity
 {
@@ -12,7 +12,7 @@ class MpInGroup extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('mp_id', 'group_id', 'role_code', 'party_id', 'since', 'until');
+		self::$tableColumns = array('mp_id', 'group_id', 'role_code', 'party_id', 'constituency_id', 'since', 'until');
 		self::$roColumns = array();
 	}
 
