@@ -3,7 +3,7 @@
 /**
  * This class downloads and parses data from given resources for Parliament of the Czech republic - Senate.
  */
-class ScrapeParliament
+class ScrapeCzSenat
 {
 	/**
 	 * Downloads and parses data from a given resource.
@@ -12,7 +12,7 @@ class ScrapeParliament
 	 *
 	 * \return An array of data parsed from the resource.
 	 */
-	public static function read($params)
+	public static function scrape($params)
 	{
 		$resource = $params['resource'];
 		switch ($resource)
