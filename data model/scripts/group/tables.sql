@@ -17,10 +17,9 @@ create table group_
 	short_name varchar,
 	group_kind_code varchar not null references group_kind on delete restrict on update cascade,
 	term_id integer not null references term on delete restrict on update cascade,
-	constituency_id integer not null references constituency on delete restrict on update cascade,
 	parliament_code varchar not null references parliament on delete restrict on update cascade,
 	subgroup_of integer references group_ on delete cascade on update cascade,
-	unique (name_, group_kind_code, term_id, constituency_id, parliament_code)
+	unique (name_, group_kind_code, term_id, parliament_code)
 );
 
 create table role_
@@ -47,37 +46,38 @@ create table mp_in_group
 	group_id integer references group_ on delete cascade on update cascade,
 	role_code varchar references role_ on delete restrict on update cascade,
 	party_id integer references party on delete restrict on update cascade,
+	constituency_id integer references constituency on delete restrict on update cascade,
 	since timestamp default '-infinity',
 	until timestamp default 'infinity',
-	primary key (mp_id, group_id, role_code, since, until),
-	check (since < until)
+	primary key (mp_id, group_id, role_code, since),
+	check (since <= until)
 );
 
 -- attributes
 create table group_kind_attribute
 (
-	group_kind_code varchar references group_kind on delete restrict on update cascade,
+	group_kind_code varchar references group_kind on delete cascade on update cascade,
 	primary key (group_kind_code, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table group_attribute
 (
-	group_id integer references group_ on delete restrict on update cascade,
+	group_id integer references group_ on delete cascade on update cascade,
 	primary key (group_id, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table role_attribute
 (
-	role_code varchar references role_ on delete restrict on update cascade,
+	role_code varchar references role_ on delete cascade on update cascade,
 	primary key (role_code, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table party_attribute
 (
-	party_id integer references party on delete restrict on update cascade,
+	party_id integer references party on delete cascade on update cascade,
 	primary key (party_id, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);

@@ -3,20 +3,23 @@
 
 insert into group_kind (code, name_, short_name, description, subkind_of) values
 ('parliament', 'Parliament', 'Parliament', 'Parliament at any administrative level.', null),
-('group', 'Parliamentary group', 'Group', 'Political group in a parliament.', 'parliament'),
+('political group', 'Political group', 'Group', 'Political group in a parliament.', 'parliament'),
 ('committee', 'Parliamentary committee', 'Committee', 'Committee of a parliament.', 'parliament'),
 ('subcommittee', 'Parliamentary subcommittee', 'Subcommittee', 'Subcommittee of a committee of a parliament.', 'committee'),
 ('commission', 'Parliamentary commission', 'Commission', 'Commission of a parliament.', 'parliament'),
 ('delegation', 'Parliamentary delegation', 'Delegation', 'Delegation of a parliament.', 'parliament'),
-('friendship', 'Interparliamentary friendship group', 'Friendship group', 'Friendship group with a parliament of a different country.', 'parliament');
+('friendship group', 'Interparliamentary friendship group', 'Friendship group', 'Friendship group with a parliament of a different country.', 'parliament'),
+('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament'),
+('government', 'Government', 'Government', 'Government.', null),
+('institution', 'Other institution', 'Institution', 'Other institution outside parliament.', null);
 
 insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('parliament', 'sk', 'name_', 'Parlament'),
 ('parliament', 'sk', 'short_name', 'Parlament'),
 ('parliament', 'sk', 'description', 'Parlament na ľubovoľnej administratívnej úrovni.'),
-('group', 'sk', 'name_', 'Poslanecký klub'),
-('group', 'sk', 'short_name', 'Klub'),
-('group', 'sk', 'description', 'Poslanecký klub v parlamente.'),
+('political group', 'sk', 'name_', 'Poslanecký klub'),
+('political group', 'sk', 'short_name', 'Klub'),
+('political group', 'sk', 'description', 'Poslanecký klub v parlamente.'),
 ('committee', 'sk', 'name_', 'Parlamentný výbor'),
 ('committee', 'sk', 'short_name', 'Výbor'),
 ('committee', 'sk', 'description', 'Výbor parlamentu.'),
@@ -29,17 +32,26 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('delegation', 'sk', 'name_', 'Parlamentná delegácia'),
 ('delegation', 'sk', 'short_name', 'Delegácia'),
 ('delegation', 'sk', 'description', 'Delegácia parlamentu.'),
-('friendship', 'sk', 'name_', 'Medziparlamentná skupina'),
-('friendship', 'sk', 'short_name', 'Medziparlament'),
-('friendship', 'sk', 'description', 'Medziparlamentná skupina priateľstva s parlamentom inej krajiny.');
+('friendship group', 'sk', 'name_', 'Medziparlamentná skupina'),
+('friendship group', 'sk', 'short_name', 'Medziparlament'),
+('friendship group', 'sk', 'description', 'Medziparlamentná skupina priateľstva s parlamentom inej krajiny.'),
+('working group', 'sk', 'name_', 'Pracovná skupina'),
+('working group', 'sk', 'short_name', 'Prac. skupina'),
+('working group', 'sk', 'description', 'Pracovná alebo expertná skupina.'),
+('government', 'sk', 'name_', 'Vláda'),
+('government', 'sk', 'short_name', 'Vláda'),
+('government', 'sk', 'description', 'Vláda.'),
+('institution', 'sk', 'name_', 'Iná inštitúcia'),
+('institution', 'sk', 'short_name', 'Inštitúcia'),
+('institution', 'sk', 'description', 'Inštitúcia mimo parlamentu.');
 
 insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('parliament', 'cs', 'name_', 'Parlament'),
 ('parliament', 'cs', 'short_name', 'Parlament'),
 ('parliament', 'cs', 'description', 'Parlament na libovolné administrativní úrovni.'),
-('group', 'cs', 'name_', 'Poslanecký klub'),
-('group', 'cs', 'short_name', 'Klub'),
-('group', 'cs', 'description', 'Poslanecký klub v parlamentu.'),
+('political group', 'cs', 'name_', 'Poslanecký klub'),
+('political group', 'cs', 'short_name', 'Klub'),
+('political group', 'cs', 'description', 'Poslanecký klub v parlamentu.'),
 ('committee', 'cs', 'name_', 'Parlamentní výbor'),
 ('committee', 'cs', 'short_name', 'Výbor'),
 ('committee', 'cs', 'description', 'Výbor parlamentu.'),
@@ -52,9 +64,18 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('delegation', 'cs', 'name_', 'Parlamentní delegace'),
 ('delegation', 'cs', 'short_name', 'Delegace'),
 ('delegation', 'cs', 'description', 'Delegace parlamentu.'),
-('friendship', 'cs', 'name_', 'Meziparlamentní skupina'),
-('friendship', 'cs', 'short_name', 'Meziparlament'),
-('friendship', 'cs', 'description', 'Meziparlamentní skupina v rámci MPU.');
+('friendship group', 'cs', 'name_', 'Meziparlamentní skupina'),
+('friendship group', 'cs', 'short_name', 'Meziparlament'),
+('friendship group', 'cs', 'description', 'Meziparlamentní skupina v rámci MPU.'),
+('working group', 'cs', 'name_', 'Pracovní skupina'),
+('working group', 'cs', 'short_name', 'Prac. skupina'),
+('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.'),
+('government', 'cs', 'name_', 'Vláda'),
+('government', 'cs', 'short_name', 'Vláda'),
+('government', 'cs', 'description', 'Vláda.'),
+('institution', 'cs', 'name_', 'Jiná instituce'),
+('institution', 'cs', 'short_name', 'Instituce'),
+('institution', 'cs', 'description', 'Instituce mimo parlamentu.');
 
 
 insert into role_ (code, male_name, female_name, description) values

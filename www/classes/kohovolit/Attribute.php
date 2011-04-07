@@ -9,10 +9,7 @@
  {
 	/// common columns of all *_ATTRIBUTE tables
 	protected static $tableColumns = array('name_', 'value_', 'lang', 'since', 'until');
-	
-	/// Must be defined in a derived class to initialize column names of the table to work with.
-	abstract protected static function initColumnNames();
-	
+		
 	/**
 	 * Read attributes according to parameters from the given table.
 	 *

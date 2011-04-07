@@ -51,7 +51,7 @@ create table area
 -- attributes
 create table letter_attribute
 (
-	letter_id integer references letter on delete restrict on update cascade,
+	letter_id integer references letter on delete cascade on update cascade,
 	primary key (letter_id, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);

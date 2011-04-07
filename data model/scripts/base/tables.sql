@@ -36,20 +36,20 @@ create table attribute_
 	lang varchar references language_ on delete restrict on update cascade default '-',
 	since timestamp default '-infinity',
 	until timestamp default 'infinity',
-	check (since < until)
+	check (since <= until)
 );
 
 --attributes
 create table language_attribute
 (
-	language_code varchar references language_ on delete restrict on update cascade,
+	language_code varchar references language_ on delete cascade on update cascade,
 	primary key (language_code, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table country_attribute
 (
-	country_code varchar references country on delete restrict on update cascade,
+	country_code varchar references country on delete cascade on update cascade,
 	primary key (country_code, name_, lang, since),
 	foreign key (lang) references language_ on delete restrict on update cascade
 ) inherits (attribute_);
