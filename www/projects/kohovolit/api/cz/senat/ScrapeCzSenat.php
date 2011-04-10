@@ -26,6 +26,7 @@ class ScrapeCzSenat
 			case 'group': return self::scrapeGroup($params);
 			case 'elected_mp_list': return self::scrapeElectedMpList($params);
 			case 'division': return self::scrapeDivision($params);
+			case 'constituency': return self::scrapeConstituency($params);
 			default:
 				throw new Exception("Scraping of the resource <em>$resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
@@ -406,7 +407,6 @@ class ScrapeCzSenat
   * example: 
   *     scrapeGroupList(array('id' => 66, 'date' => '20.2.2002'));
   */
-  //*** chybny vypis
   private static function scrapeGroup($params)
   {  
     //set date
@@ -467,6 +467,39 @@ class ScrapeCzSenat
 		}
 	} else {
 	  $result['group']['number'] = 0;
+	}
+	return $result;
+  }
+
+  /**
+  * scrape constituency
+  * @param params['id']
+  * example: 
+  *     scrapeConstituency(array('id' => '8'));
+  */
+  private static function scrapeConstituency($params)
+  { 
+    //set date
+    if (isset($params['date'])) {
+   	 $d = $params['date'];
+   	} else {
+   	 $date_oo = new DateTime($date);
+	 $d = $date_oo->format('d.m.Y');
+	}
+	//download the file
+	$c = $params['id'];
+	$url = "http://senat.cz/volby/hledani/o_obvodu.php?ke_dni={$d}&kod={$c}";
+	$html = self::download($url);
+	//parse
+	$tmp = ScraperUtils::getFirstString($html,'selected="selected" value="'.$c.'">','</option>');
+	$tmp_ar = explode('-',$tmp);
+	$result['constituency']['name'] = trim($tmp_ar[1]);
+	$result['constituency']['number'] = $c;
+	$result['constituency']['description'] = strip_tags(trim(ScraperUtils::getFirstString($html,'<h3>Popis dle zákona 247/1995 Sb: </h3>','<h4>')));
+	$text_part = ScraperUtils::getFirstString($html,'<h4>Části územního členění příslušné obvodu:</h4>','</ul>');
+	$towns = ScraperUtils::returnSubstrings($text_part,'<li>','</li>');
+	foreach ((array) $towns as $town) {
+	  $result['constituency']['part'][] = $town;
 	}
 	return $result;
   }
