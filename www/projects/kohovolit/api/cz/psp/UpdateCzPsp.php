@@ -365,7 +365,13 @@ class UpdateCzPsp
 		{
 			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => $image_attr_name, 'value_' => $src_image_filename, 'since' => 'now')));
 			$image = file_get_contents($src_image_url);
-			file_put_contents(IMAGES_DIRECTORY . '/mp/' . $src_image_filename, $image);
+
+			// if the directory for MP images does not exist, create it
+			$path = DATA_DIRECTORY . '/images/mp';
+			if (!file_exists($path))
+				mkdir($path, 0775, true);
+
+			file_put_contents($path . '/' . $src_image_filename, $image);
 		}
 	}
 
