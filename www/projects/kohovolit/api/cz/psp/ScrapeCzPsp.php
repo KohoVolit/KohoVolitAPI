@@ -171,13 +171,13 @@ class ScrapeCzPsp
 				'Klub' => 'political group',
 				'Meziparlamentní skupina vrámci MPU' => 'friendship group',
 				'Pracovní skupina' => 'working group',
-				'Vláda' => 'government',
 				'Instituce' => 'institution'
 			);
 			$i = 0;  // group_kind
 			foreach($typy as $typ)  // typ = Parlament, Vybor, Komise, ...
 			{
-				$group_kind_name = trim(str_replace('&nbsp;', '', $typ));
+				$group_kind_name = trim(str_replace('&nbsp;', '', $typ));				
+				if (!isset($group_kinds[$group_kind_name])) continue;
 				$group_kind_code = $group_kinds[$group_kind_name];
 
 				// rozlisim, zda jde o posledni group_kind nebo ne (jine rozpoznani ukonceni)

@@ -10,7 +10,6 @@ insert into group_kind (code, name_, short_name, description, subkind_of) values
 ('delegation', 'Parliamentary delegation', 'Delegation', 'Delegation of a parliament.', 'parliament'),
 ('friendship group', 'Interparliamentary friendship group', 'Friendship group', 'Friendship group with a parliament of a different country.', 'parliament'),
 ('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament'),
-('government', 'Government', 'Government', 'Government.', null),
 ('institution', 'Other institution', 'Institution', 'Other institution outside parliament.', null);
 
 insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
@@ -38,9 +37,6 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('working group', 'sk', 'name_', 'Pracovná skupina'),
 ('working group', 'sk', 'short_name', 'Prac. skupina'),
 ('working group', 'sk', 'description', 'Pracovná alebo expertná skupina.'),
-('government', 'sk', 'name_', 'Vláda'),
-('government', 'sk', 'short_name', 'Vláda'),
-('government', 'sk', 'description', 'Vláda.'),
 ('institution', 'sk', 'name_', 'Iná inštitúcia'),
 ('institution', 'sk', 'short_name', 'Inštitúcia'),
 ('institution', 'sk', 'description', 'Inštitúcia mimo parlamentu.');
@@ -70,9 +66,6 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('working group', 'cs', 'name_', 'Pracovní skupina'),
 ('working group', 'cs', 'short_name', 'Prac. skupina'),
 ('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.'),
-('government', 'cs', 'name_', 'Vláda'),
-('government', 'cs', 'short_name', 'Vláda'),
-('government', 'cs', 'description', 'Vláda.'),
 ('institution', 'cs', 'name_', 'Jiná instituce'),
 ('institution', 'cs', 'short_name', 'Instituce'),
 ('institution', 'cs', 'description', 'Instituce mimo parlamentu.');

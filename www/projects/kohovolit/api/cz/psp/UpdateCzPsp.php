@@ -449,16 +449,6 @@ class UpdateCzPsp
 	 */
 	private function updateGroup($src_group)
 	{
-		// FIX ERRORS ON THE SOURCE PAGES
-		// two governments in 5. term of office
-		if ($src_group['name'] == 'Vláda České republiky' && strstr($src_group['since'], '2009'))
-		{
-			if ($this->term_src_code == '5')
-				$src_group['name'] .= ', 2.';
-			else
-				return null;
-		}
-
 		$this->log->write("Updating group '{$src_group['name']}' (source id {$src_group['id']}).", Log::DEBUG);
 
 		// for all groups except the whole parliament check presence in the database by group's source code as an attribute
