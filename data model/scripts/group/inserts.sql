@@ -9,8 +9,7 @@ insert into group_kind (code, name_, short_name, description, subkind_of) values
 ('commission', 'Parliamentary commission', 'Commission', 'Commission of a parliament.', 'parliament'),
 ('delegation', 'Parliamentary delegation', 'Delegation', 'Delegation of a parliament.', 'parliament'),
 ('friendship group', 'Interparliamentary friendship group', 'Friendship group', 'Friendship group with a parliament of a different country.', 'parliament'),
-('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament'),
-('institution', 'Other institution', 'Institution', 'Other institution outside parliament.', null);
+('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament');
 
 insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('parliament', 'sk', 'name_', 'Parlament'),
@@ -36,10 +35,7 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('friendship group', 'sk', 'description', 'Medziparlamentná skupina priateľstva s parlamentom inej krajiny.'),
 ('working group', 'sk', 'name_', 'Pracovná skupina'),
 ('working group', 'sk', 'short_name', 'Prac. skupina'),
-('working group', 'sk', 'description', 'Pracovná alebo expertná skupina.'),
-('institution', 'sk', 'name_', 'Iná inštitúcia'),
-('institution', 'sk', 'short_name', 'Inštitúcia'),
-('institution', 'sk', 'description', 'Inštitúcia mimo parlamentu.');
+('working group', 'sk', 'description', 'Pracovná alebo expertná skupina.');
 
 insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('parliament', 'cs', 'name_', 'Parlament'),
@@ -65,10 +61,7 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('friendship group', 'cs', 'description', 'Meziparlamentní skupina v rámci MPU.'),
 ('working group', 'cs', 'name_', 'Pracovní skupina'),
 ('working group', 'cs', 'short_name', 'Prac. skupina'),
-('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.'),
-('institution', 'cs', 'name_', 'Jiná instituce'),
-('institution', 'cs', 'short_name', 'Instituce'),
-('institution', 'cs', 'description', 'Instituce mimo parlamentu.');
+('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.');
 
 
 insert into role_ (code, male_name, female_name, description) values

@@ -92,7 +92,7 @@ class UpdateCzPsp
 			foreach ($src_groups as $src_group)
 			{
 				// ommit non-parliament institutions
-				if ($src_group['kind'] == 'institution') continue;
+				if ($src_group['kind'] == 'government' || $src_group['kind'] == 'institution') continue;
 
 				// update (or insert) groups the MP is member of
 				if (isset($updated_groups[$src_group['id']]))
@@ -102,7 +102,6 @@ class UpdateCzPsp
 					$group_id = $this->updateGroup($src_group);
 					$updated_groups[$src_group['id']] = $group_id;
 				}
-				if (is_null($group_id)) continue;		// skip groups present in this term by mistake on the official site
 
 				// update (or insert) roles the MP stands in groups
 				$src_role_name = $src_group['role'];
@@ -450,7 +449,7 @@ class UpdateCzPsp
 	private function updateGroup($src_group)
 	{
 		$this->log->write("Updating group '{$src_group['name']}' (source id {$src_group['id']}).", Log::DEBUG);
-
+		
 		// for all groups except the whole parliament check presence in the database by group's source code as an attribute
 		if ($src_group['kind'] != 'parliament')
 		{
