@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- inserts into tables of package PARLIAMENT
 
 insert into parliament_kind (code, name_, short_name, description) values

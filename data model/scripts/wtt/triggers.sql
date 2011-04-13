@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- triggers of package WTT
 
 create or replace function letter_attribute_temporal_check()

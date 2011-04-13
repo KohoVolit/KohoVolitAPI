@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- triggers of package PARLIAMENT
 
 create or replace function parliament_kind_attribute_temporal_check()

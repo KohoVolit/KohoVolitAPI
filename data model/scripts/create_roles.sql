@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- roles (users) creation
 
 -- must be executed by a superuser (postgres)

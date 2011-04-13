@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- triggers of package GROUP
 
 create or replace function group_kind_attribute_temporal_check()

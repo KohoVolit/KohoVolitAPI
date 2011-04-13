@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- triggers of package MP
 	
 create or replace function mp_attribute_temporal_check()

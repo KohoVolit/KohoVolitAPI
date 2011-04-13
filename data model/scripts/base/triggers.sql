@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- triggers of package BASE
 
 create or replace function language_attribute_temporal_check()
