@@ -49,15 +49,15 @@ create or replace function term_attribute_temporal_check()
 returns trigger as $$
 begin
 	if tg_op = 'INSERT' then
-		perform * from term_attribute where (term_id, name_, lang) = (new.term_id, new.name_, new.lang) and until > new.since and since < new.until limit 1;
+		perform * from term_attribute where (term_id, name_, lang, parl) = (new.term_id, new.name_, new.lang, new.parl) and until > new.since and since < new.until limit 1;
 	else  -- tg_op = 'UPDATE'
-		perform * from term_attribute where (term_id, name_, lang) = (new.term_id, new.name_, new.lang) and until > new.since and since < new.until
-			and (term_id, name_, lang, since) != (old.term_id, old.name_, old.lang, old.since)
+		perform * from term_attribute where (term_id, name_, lang, parl) = (new.term_id, new.name_, new.lang, new.parl) and until > new.since and since < new.until
+			and (term_id, name_, lang, parl, since) != (old.term_id, old.name_, old.lang, old.parl, old.since)
 			limit 1;
 	end if;
 	if found then
-		raise exception 'Time period in the row (term_id=%, name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into TERM_ATTRIBUTE overlaps with a period of another value of the attribute.',
-			new.term_id, new.name_, new.value_, new.lang, new.since, new.until;
+		raise exception 'Time period in the row (term_id=%, name_=''%'', value_=''%'', lang=''%'', parl=''%'', since=''%'', until=''%'') being inserted (or updated) into TERM_ATTRIBUTE overlaps with a period of another value of the attribute.',
+			new.term_id, new.name_, new.value_, new.lang, new.parl, new.since, new.until;
 	end if;
 	return new;
 end; $$ language plpgsql;
@@ -70,15 +70,15 @@ create or replace function constituency_attribute_temporal_check()
 returns trigger as $$
 begin
 	if tg_op = 'INSERT' then
-		perform * from constituency_attribute where (constituency_id, name_, lang) = (new.constituency_id, new.name_, new.lang) and until > new.since and since < new.until limit 1;
+		perform * from constituency_attribute where (constituency_id, name_, lang, parl) = (new.constituency_id, new.name_, new.lang, new.parl) and until > new.since and since < new.until limit 1;
 	else  -- tg_op = 'UPDATE'
-		perform * from constituency_attribute where (constituency_id, name_, lang) = (new.constituency_id, new.name_, new.lang) and until > new.since and since < new.until
-			and (constituency_id, name_, lang, since) != (old.constituency_id, old.name_, old.lang, old.since)
+		perform * from constituency_attribute where (constituency_id, name_, lang, parl) = (new.constituency_id, new.name_, new.lang, new.parl) and until > new.since and since < new.until
+			and (constituency_id, name_, lang, parl, since) != (old.constituency_id, old.name_, old.lang, old.parl, old.since)
 			limit 1;
 	end if;
 	if found then
-		raise exception 'Time period in the row (constituency_id=%, name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into CONSTITUENCY_ATTRIBUTE overlaps with a period of another value of the attribute.',
-			new.constituency_id, new.name_, new.value_, new.lang, new.since, new.until;
+		raise exception 'Time period in the row (constituency_id=%, name_=''%'', value_=''%'', lang=''%'', parl=''%'', since=''%'', until=''%'') being inserted (or updated) into CONSTITUENCY_ATTRIBUTE overlaps with a period of another value of the attribute.',
+			new.constituency_id, new.name_, new.value_, new.lang, new.parl, new.since, new.until;
 	end if;
 	return new;
 end; $$ language plpgsql;
@@ -92,7 +92,7 @@ returns void as $$
 declare
 	l_since timestamp;
 begin
-	select until into l_since from constituency_attribute where constituency_id = a_constituency_id and name_ = a_column_name and lang = '-' order by until desc limit 1;
+	select until into l_since from constituency_attribute where constituency_id = a_constituency_id and name_ = a_column_name and lang = '-' and parl='-' order by until desc limit 1;
 	if not found then l_since = '-infinity'; end if;
 	insert into constituency_attribute(constituency_id, name_, value_, since, until) values (a_constituency_id, a_column_name, a_column_value, l_since, 'now');
 end; $$ language plpgsql;

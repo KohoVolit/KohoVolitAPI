@@ -12,7 +12,7 @@ begin
 			limit 1;
 	end if;
 	if found then
-		raise exception 'Time period in the row (letter_id=%, name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into lETTER_ATTRIBUTE overlaps with a period of another value of the attribute.',
+		raise exception 'Time period in the row (letter_id=%, name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into LETTER_ATTRIBUTE overlaps with a period of another value of the attribute.',
 			new.letter_id, new.name_, new.value_, new.lang, new.since, new.until;
 	end if;
 	return new;

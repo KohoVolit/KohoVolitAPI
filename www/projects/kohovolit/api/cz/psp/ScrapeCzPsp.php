@@ -129,7 +129,7 @@ class ScrapeCzPsp
 				if ($j == 1 || substr($off, 0, 6) == 'Kancel')
 				{
 					$out['office'][$j]['address'] = ScraperUtils::getFirstString($off, '<b>', '</b>');
-					$out['office'][$j]['tel'] = ScraperUtils::getFirstString($off, 'tel.: <b>', '</b>');
+					$out['office'][$j]['phone'] = ScraperUtils::getFirstString($off, 'tel.: <b>', '</b>');
 					$out['office'][$j]['fax'] = ScraperUtils::getFirstString($off, 'fax: <b>', '</b>');
 					$pattern = '/, *([0-9]{3} [0-9]{2})? *(\S.+)/';
 					preg_match($pattern, $out['office'][$j]['address'], $matches);
@@ -146,7 +146,7 @@ class ScrapeCzPsp
 		$out['email'] = trim(ScraperUtils::getFirstString($html, 'mailto:','">'));
 
 		// www
-		$out['www'] = trim(ScraperUtils::getFirstString($html, 'href="http://','">Další informace (vlastní stránka)'), '/');
+		$out['webpage'] = trim(ScraperUtils::getFirstString($html, 'href="http://','">Další informace (vlastní stránka)'), '/');
 		
 		// clenstva poslance
 		if (isset($params['list_memberships']))

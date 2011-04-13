@@ -63,15 +63,19 @@ create table parliament_attribute
 create table term_attribute
 (
 	term_id integer references term on delete cascade on update cascade,
-	primary key (term_id, name_, lang, since),
-	foreign key (lang) references language_ on delete restrict on update cascade
+	parl varchar references parliament on delete restrict on update cascade default '-',
+	primary key (term_id, name_, lang, parl, since),
+	foreign key (lang) references language_ on delete restrict on update cascade,
+	foreign key (parl) references parliament on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table constituency_attribute
 (
 	constituency_id integer references constituency on delete cascade on update cascade,
-	primary key (constituency_id, name_, lang, since),
-	foreign key (lang) references language_ on delete restrict on update cascade
+	parl varchar references parliament on delete restrict on update cascade default '-',
+	primary key (constituency_id, name_, lang, parl, since),
+	foreign key (lang) references language_ on delete restrict on update cascade,
+	foreign key (parl) references parliament on delete restrict on update cascade
 ) inherits (attribute_);
 
 -- privileges on objects

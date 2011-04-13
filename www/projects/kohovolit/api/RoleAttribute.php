@@ -3,7 +3,7 @@
 /**
  * Class RoleAttribute provides information about MP roles' additional attributes through API and implements CRUD operations on database table ROLE_ATTRIBUTE.
  *
- * Columns of table ROLE_ATTRIBUTE are: <em>role_code</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
+ * Columns of table ROLE_ATTRIBUTE are: <em>role_code, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
 class RoleAttribute extends Attribute
 {
@@ -12,6 +12,7 @@ class RoleAttribute extends Attribute
 	 */
 	public static function initColumnNames()
 	{
+		self::$tableColumns[] = 'parl';
 		self::$tableColumns[] = 'role_code';
 	}
 

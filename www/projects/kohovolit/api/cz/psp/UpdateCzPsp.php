@@ -12,6 +12,10 @@ class UpdateCzPsp
 	private $term_id;
 	private $term_src_code;
 
+	/// start date of the term of office to update the data for and start date of the next term
+	private $term_since;
+	private $next_term_since;
+
 	/// code of this updated parliament
 	private $parliament_code;
 
@@ -78,11 +82,17 @@ class UpdateCzPsp
 			$src_mp = $this->ac->read('Scrape', array('resource' => 'mp', 'term' => $this->term_src_code, 'id' => $src_mp['id'], 'list_memberships' => 'true'));
 			$src_mp = $src_mp['mp'];
 
-			// update the MP details, assistants and offices
+			// update the MP personal details
 			$mp_id = $this->updateMp($src_mp);
 			if (is_null($mp_id)) continue;		// skip conflicting MPs with no given conflict resolution
-			$this->updateImage($src_mp, $mp_id);
-			$this->updateAssistants($src_mp, $mp_id);
+
+			// update other MP attributes and offices
+			$this->updateMpAttribute($src_mp, $mp_id, 'email');
+			$this->updateMpAttribute($src_mp, $mp_id, 'webpage');
+			$this->updateMpAttribute($src_mp, $mp_id, 'address');
+			$this->updateMpAttribute($src_mp, $mp_id, 'phone');
+			$this->updateMpAttribute($src_mp, $mp_id, 'assistant', ', ');
+			$this->updateMpImage($src_mp, $mp_id);
 			$this->updateOffices($src_mp, $mp_id);
 
 			// update (or insert) constituency of the MP
@@ -188,7 +198,8 @@ class UpdateCzPsp
 
 		// get details of the term
 		$term_list = $this->ac->read('Scrape', array('resource' => 'term_list'));
-		foreach($term_list['term'] as $term)
+		$term_list = $term_list['term'];
+		foreach($term_list as $term)
 			if ($term['id'] == $term_src_code)
 				$term_to_update = $term;
 
@@ -197,7 +208,7 @@ class UpdateCzPsp
 			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check http://api.kohovolit.eu/kohovolit/Scrape?parliament={$this->parliament_code}&resource=term_list", Log::FATAL_ERROR, 400);
 
 		// if the term is present in the database, update it and get its id
-		$src_code_in_db = $this->ac->read('TermAttribute', array('name_' => "source_code {$this->parliament_code}", 'value_' => $term_src_code));
+		$src_code_in_db = $this->ac->read('TermAttribute', array('name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code));
 		if (isset($src_code_in_db['term_attribute'][0]))
 		{
 			$term_id = $src_code_in_db['term_attribute'][0]['term_id'];
@@ -206,7 +217,7 @@ class UpdateCzPsp
 				$data['short_name'] = $term_to_update['short_name'];
 			if (isset($term_to_update['until']))
 				$data['until'] = $term_to_update['until'];
-			$this->ac->update('Term', array('term_id' => $term_id), $data);
+			$this->ac->update('Term', array('id' => $term_id), $data);
 		}
 		else
 		{
@@ -220,8 +231,13 @@ class UpdateCzPsp
 			$term_id = $term_id[0];
 
 			// insert term's source code as an attribute
-			$this->ac->create('TermAttribute', array(array('term_id' => $term_id, 'name_' => "source_code {$this->parliament_code}", 'value_' => $term_src_code)));
+			$this->ac->create('TermAttribute', array(array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code)));
 		}
+
+		// prepare start date of this term and start date of the following term
+		$this->term_since = $term_to_update['since'];
+		$index = array_search($term_to_update, $term_list);
+		$this->next_term_since = isset($term_list[$index+1]) ? $term_list[$index+1]['since'] : 'infinity';
 
 		return $term_id;
 	}
@@ -275,7 +291,7 @@ class UpdateCzPsp
 		$this->log->write("Updating MP '{$src_mp['first_name']} {$src_mp['last_name']}' (source id $src_code).", Log::DEBUG);
 
 		// if MP is already in the database, update his data
-		$src_code_in_db = $this->ac->read('MpAttribute', array('name_' => "source_code {$this->parliament_code}", 'value_' => $src_code));
+		$src_code_in_db = $this->ac->read('MpAttribute', array('name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
 		if (isset($src_code_in_db['mp_attribute'][0]))
 		{
 			$mp_id = $src_code_in_db['mp_attribute'][0]['mp_id'];
@@ -318,11 +334,9 @@ class UpdateCzPsp
 			'post_title' => $src_mp['post_title'],
 			'born_on' => $src_mp['born_on'],
 			'died_on' => $src_mp['died_on'],
-			'email' => $src_mp['email'],
-			'webpage' => $src_mp['www']
 		);
 
-		// perform all proper actions to update or insert MP
+		// perform appropriate actions to update or insert MP
 		if ($action & self::MP_INSERT)
 		{
 			if ($action & self::MP_DISAMBIGUATE)
@@ -334,7 +348,7 @@ class UpdateCzPsp
 		}
 
 		if ($action & self::MP_INSERT_SOURCE_CODE)
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => "source_code {$this->parliament_code}", 'value_' => $src_code)));
+			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code)));
 
 		if ($action & self::MP_UPDATE)
 			$this->ac->update('Mp', array('id' => $mp_id), $data);
@@ -343,12 +357,43 @@ class UpdateCzPsp
 	}
 
 	/**
+	 * Update value of an attribute of an MP. If its value has changed, close the current record and insert a new one.
+	 *
+	 * \param $src_mp array of key => value pairs with properties of a scraped MP
+	 * \param $mp_id \e id of that MP in database
+	 * \param $attr_name name of the attribute
+	 * \param $implode_separator in case that <em>$src_mp[$attr_name]</em> is an array, use this parameter to set a string used for implosion of the array to a string value.
+	 */
+	private function updateMpAttribute($src_mp, $mp_id, $attr_name, $implode_separator = null)
+	{
+		$this->log->write("Updating MP's attribute '$attr_name'.", Log::DEBUG);
+
+		// set effective date to which the update process actually runs
+		$effective_date = ($this->next_term_since == 'infinity') ? 'now' : $this->term_since;
+
+		$src_value = isset($src_mp[$attr_name]) ? (is_null($implode_separator) ? $src_mp[$attr_name] : implode($implode_separator, $src_mp[$attr_name])) : null;
+		$value_in_db = $this->ac->read('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $this->parliament_code, 'datetime' => $effective_date));
+		if (isset($value_in_db['mp_attribute'][0]))
+			$db_value = $value_in_db['mp_attribute'][0]['value_'];
+
+		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && $src_value == $db_value) return;
+
+		// close the current record
+		if (isset($db_value))
+			$this->ac->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $this->parliament_code, 'since' =>  $value_in_db['mp_attribute'][0]['since']), array('until' => $effective_date));
+
+		// and insert a new one
+		if (isset($src_value))
+			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $this->parliament_code, 'since' => $effective_date, 'until' => $this->next_term_since)));
+	}
+
+	/**
 	 * Update information about image of an MP. If image has changed, close the current image record and insert a new one.
 	 *
 	 * \param $src_mp array of key => value pairs with properties of a scraped MP
 	 * \param $mp_id \e id of that MP in database
 	 */
-	private function updateImage($src_mp, $mp_id)
+	private function updateMpImage($src_mp, $mp_id)
 	{
 		if (!isset($src_mp['image_url'])) return;
 		$this->log->write("Updating MP's image.", Log::DEBUG);
@@ -357,16 +402,18 @@ class UpdateCzPsp
 		$src_image_url = $src_mp['image_url'];
 		$src_image_filename = substr($src_image_url, strrpos($src_image_url, '/') + 1);
 
-		// check for existing image in the database and if image for this term of office is not present, insert its filename and download the image file
-		$image_attr_name = 'image ' . $this->parliament_code . '/' . $this->term_src_code;
-		$image_in_db = $this->ac->read('MpAttribute', array('mp_id' => $mp_id, 'name_' => $image_attr_name));
+		// set effective date to which the update process actually runs
+		$effective_date = ($this->next_term_since == 'infinity') ? 'now' : $this->term_since;
+		
+		// check for existing image in the database and if it is not present, insert its filename and download the image file
+		$image_in_db = $this->ac->read('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'datetime' => $effective_date));
 		if (!isset($image_in_db['mp_attribute'][0]))
 		{
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => $image_attr_name, 'value_' => $src_image_filename, 'since' => 'now')));
+			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $src_image_filename, 'parl' => $this->parliament_code, 'since' => $effective_date, 'until' => $this->next_term_since)));
 			$image = file_get_contents($src_image_url);
 
 			// if the directory for MP images does not exist, create it
-			$path = DATA_DIRECTORY . '/images/mp';
+			$path = DATA_DIRECTORY . '/' . $this->parliament_code . '/images/mp';
 			if (!file_exists($path))
 				mkdir($path, 0775, true);
 
@@ -375,50 +422,35 @@ class UpdateCzPsp
 	}
 
 	/**
-	 * Update information about assistants of an MP. If assistants have changed, close the current assistants record and insert a new one.
-	 *
-	 * \param $src_mp array of key => value pairs with properties of a scraped MP
-	 * \param $mp_id \e id of that MP in database
-	 */
-	private function updateAssistants($src_mp, $mp_id)
-	{
-		$this->log->write("Updating MP's assistants.", Log::DEBUG);
-
-		$src_assistants = isset($src_mp['assistant']) ? implode(', ', $src_mp['assistant']) : '';
-		$assistants_in_db = $this->ac->read('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'assistants', 'datetime' => 'now'));
-		if (isset($assistants_in_db['mp_attribute'][0]))
-			$db_assistants = $assistants_in_db['mp_attribute'][0]['value_'];
-		if (!isset($db_assistants) || $src_assistants != $db_assistants)
-		{
-			if (isset($db_assistants))
-				$this->ac->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'assistants', 'since' =>  $assistants_in_db['mp_attribute'][0]['since']), array('until' => 'now'));
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'assistants', 'value_' => $src_assistants, 'since' => 'now')));
-		}
-	}
-
-	/**
 	 * Update information about offices of an MP. Insert new offices and close records for the ones that are no more valid.
 	 *
-	 * \param $src_mp array of key => valu pairs with properties of a scraped MP
+	 * \param $src_mp array of key => value pairs with properties of a scraped MP
 	 * \param $mp_id \e id of that MP in database
 	 */
 	private function updateOffices($src_mp, $mp_id)
 	{
 		$this->log->write("Updating MP's offices.", Log::DEBUG);
 
+		// set effective date to which the update process actually runs
+		$effective_date = ($this->next_term_since == 'infinity') ? 'now' : $this->term_since;
+
 		$src_offices = isset($src_mp['office']) ? $src_mp['office'] : array();
-		$db_offices = $this->ac->read('Office', array('mp_id' => $mp_id, 'datetime' => 'now'));
+		$db_offices = $this->ac->read('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'datetime' => $effective_date));
 		$db_offices = isset($db_offices['office']) ? $db_offices['office'] : array();
 
 		// insert all scraped offices that are not present in the database yet
 		foreach ($src_offices as $src_office)
 		{
-			$parsed_address = $this->parseAddress($src_office['address']);
+			$src_parsed_address = $this->parseAddress($src_office['address']);
 			$found = false;
 			foreach ($db_offices as &$db_office)
 			{
-				if ($parsed_address == $db_office['address'])
+				if ($src_parsed_address == $db_office['address'])
 				{
+					// update phone number of the office
+					$phone = isset($src_office['phone']) ? $src_office['phone'] : '';
+					$this->ac->update('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'since' => $db_office['since']), array('phone' => $phone));
+
 					$db_office['#valid'] = true;
 					$found = true;
 					break;
@@ -426,9 +458,8 @@ class UpdateCzPsp
 			}
 			if (!$found)
 			{
-				$data = array('mp_id' => $mp_id, 'address' => $parsed_address, 'since' => 'now');
-				if (isset($src_office['tel']))
-					$data['phone'] = $src_office['tel'];
+				$phone = isset($src_office['phone']) ? $src_office['phone'] : '';
+				$data = array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'phone' => $phone, 'since' => $effective_date, 'until' => $this->next_term_since);
 				$this->ac->create('Office', array($data));
 			}
 		}
@@ -436,7 +467,7 @@ class UpdateCzPsp
 		// close offices in the database that are no more valid
 		foreach ($db_offices as $db_office)
 			if (!isset($db_office['#valid']))
-				$this->ac->update('Office', array('mp_id' => $db_office['mp_id'], 'address' => $db_office['address'], 'since' => $db_office['since']), array('until' => 'now'));
+				$this->ac->update('Office', array('mp_id' => $db_office['mp_id'], 'parliament_code' => $this->parliament_code, 'address' => $db_office['address'],  'since' => $db_office['since']), array('until' => $effective_date));
 	}
 
 	/**
@@ -449,11 +480,11 @@ class UpdateCzPsp
 	private function updateGroup($src_group)
 	{
 		$this->log->write("Updating group '{$src_group['name']}' (source id {$src_group['id']}).", Log::DEBUG);
-		
+
 		// for all groups except the whole parliament check presence in the database by group's source code as an attribute
 		if ($src_group['kind'] != 'parliament')
 		{
-			$src_code_in_db = $this->ac->read('GroupAttribute', array('name_' => "source_code {$this->parliament_code}", 'value_' => $src_group['id']));
+			$src_code_in_db = $this->ac->read('GroupAttribute', array('name_' => 'source_code', 'value_' => $src_group['id'], 'parl' => $this->parliament_code));
 			if (isset($src_code_in_db['group_attribute'][0]))
 				$group_id = $src_code_in_db['group_attribute'][0]['group_id'];
 
@@ -496,7 +527,7 @@ class UpdateCzPsp
 
 			// insert group's source code
 			if ($src_group['kind'] != 'parliament')
-				$this->ac->create('GroupAttribute', array(array('group_id' => $group_id, 'name_' => "source_code {$this->parliament_code}", 'value_' => $src_group['id'])));
+				$this->ac->create('GroupAttribute', array(array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['id'], 'parl' => $this->parliament_code)));
 		}
 
 		// if the group has a parent group, add it to the list to resolve parentship

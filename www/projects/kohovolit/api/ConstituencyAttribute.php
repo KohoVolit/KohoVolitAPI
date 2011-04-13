@@ -3,7 +3,7 @@
 /**
  * Class ConstituencyAttribute provides information about constituencies' additional attributes through API and implements CRUD operations on database table CONSTITUENCY_ATTRIBUTE.
  *
- * Columns of table CONSTITUENCY_ATTRIBUTE are: <em>constituency_id</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
+ * Columns of table CONSTITUENCY_ATTRIBUTE are: <em>constituency_id, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
 class ConstituencyAttribute extends Attribute
 {
@@ -12,6 +12,7 @@ class ConstituencyAttribute extends Attribute
 	 */
 	public static function initColumnNames()
 	{
+		self::$tableColumns[] = 'parl';
 		self::$tableColumns[] = 'constituency_id';
 	}
 

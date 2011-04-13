@@ -3,7 +3,7 @@
 /**
  * Class PartyAttribute provides information about parties' additional attributes through API and implements CRUD operations on database table PARTY_ATTRIBUTE.
  *
- * Columns of table PARTY_ATTRIBUTE are: <em>party_id</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
+ * Columns of table PARTY_ATTRIBUTE are: <em>party_id, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
 class PartyAttribute extends Attribute
 {
@@ -12,6 +12,7 @@ class PartyAttribute extends Attribute
 	 */
 	public static function initColumnNames()
 	{
+		self::$tableColumns[] = 'parl';
 		self::$tableColumns[] = 'party_id';
 	}
 

@@ -13,10 +13,6 @@ create table mp
 	post_title varchar,
 	born_on date,
 	died_on date,
-	email varchar,
-	webpage varchar,
-	address varchar,
-	phone varchar,
 	unique (last_name, first_name, middle_names, disambiguation),
 	check (born_on <= died_on)
 );
@@ -24,11 +20,12 @@ create table mp
 create table office
 (
 	mp_id integer references mp on delete cascade on update cascade,
+	parliament_code varchar references parliament on delete restrict on update cascade,
 	address varchar,
 	phone varchar,
 	since timestamp default '-infinity',
 	until timestamp default 'infinity',
-	primary key (mp_id, address, since),
+	primary key (mp_id, parliament_code, address, since),
 	check (since <= until)
 );
 
@@ -36,8 +33,10 @@ create table office
 create table mp_attribute
 (
 	mp_id integer references mp on delete cascade on update cascade,
-	primary key (mp_id, name_, lang, since),
-	foreign key (lang) references language_ on delete restrict on update cascade
+	parl varchar references parliament on delete restrict on update cascade default '-',
+	primary key (mp_id, name_, lang, parl, since),
+	foreign key (lang) references language_ on delete restrict on update cascade,
+	foreign key (parl) references parliament on delete restrict on update cascade
 ) inherits (attribute_);
 
 -- privileges on objects

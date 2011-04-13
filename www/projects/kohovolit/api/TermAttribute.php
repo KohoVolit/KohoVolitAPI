@@ -3,7 +3,7 @@
 /**
  * Class TermAttribute provides information about terms' additional attributes through API and implements CRUD operations on database table TERM_ATTRIBUTE.
  *
- * Columns of table TERM_ATTRIBUTE are: <em>term_id</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
+ * Columns of table TERM_ATTRIBUTE are: <em>term_id, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
 class TermAttribute extends Attribute
 {
@@ -12,6 +12,7 @@ class TermAttribute extends Attribute
 	 */
 	public static function initColumnNames()
 	{
+		self::$tableColumns[] = 'parl';
 		self::$tableColumns[] = 'term_id';
 	}
 

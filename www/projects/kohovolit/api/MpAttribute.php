@@ -3,15 +3,16 @@
 /**
  * Class MpAttribute provides information about MPs' additional attributes through API and implements CRUD operations on database table MP_ATTRIBUTE.
  *
- * Columns of table MP_ATTRIBUTE are: <em>mp_id</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
+ * Columns of table MP_ATTRIBUTE are: <em>mp_id, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
 class MpAttribute extends Attribute
 {
 	/**
-	 * Add a table specific column to the list of common columns of all attribute tables.
+	 * Add a table specific columns to the list of common columns of all attribute tables.
 	 */
 	public static function initColumnNames()
 	{
+		self::$tableColumns[] = 'parl';
 		self::$tableColumns[] = 'mp_id';
 	}
 
