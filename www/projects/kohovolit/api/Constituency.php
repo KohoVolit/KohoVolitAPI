@@ -3,7 +3,7 @@
 /**
  * Class Constituency provides information about constituencies of a parliament through API and implements CRUD operations on database table CONSTITUENCY.
  *
- * Columns of table CONSTITUENCY are: <em>id, name_, short_name, description, parliament_code</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Columns of table CONSTITUENCY are: <em>id, name_, short_name, description, parliament_code, last_updated_on</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
 class Constituency extends Entity
 {
@@ -12,7 +12,7 @@ class Constituency extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'parliament_code');
+		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'parliament_code', 'last_updated_on');
 		self::$roColumns = array('id');
 	}
 

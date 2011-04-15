@@ -172,7 +172,8 @@ class ScrapeCzPsp
 				'Meziparlamentní skupina vrámci MPU' => 'friendship group',
 				'Pracovní skupina' => 'working group',
 				'Vláda' => 'government',
-				'Instituce' => 'institution'
+				'Instituce' => 'institution',
+				'Mezinárodní organizace' => 'international organization'
 			);
 			$i = 0;  // group_kind
 			foreach($typy as $typ)  // typ = Parlament, Vybor, Komise, ...
@@ -218,6 +219,7 @@ class ScrapeCzPsp
 					$st = trim(strip_tags($group_full));
 					$pom = strpos($st, $group['role']);
 					$group['name'] = rtrim(substr($st, 0, $pom - 1), ', ');
+					$group['role'] = trim($group['role']);
 					$out['group'][] = $group;
 				}
 				$i++;

@@ -13,6 +13,7 @@ create table mp
 	post_title varchar,
 	born_on date,
 	died_on date,
+	last_updated_on timestamp not null default current_timestamp,
 	unique (last_name, first_name, middle_names, disambiguation),
 	check (born_on <= died_on)
 );

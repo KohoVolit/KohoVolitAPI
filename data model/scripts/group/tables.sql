@@ -19,6 +19,7 @@ create table group_
 	term_id integer not null references term on delete restrict on update cascade,
 	parliament_code varchar not null references parliament on delete restrict on update cascade,
 	subgroup_of integer references group_ on delete cascade on update cascade,
+	last_updated_on timestamp not null default current_timestamp,
 	unique (name_, group_kind_code, term_id, parliament_code)
 );
 
@@ -37,6 +38,7 @@ create table party
 	short_name varchar,
 	description text,
 	country_code varchar references country on delete restrict on update cascade,
+	last_updated_on timestamp not null default current_timestamp,
 	unique (name_, country_code)
 );
 

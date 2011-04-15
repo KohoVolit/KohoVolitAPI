@@ -3,7 +3,7 @@
 /**
  * Class Party provides information about parties through API and implements CRUD operations on database table PARTY.
  *
- * Columns of table PARTY are: <em>id, name_, short_name, description, country_code</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Columns of table PARTY are: <em>id, name_, short_name, description, country_code, last_updated_on</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
 class Party extends Entity
 {
@@ -12,7 +12,7 @@ class Party extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'country_code');
+		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'country_code', 'last_updated_on');
 		self::$roColumns = array('id');
 	}
 

@@ -12,7 +12,7 @@ begin
 			limit 1;
 	end if;
 	if found then
-		raise exception 'Time period in the row (language_code=%, name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into LANGUAGE_ATTRIBUTE overlaps with a period of another value of the attribute.',
+		raise exception 'Time period in the row (language_code=''%'', name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into LANGUAGE_ATTRIBUTE overlaps with a period of another value of the attribute.',
 			new.language_code, new.name_, new.value_, new.lang, new.since, new.until;
 	end if;
 	return new;
@@ -33,7 +33,7 @@ begin
 			limit 1;
 	end if;
 	if found then
-		raise exception 'Time period in the row (country_code=%, name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into COUNTRY_ATTRIBUTE overlaps with a period of another value of the attribute.',
+		raise exception 'Time period in the row (country_code=''%'', name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into COUNTRY_ATTRIBUTE overlaps with a period of another value of the attribute.',
 			new.country_code, new.name_, new.value_, new.lang, new.since, new.until;
 	end if;
 	return new;

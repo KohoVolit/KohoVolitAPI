@@ -12,7 +12,7 @@ begin
 			limit 1;
 	end if;
 	if found then
-		raise exception 'Time period in the row (parliament_kind_code=%, name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into PARLIAMENT_KIND_ATTRIBUTE overlaps with a period of another value of the attribute.',
+		raise exception 'Time period in the row (parliament_kind_code=''%'', name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into PARLIAMENT_KIND_ATTRIBUTE overlaps with a period of another value of the attribute.',
 			new.parliament_kind_code, new.name_, new.value_, new.lang, new.since, new.until;
 	end if;
 	return new;
@@ -33,7 +33,7 @@ begin
 			limit 1;
 	end if;
 	if found then
-		raise exception 'Time period in the row (parliament_code=%, name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into PARLIAMENT_ATTRIBUTE overlaps with a period of another value of the attribute.',
+		raise exception 'Time period in the row (parliament_code=''%'', name_=''%'', value_=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into PARLIAMENT_ATTRIBUTE overlaps with a period of another value of the attribute.',
 			new.parliament_code, new.name_, new.value_, new.lang, new.since, new.until;
 	end if;
 	return new;
@@ -87,22 +87,24 @@ create trigger constituency_attribute_temporal_check
 	before insert or update /* of since, until */ on constituency_attribute
 	for each row execute procedure constituency_attribute_temporal_check();
 
-create or replace function constituency_archive_value(a_constituency_id integer, a_column_name varchar, a_column_value varchar)
+create or replace function constituency_archive_value(a_constituency_id integer, a_column_name varchar, a_column_value varchar, a_update_date timestamp)
 returns void as $$
 declare
 	l_since timestamp;
 begin
-	select until into l_since from constituency_attribute where constituency_id = a_constituency_id and name_ = a_column_name and lang = '-' and parl='-' order by until desc limit 1;
+	select until into l_since from constituency_attribute where constituency_id = a_constituency_id and name_ = a_column_name and lang = '-' and parl = '-' order by until desc limit 1;
 	if not found then l_since = '-infinity'; end if;
-	insert into constituency_attribute(constituency_id, name_, value_, since, until) values (a_constituency_id, a_column_name, a_column_value, l_since, 'now');
+	insert into constituency_attribute(constituency_id, name_, value_, since, until) values (a_constituency_id, a_column_name, a_column_value, l_since, a_update_date);
 end; $$ language plpgsql;
 
 create or replace function constituency_changed_values_archivation()
 returns trigger as $$
 begin
-	if new.name_ is distinct from old.name_ then perform constituency_archive_value(old.id, 'name_', old.name_); end if;
-	if new.short_name is distinct from old.short_name then perform constituency_archive_value(old.id, 'short_name', old.short_name); end if;
-	if new.description is distinct from old.description then perform constituency_archive_value(old.id, 'description', old.description); end if;
+	if new.last_updated_on is null then new.last_updated_on = 'now'; end if;
+	if new.last_updated_on < old.last_updated_on then return null; end if;
+	if new.name_ is distinct from old.name_ then perform constituency_archive_value(old.id, 'name_', old.name_, new.last_updated_on); end if;
+	if new.short_name is distinct from old.short_name then perform constituency_archive_value(old.id, 'short_name', old.short_name, new.last_updated_on); end if;
+	if new.description is distinct from old.description then perform constituency_archive_value(old.id, 'description', old.description, new.last_updated_on); end if;
 	return new;
 end; $$ language plpgsql;
 
