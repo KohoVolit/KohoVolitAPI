@@ -3,7 +3,7 @@
 /**
  * Class GroupAttribute provides information about MP groups' additional attributes through API and implements CRUD operations on database table GROUP_ATTRIBUTE.
  *
- * Columns of table GROUP_ATTRIBUTE are: <em>group_id</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
+ * Columns of table GROUP_ATTRIBUTE are: <em>group_id, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
 class GroupAttribute extends Attribute
 {
@@ -12,6 +12,7 @@ class GroupAttribute extends Attribute
 	 */
 	public static function initColumnNames()
 	{
+		self::$tableColumns[] = 'parl';
 		self::$tableColumns[] = 'group_id';
 	}
 

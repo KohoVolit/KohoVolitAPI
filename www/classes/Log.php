@@ -39,7 +39,7 @@ class Log
 		$path = is_int($p) ? substr($filename, 0, $p) : '';
 		$name = is_int($p) ? substr($filename, $p + 1) : $filename;
 		if (!empty($path) && !file_exists($path))
-			mkdir($path, 775, true);
+			mkdir($path, 0775, true);
 	
 		$this->file = fopen($filename, 'w');
 		if ($this->file === false)

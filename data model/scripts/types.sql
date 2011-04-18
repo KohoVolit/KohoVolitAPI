@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- user defined data types
 
 create type address_type as

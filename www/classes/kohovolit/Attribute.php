@@ -4,6 +4,7 @@
  * Abstract class Attribute is a base class for all classes providing information about additional attributes of entities through API.
  *
  * The class specifies columns common for all attribute tables and implements CRUD operations on those database tables.
+ * Columns common for all attribute tables are: <em>name_, value_, lang, since, until</em>. All columns are allowed to write to. 
  */
  abstract class Attribute
  {

@@ -3,7 +3,7 @@
 /**
  * Class Mp provides information about MPs through API and implements CRUD operations on database table MP.
  *
- * Columns of table MP are: <em>id, first_name, middle_names, last_name, disambiguation, sex, pre_title, post_title, born_on, died_on, email, webpage, address, phone</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Columns of table MP are: <em>id, first_name, middle_names, last_name, disambiguation, sex, pre_title, post_title, born_on, died_on, last_updated_on</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
 class Mp extends Entity
 {
@@ -12,7 +12,7 @@ class Mp extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('id', 'first_name', 'middle_names', 'last_name', 'disambiguation', 'sex', 'pre_title', 'post_title', 'born_on', 'died_on', 'email', 'webpage', 'address', 'phone');
+		self::$tableColumns = array('id', 'first_name', 'middle_names', 'last_name', 'disambiguation', 'sex', 'pre_title', 'post_title', 'born_on', 'died_on', 'last_updated_on');
 		self::$roColumns = array('id');
 	}
 

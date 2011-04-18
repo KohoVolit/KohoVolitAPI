@@ -1,12 +1,13 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- inserts into tables of package PARLIAMENT
 
 insert into parliament_kind (code, name_, short_name, description) values
 ('supernational', 'Supernational parliament', 'Supernational', 'Parliament at supernational level, eg. European parliament.'),
 ('national-upper', 'Upper house of the national parliament', 'Upper house', 'Upper house of the national level parliament - senate.'),
 ('national-lower', 'Lower house of the national parliament', 'Lower house', 'Lower house of the national level parliament - chamber of deputies.'),
-('regional', 'Regional parliament', 'Regional', 'Parliament at regional level.'),
-('local', 'Local parliament', 'Local', 'Parliament at city level.');
+('government', 'Government', 'Government', 'Government of the country.'),
+('regional', 'Regional parliament', 'Regional', 'Parliament at a regional level.'),
+('local', 'Local parliament', 'Local', 'Parliament at a city level.');
 
 insert into parliament_kind_attribute (parliament_kind_code, lang, name_, value_) values
 ('supernational', 'sk', 'name_', 'Nadnárodný parlament'),
@@ -18,6 +19,9 @@ insert into parliament_kind_attribute (parliament_kind_code, lang, name_, value_
 ('national-lower', 'sk', 'name_', 'Dolná komora národného parlamentu'),
 ('national-lower', 'sk', 'short_name', 'Dolná komora'),
 ('national-lower', 'sk', 'description', 'Dolná komora národného parlamentu - poslanecká snemovňa.'),
+('government', 'sk', 'name_', 'Vláda'),
+('government', 'sk', 'short_name', 'Vláda'),
+('government', 'sk', 'description', 'Vláda krajiny.'),
 ('regional', 'sk', 'name_', 'Krajské zastupiteľstvo'),
 ('regional', 'sk', 'short_name', 'Krajský'),
 ('regional', 'sk', 'description', 'Zastupiteľstvo na krajskej úrovni.'),
@@ -35,9 +39,16 @@ insert into parliament_kind_attribute (parliament_kind_code, lang, name_, value_
 ('national-lower', 'cs', 'name_', 'Dolní komora národního parlamentu'),
 ('national-lower', 'cs', 'short_name', 'Dolní komora'),
 ('national-lower', 'cs', 'description', 'Dolní komora národního parlamentu - poslanecká sněmovna.'),
+('government', 'cs', 'name_', 'Vláda'),
+('government', 'cs', 'short_name', 'Vláda'),
+('government', 'cs', 'description', 'Vláda krajiny.'),
 ('regional', 'cs', 'name_', 'Krajské zastupitelstvo'),
 ('regional', 'cs', 'short_name', 'Krajský'),
 ('regional', 'cs', 'description', 'Zastupitelstvo na krajské úrovni.'),
 ('local', 'cs', 'name_', 'Místní zastupitelstvo'),
 ('local', 'cs', 'short_name', 'Místní'),
 ('local', 'cs', 'description', 'Zastupitelstvo na obecní nebo městské úrovni.');
+
+
+insert into parliament (code, name_, short_name, description) values
+('-', 'any parliament', 'any', 'This parliament is referenced as a foreign key by MP attributes that are parliament independent.');

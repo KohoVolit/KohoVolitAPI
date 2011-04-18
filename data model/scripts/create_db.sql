@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- database creation
 
 create database kohovolit with owner kohovolit encoding 'UTF8' lc_collate 'C' lc_ctype 'C' template template0;

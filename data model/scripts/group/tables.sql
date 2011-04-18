@@ -1,4 +1,4 @@
--- KohoVolit.eu Generación Quarta
+-- KohoVolit.eu Generación Cuarta
 -- tables of package GROUP
 
 create table group_kind
@@ -19,6 +19,7 @@ create table group_
 	term_id integer not null references term on delete restrict on update cascade,
 	parliament_code varchar not null references parliament on delete restrict on update cascade,
 	subgroup_of integer references group_ on delete cascade on update cascade,
+	last_updated_on timestamp not null default current_timestamp,
 	unique (name_, group_kind_code, term_id, parliament_code)
 );
 
@@ -37,6 +38,7 @@ create table party
 	short_name varchar,
 	description text,
 	country_code varchar references country on delete restrict on update cascade,
+	last_updated_on timestamp not null default current_timestamp,
 	unique (name_, country_code)
 );
 
@@ -57,29 +59,37 @@ create table mp_in_group
 create table group_kind_attribute
 (
 	group_kind_code varchar references group_kind on delete cascade on update cascade,
-	primary key (group_kind_code, name_, lang, since),
-	foreign key (lang) references language_ on delete restrict on update cascade
+	parl varchar references parliament on delete restrict on update cascade default '-',
+	primary key (group_kind_code, name_, lang, parl, since),
+	foreign key (lang) references language_ on delete restrict on update cascade,
+	foreign key (parl) references parliament on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table group_attribute
 (
 	group_id integer references group_ on delete cascade on update cascade,
-	primary key (group_id, name_, lang, since),
-	foreign key (lang) references language_ on delete restrict on update cascade
+	parl varchar references parliament on delete restrict on update cascade default '-',
+	primary key (group_id, name_, lang, parl, since),
+	foreign key (lang) references language_ on delete restrict on update cascade,
+	foreign key (parl) references parliament on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table role_attribute
 (
 	role_code varchar references role_ on delete cascade on update cascade,
-	primary key (role_code, name_, lang, since),
-	foreign key (lang) references language_ on delete restrict on update cascade
+	parl varchar references parliament on delete restrict on update cascade default '-',
+	primary key (role_code, name_, lang, parl, since),
+	foreign key (lang) references language_ on delete restrict on update cascade,
+	foreign key (parl) references parliament on delete restrict on update cascade
 ) inherits (attribute_);
 
 create table party_attribute
 (
 	party_id integer references party on delete cascade on update cascade,
-	primary key (party_id, name_, lang, since),
-	foreign key (lang) references language_ on delete restrict on update cascade
+	parl varchar references parliament on delete restrict on update cascade default '-',
+	primary key (party_id, name_, lang, parl, since),
+	foreign key (lang) references language_ on delete restrict on update cascade,
+	foreign key (parl) references parliament on delete restrict on update cascade
 ) inherits (attribute_);
 
 -- indexes (except PRIMARY KEY and UNIQUE constraints, for which the indexes have been created automatically)
