@@ -52,7 +52,7 @@ class ScrapeCzPsp
 		);
 		return array('term' => $out);
 	}
-		
+
 	/**
 	 * ...
 	 */
@@ -68,10 +68,9 @@ class ScrapeCzPsp
 		else
 			$term_id = $params['term'];
 
-		$html = self::download("http://www.psp.cz/sqw/detail.sqw?id={$mp_id}&t=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,41,42,45,78,83,84&o={$term_id}");
+		$html = self::download("http://www.psp.cz/sqw/detail.sqw?id={$mp_id}&t=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,41,42,45,77,78,83,84&o={$term_id}");
 		$out['id'] = $mp_id;
 		$out['term_id'] = $term_id;
-
 
 		// pole udaju o poslanci
 		$name_full = str_replace('&nbsp;', ' ', ScraperUtils::getFirstString($html, "<h2>", "</h2>"));
@@ -107,7 +106,7 @@ class ScrapeCzPsp
 		$img = ScraperUtils::getFirstString($html, '<img src="/forms/tmp_sqw/', '"');
 		if (!empty($img))
 			$out['image_url'] = 'http://www.psp.cz/forms/tmp_sqw/' . $img;
-		
+
 		// kraj
 		$out['constituency'] = trim(ScraperUtils::getFirstString($html, "Volební kraj:", "<br />"));
 
@@ -147,7 +146,7 @@ class ScrapeCzPsp
 
 		// www
 		$out['webpage'] = trim(ScraperUtils::getFirstString($html, 'href="http://','">Další informace (vlastní stránka)'), '/');
-		
+
 		// clenstva poslance
 		if (isset($params['list_memberships']))
 		{
@@ -160,7 +159,7 @@ class ScrapeCzPsp
 				$typy_position[] = strpos($html, $typ, ($j > 0 ? $typy_position[$j-1] : 0) + 1);
 				$j++;
 			}
-					
+
 			// pro kazdy group_kind
 			$group_kinds = array(
 				'Parlament' => 'parliament',
@@ -173,7 +172,9 @@ class ScrapeCzPsp
 				'Pracovní skupina' => 'working group',
 				'Vláda' => 'government',
 				'Instituce' => 'institution',
-				'Mezinárodní organizace' => 'international organization'
+				'Mezinárodní organizace' => 'international organization',
+				'Evropský parlament' => 'european parliament',
+				'Prezident' => 'president'
 			);
 			$i = 0;  // group_kind
 			foreach($typy as $typ)  // typ = Parlament, Vybor, Komise, ...
@@ -225,7 +226,7 @@ class ScrapeCzPsp
 				$i++;
 			}
 		}
-		
+
 		self::appendHtml($params, $out, $html);
 		return array('mp' => $out);
 	}
@@ -244,7 +245,7 @@ class ScrapeCzPsp
 			$term_id = $term_ar['term']['id'];
 		}
 		$active = isset($params['active']);
-				
+
 		$t_bit = !$active ? '&o=' . $term_id : '';
 		$url = 'http://www.psp.cz' . (isset($params['language']) && $params['language'] == 'en' ? '/cgi-bin/eng' : '') . '/sqw/snem.sqw?' . $a_bit . $t_bit;
 		$html = self::download($url);  // 591, o=5 - whole term,  otherwise active only
@@ -299,7 +300,7 @@ class ScrapeCzPsp
 					'kind' => 'constituency',
 					'name' => ScraperUtils::getFirstString($r_ar[3],'">','<')
 				);
-				
+
 				// political groups
 				$pom = explode('>,', $r_ar[5]);
 				foreach($pom as $p)
@@ -333,7 +334,7 @@ class ScrapeCzPsp
 						);
 					}
 				}
-				
+
 				//commissions
 				$pom = explode('>, ', $r_ar[9]);
 				foreach($pom as $p)
@@ -350,7 +351,7 @@ class ScrapeCzPsp
 						);
 					}
 				}
-				
+
 				//delegations
 				$pom = explode('>,', $r_ar[11]);
 				foreach($pom as $p)
@@ -370,7 +371,7 @@ class ScrapeCzPsp
 				$out['mp'][] = $mp;
 			}
 		}
-	
+
 		//sub committee etc.
 		if (isset($params['list_children']))
 		{
@@ -394,7 +395,7 @@ class ScrapeCzPsp
 			throw new Exception('The file from psp.cz was not downloaded well. Is not around 3 in the morning CET? The psp.cz is being mainteined at that time... (file too short)', 503);
 		return iconv("cp1250", "UTF-8//TRANSLIT", $page);
 	}
-	
+
 	private static function appendHtml($params, &$out, $html)
 	{
 		if (isset($params['original_html']))

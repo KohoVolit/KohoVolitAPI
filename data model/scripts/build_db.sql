@@ -19,6 +19,7 @@ grant usage on language plpgsql to kohovolit;
 \i parliament/triggers.sql
 \i parliament/inserts.sql
 \i mp/tables.sql
+\i mp/functions.sql
 \i mp/triggers.sql
 \i group/tables.sql
 \i group/triggers.sql

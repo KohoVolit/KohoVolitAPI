@@ -12,13 +12,14 @@ class UpdateCzPsp
 	private $term_id;
 	private $term_src_code;
 
-	/// start date of the term of office to update the data for and start date of the next term
+	/// start and end dates of the term of office to update the data for and start date of the next term
 	private $term_since;
+	private $term_until;
 	private $next_term_since;
 
 	/// effective date which the update process actually runs to
 	private $update_date;
-	
+
 	/// code of this updated parliament
 	private $parliament_code;
 
@@ -41,7 +42,7 @@ class UpdateCzPsp
 	{
 		$this->parliament_code = $params['parliament'];
 		$this->ac = new ApiClient('kohovolit', 'php', array('parliament' => $this->parliament_code));
-		$this->log = new Log(LOGS_DIRECTORY . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d') . '.log');
+		$this->log = new Log(LOGS_DIRECTORY . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log');
 		$this->log->setMinLogLevel(Log::DEBUG);
 	}
 
@@ -53,9 +54,11 @@ class UpdateCzPsp
 	 * Parameter <em>$params['term']</em> indicates source code of the term of office to update data for. If ommitted, the current term is assumed.
 	 *
 	 * Parameter <em>$param['conflict_mps']</em> specifies how to resolve the cases when there is an MP in the database with the same name as a new MP scraped from this parliament.
-	 * The variable maps the source codes of conflicting MPs being scraped to either <em>id</em> of an MP in the database to merge with or to nothing to create
-	 * a new MP with the same name. In the latter case the new created MP will have a generated value in the disambiguation column that should be later changed by hand.
-	 * The mapping is expected as a string in the form <em>pair1,pair2,...</em> where each pair is either <em>mp_src_code->mp_id</em> or <em>mp_src_code-></em>.
+	 * The variable maps the source codes of conflicting MPs being scraped to either parliament code/source code of an MP in the database to merge with (eg. <em>cz/psp/5229</em>)
+	 * or to nothing to create a new MP with the same name.
+	 * In the latter case the new created MP will have a generated value in the disambiguation column that should be later changed by hand.
+	 * The mapping is expected as a string in the form <em>pair1,pair2,...</em> where each pair is either <em>mp_src_code->parliament_code/mp_src_code</em> or
+	 *<em>mp_src_code-></em>.
 	 *
 	 * \return Result of the update process.
 	 */
@@ -105,7 +108,17 @@ class UpdateCzPsp
 			foreach ($src_groups as $src_group)
 			{
 				// ommit non-parliament institutions
-				if ($src_group['kind'] == 'government' || $src_group['kind'] == 'institution' || $src_group['kind'] == 'international organization') continue;
+				if ($src_group['kind'] == 'government' || $src_group['kind'] == 'institution' || $src_group['kind'] == 'international organization' ||
+					$src_group['kind'] == 'european parliament' || $src_group['kind'] == 'president') continue;
+
+				// skip wrong groups on the official cz/psp parliament website
+				if (($src_group['id'] == 864 && $this->term_src_code != '6') ||
+					($src_group['id'] == 728 && $this->term_src_code == '4') ||
+					(strcmp($src_group['since'], $this->term_until) > 0 || isset($src_group['until']) && strcmp($src_group['until'], $this->term_since) < 0))
+				{
+					$this->log->write('Skipping wrong group (' . print_r($src_group, true) . ") in MP (source id = {$src_mp['id']}).", Log::ERROR);
+					continue;
+				}
 
 				// update (or insert) groups the MP is member of
 				if (isset($updated_groups[$src_group['id']]))
@@ -129,6 +142,16 @@ class UpdateCzPsp
 
 				// update memberships of the MP in groups
 				$cid = $src_group['kind'] == 'parliament' ? $constituency_id : null;
+
+				// skip wrong memberships on the official cz/psp parliament website
+				if (($src_mp['id'] == 377 && $src_group['id'] == 478 && $role_code == 'member' && $src_group['since'] == '2000-07-11') ||
+					($src_mp['id'] == 310 && $src_group['id'] == 596 && $role_code == '1mistopredseda' && $src_group['since'] == '2002-09-17') ||
+					($src_mp['id'] == 250 && $src_group['id'] == 599 && $role_code == 'vice-chairman' && $src_group['since'] == '2005-12-13'))
+				{
+					$this->log->write('Skipping wrong membership (' . print_r($src_group, true) . ") in MP (source id = {$src_mp['id']}).", Log::ERROR);
+					continue;
+				}
+
 				$this->updateMembership($src_group, $mp_id, $group_id, $role_code, $cid);
 			}
 		}
@@ -237,8 +260,9 @@ class UpdateCzPsp
 			$this->ac->create('TermAttribute', array(array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code)));
 		}
 
-		// prepare start date of this term and start date of the following term
+		// prepare start and end dates of this term and start date of the following term
 		$this->term_since = $term_to_update['since'];
+		$this->term_until = isset($term_to_update['until']) ? $term_to_update['until'] : '9999-12-31';
 		$index = array_search($term_to_update, $term_list);
 		$this->next_term_since = isset($term_list[$index+1]) ? $term_list[$index+1]['since'] : 'infinity';
 
@@ -318,12 +342,27 @@ class UpdateCzPsp
 				}
 				else
 				{
-					// if an id is given in the conflict resolution on input for this MP, the MP is already in the database with the given id -> update his data and insert his source code for this parliament
-					$mp_id = $this->conflict_mps[$src_code];
-					if (!empty($mp_id))
-						$action = self::MP_UPDATE | self::MP_INSERT_SOURCE_CODE;
+					// if conflict_mps indicates that this MP is already in the database, update his data and insert his source code for this parliament
+					if (!empty($this->conflict_mps[$src_code]))
+					{
+						$pmp_code = $this->conflict_mps[$src_code];
+						$p = strrpos($pmp_code, '/');
+						$parliament_code = substr($pmp_code, 0, $p);
+						$mp_src_code = substr($pmp_code, $p + 1);
+						$mp_id = $this->ac->read('MpAttribute', array('name_' => 'source_code', 'value_' => $mp_src_code, 'parl' => $parliament_code));
+						if (isset($mp_id['mp_attribute'][0]))
+							$mp_id = $mp_id['mp_attribute'][0]['mp_id'];
+						else
+						{
+							$this->log->write("Wrong parliament code and source code '$pmp_code' of an MP existing in the database specified in the \$conflict_mps parameter. MP {$src_mp['first_name']} {$src_mp['last_name']} (source id = {$src_mp['id']}) skipped.", Log::ERROR);
+							return null;
+						}
+						$action = self::MP_UPDATE;
+						if ($parliament_code != $this->parliament_code)
+							$action |= self::MP_INSERT_SOURCE_CODE;
+					}
 					else
-						// if null is given instead of id of an existing MP in database, insert MP as a new one, insert his source code for this parliament and generate a value for his disambigation column
+						// if null is given instead of an existing MP in database, insert MP as a new one, insert his source code for this parliament and generate a value for his disambigation column
 						$action = self::MP_INSERT | self::MP_INSERT_SOURCE_CODE | self::MP_DISAMBIGUATE;
 				}
 			}
@@ -390,7 +429,10 @@ class UpdateCzPsp
 	}
 
 	/**
-	 * Update information about image of an MP. If image has changed, close the current image record and insert a new one.
+	 * Update information about image of an MP.
+	 *
+	 * Not a full update is implemented, only if an image for this term-of-office is not present in the database and it is detected on the source website, it is inserted into database.
+	 * Change of the image during the term cannot be detected, because image filenames are randomly generated on each request. It would need to compare images by file content.
 	 *
 	 * \param $src_mp array of key => value pairs with properties of a scraped MP
 	 * \param $mp_id \e id of that MP in database
@@ -400,23 +442,24 @@ class UpdateCzPsp
 		if (!isset($src_mp['image_url'])) return;
 		$this->log->write("Updating MP's image.", Log::DEBUG);
 
-		// extract the scraped image filename
-		$src_image_url = $src_mp['image_url'];
-		$src_image_filename = substr($src_image_url, strrpos($src_image_url, '/') + 1);
-
 		// check for existing image in the database and if it is not present, insert its filename and download the image file
-		$image_in_db = $this->ac->read('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'datetime' => $this->update_date));
+		$image_in_db = $this->ac->read('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'since' => $this->term_since));
 		if (!isset($image_in_db['mp_attribute'][0]))
 		{
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $src_image_filename, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since)));
-			$image = file_get_contents($src_image_url);
+			// close record for image from previous term-of-office
+			$this->ac->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'until' => 'infinity'), array('until' => $this->term_since));
+
+			// insert current image
+			$db_image_filename = $src_mp['id'] . '_' . $this->term_src_code . '.jpg';
+			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since)));
 
 			// if the directory for MP images does not exist, create it
 			$path = DATA_DIRECTORY . '/' . $this->parliament_code . '/images/mp';
 			if (!file_exists($path))
 				mkdir($path, 0775, true);
 
-			file_put_contents($path . '/' . $src_image_filename, $image);
+			$image = file_get_contents($src_mp['image_url']);
+			file_put_contents($path . '/' . $db_image_filename, $image);
 		}
 	}
 
@@ -556,7 +599,7 @@ class UpdateCzPsp
 			return $role['role'][0]['code'];
 
 		// if role has not been found, insert it
-		$role_code = preg_replace('/\W+/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $src_role['male_name'])));		// code = lowercase male name without accents
+		$role_code = preg_replace('/[\'^"]/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $src_role['male_name'])));		// code = lowercase male name without accents
 		$data = array('code' => $role_code, 'male_name' => $src_role['male_name'], 'female_name' => $src_role['female_name'], 'description' => "Appears in parliament {$this->parliament_code}.");
 		$role_code = $this->ac->create('Role', array($data));
 		return $role_code[0];
@@ -574,7 +617,7 @@ class UpdateCzPsp
 	 */
 	private function updateMembership($src_group, $mp_id, $group_id, $role_code, $constituency_id)
 	{
-		$this->log->write("Updating membership (mp_id=$mp_id, group_id=$group_id, role_code=$role_code, since={$src_group['since']}).", Log::DEBUG);
+		$this->log->write("Updating membership (mp_id=$mp_id, group_id=$group_id, role_code='$role_code', since={$src_group['since']}).", Log::DEBUG);
 
 		// if membership is already present in database, update its details
 		$memb = $this->ac->read('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'since' => $src_group['since']));
@@ -616,7 +659,7 @@ class UpdateCzPsp
 	 * Decodes parameter with conflicitng MPs to an array.
 	 *
 	 * \param $params['conflict_mps'] list of conflicting MPs in a string of the form <em>pair1,pair2,...</em> where each pair is either
-	 * <em>mp_src_code->mp_id</em> or <em>mp_src_code-></em>.
+	 * <em>mp_src_code->parliament_code/mp_src_code</em> or <em>mp_src_code-></em>.
 	 *
 	 * \returns mapping of conflicting MPs in an array corresponding to the given list
 	 */
@@ -629,7 +672,7 @@ class UpdateCzPsp
 		foreach ($cmps as $mp)
 		{
 			$p = strpos($mp, '->');
-			$res[substr($mp, 0, $p)] = substr($mp, $p + 2);
+			$res[trim(substr($mp, 0, $p))] = trim(substr($mp, $p + 2));
 		}
 		return $res;
 	}
