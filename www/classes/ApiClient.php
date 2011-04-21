@@ -108,7 +108,7 @@ class ApiClient
 	private function makeRequestBody($data)
 	{
 		$full_data = (array)$data + (array)$this->default_data;
-		$request_body = 'data=' . serialize($full_data);
+		$request_body = http_build_query($full_data);
 		return $request_body;
 	}
 	
