@@ -145,7 +145,7 @@ class ScrapeCzPsp
 		$out['email'] = trim(ScraperUtils::getFirstString($html, 'mailto:','">'));
 
 		// www
-		$out['webpage'] = trim(ScraperUtils::getFirstString($html, 'href="http://','">Další informace (vlastní stránka)'), '/');
+		$out['website'] = trim(ScraperUtils::getFirstString($html, 'href="http://','">Další informace (vlastní stránka)'), '/');
 
 		// clenstva poslance
 		if (isset($params['list_memberships']))

@@ -94,7 +94,7 @@ class UpdateCzPsp
 
 			// update other MP attributes and offices
 			$this->updateMpAttribute($src_mp, $mp_id, 'email');
-			$this->updateMpAttribute($src_mp, $mp_id, 'webpage');
+			$this->updateMpAttribute($src_mp, $mp_id, 'website');
 			$this->updateMpAttribute($src_mp, $mp_id, 'address');
 			$this->updateMpAttribute($src_mp, $mp_id, 'phone');
 			$this->updateMpAttribute($src_mp, $mp_id, 'assistant', ', ');
