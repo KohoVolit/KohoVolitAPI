@@ -45,10 +45,7 @@ create table area
 	neigborhood varchar default '*',
 	route varchar default '*',
 	street_number varchar default '*',
-	since timestamp not null default '-infinity',
-	until timestamp not null default 'infinity',
-	primary key (constituency_id, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3, locality, sublocality, neigborhood, route, street_number, since),
-	check (since <= until)
+	primary key (constituency_id, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3, locality, sublocality, neigborhood, route, street_number)
 );
 
 -- attributes

@@ -19,7 +19,7 @@ begin
 end; $$ language plpgsql;
 
 create trigger mp_attribute_temporal_check
-	before insert or update /* of since, until */ on mp_attribute
+	before insert or update on mp_attribute
 	for each row execute procedure mp_attribute_temporal_check();
 
 create or replace function office_temporal_check()
@@ -40,7 +40,7 @@ begin
 end; $$ language plpgsql;
 
 create trigger office_temporal_check
-	before insert or update /* of since, until */ on office
+	before insert or update on office
 	for each row execute procedure office_temporal_check();
 
 create or replace function mp_archive_value(a_mp_id integer, a_column_name varchar, a_column_value varchar, a_update_date timestamp)
