@@ -19,6 +19,7 @@ class ScrapeCzPsp
 		{
 			case 'current_term': return self::scrapeCurrentTerm($params);
 			case 'term_list': return self::scrapeTermList($params);
+			case 'constituency_list': return self::scrapeConstituencyList($params);
 			case 'mp': return self::scrapeMp($params);
 			case 'group': return self::scrapeGroup($params);
 			default:
@@ -56,17 +57,30 @@ class ScrapeCzPsp
 	/**
 	 * ...
 	 */
+	private static function scrapeConstituencyList($params)
+	{
+		$term_id = self::getTermId($params);
+		$html = self::download("http://www.psp.cz/sqw/organy2.sqw?kr=1&o={$term_id}");
+		$kraje = ScraperUtils::returnSubstrings($html, '<li><A HREF=', '</li>');
+		$out = array();
+		foreach ($kraje as $kraj)
+		{
+			preg_match('/id=([0-9]*).*>(.*)<.*\((.*)\)/us', $kraj, $matches);
+			$out[] = array('id' => $matches[1], 'name' => $matches[2], 'mp_count' => $matches[3]);
+		}
+
+		self::appendHtml($params, $out, $html);
+		return array('constituency' => $out);
+	}
+
+	/**
+	 * ...
+	 */
 	private static function scrapeMp($params)
 	{
+		if (!isset($params['id']) || empty($params['id'])) return array('mp' => null);
 		$mp_id = $params['id'];
-		if (empty($mp_id)) return;
-		if (empty($params['term']))
-		{
-			$term_ar = self::scrapeCurrentTerm($params);
-			$term_id = $term_ar['term']['id'];
-		}
-		else
-			$term_id = $params['term'];
+		$term_id = self::getTermId($params);
 
 		$html = self::download("http://www.psp.cz/sqw/detail.sqw?id={$mp_id}&t=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,41,42,45,77,78,83,84&o={$term_id}");
 		$out['id'] = $mp_id;
@@ -236,17 +250,10 @@ class ScrapeCzPsp
 	 */
 	private static function scrapeGroup($params)
 	{
-		$a_bit = isset($params['id']) ? 'id=' . $params['id'] : 'P1=0&P2=0';
-		if (isset($params['term']))
-			$term_id = $params['term'];
-		else
-		{
-			$term_ar = self::scrapeCurrentTerm($params);
-			$term_id = $term_ar['term']['id'];
-		}
+		$term_id = self::getTermId($params);
 		$active = isset($params['active']);
-
 		$t_bit = !$active ? '&o=' . $term_id : '';
+		$a_bit = isset($params['id']) ? 'id=' . $params['id'] : 'P1=0&P2=0';
 		$url = 'http://www.psp.cz' . (isset($params['language']) && $params['language'] == 'en' ? '/cgi-bin/eng' : '') . '/sqw/snem.sqw?' . $a_bit . $t_bit;
 		$html = self::download($url);  // 591, o=5 - whole term,  otherwise active only
 		if (isset($params['id']))
@@ -400,6 +407,17 @@ class ScrapeCzPsp
 	{
 		if (isset($params['original_html']))
 			$out['original_html'] = $html;
+	}
+
+	private static function getTermId($params)
+	{
+		if (!empty($params['term']))
+			return $params['term'];
+		else
+		{
+			$term_ar = self::scrapeCurrentTerm($params);
+			return $term_ar['term']['id'];
+		}
 	}
 }
 
