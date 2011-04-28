@@ -27,10 +27,65 @@ class ScrapeCzSenat
 			case 'elected_mp_list': return self::scrapeElectedMpList($params);
 			case 'division': return self::scrapeDivision($params);
 			case 'constituency': return self::scrapeConstituency($params);
+			case 'region': return self::scrapeRegion($params);
 			default:
 				throw new Exception("Scraping of the resource <em>$resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
 	}
+
+  /**
+  * scrape regions for constituencies
+  * @param date status at given date in Czech format
+  * 		default today
+  * @param kraj
+  * @param okres
+  * @param obec
+  * @param uzemi
+  *
+  * example: Scrape?parliament=cz/senat&resource=region&kraj=43
+  */
+  private static function scrapeRegion($params)
+  {
+     //set date
+    if (isset($params['date'])) {
+   	 $d = $params['date'];
+   	} else {
+   	 $date_oo = new DateTime();
+	 $d = $date_oo->format('d.m.Y');
+	} 
+	//download the page
+	$str = (isset($params['kraj']) ? '&kraj=' . $params['kraj'] : '') .
+			(isset($params['okres']) ? '&okres=' . $params['okres'] : '') .
+			(isset($params['obec']) ? '&obec=' . $params['obec'] : '') .
+			(isset($params['uzemi']) ? '&uzemi=' . $params['uzemi'] : '');
+	$url = 'http://www.senat.cz/volby/hledani/index.php?&ke_dni='.$d . $str;
+	$html = self::download($url);
+	//start parsing
+	$text_parts = ScraperUtils::returnSubstrings($html,'<form action="/volby/hledani/index.php','</select>');
+	//print_r($params);
+	foreach ((array) $text_parts as $tp)
+	{
+	  $region_type = ScraperUtils::getFirstString($tp,'name="','"');
+	  $result['region'][$region_type]['region_type'] = $region_type;  
+	  $rows = ScraperUtils::returnSubstrings($tp, '<option', '/option');
+	  foreach ((array) $rows as $r) 
+	  {
+	    $number = ScraperUtils::getFirstString($r, 'value="', '">');
+	    if ($number != '0') {
+	      $result['region'][$region_type]['region']['region_'.$number]['number'] = $number;
+	      $result['region'][$region_type]['region']['region_'.$number]['name'] = ScraperUtils::getFirstString($r, '">', '<');
+	    }
+	  }
+	  $result['region'][$region_type]['number'] = ScraperUtils::getFirstString($tp, 'selected" value="', '"');
+	}
+	
+	$constituencies = ScraperUtils::returnSubstrings($html,'o_obvodu.php?kod=','"');
+	foreach ((array) $constituencies as $c) {
+	  $result['constituency']['constituency_'.$c]['number'] = $c;
+	}
+	return array('regions' => $result);
+	
+  }
 
   /**
   * scrape list of MPs in Czech and English
@@ -46,7 +101,7 @@ class ScrapeCzSenat
     if (isset($params['date'])) {
    	 $d = $params['date'];
    	} else {
-   	 $date_oo = new DateTime($date);
+   	 $date_oo = new DateTime();
 	 $d = $date_oo->format('d.m.Y');
 	}
 	//download Czech an English pages
@@ -105,7 +160,7 @@ class ScrapeCzSenat
     if (isset($params['date'])) {
    	 $d = $params['date'];
    	} else {
-   	 $date_oo = new DateTime($date);
+   	 $date_oo = new DateTime();
 	 $d = $date_oo->format('d.m.Y');
 	}
 	//get html
@@ -121,9 +176,10 @@ class ScrapeCzSenat
 	  throw new Exception('The senator does not have a legitimate mandate during this period',404);
 	} else {
 	  $name = ScraperUtils::name2array(trim(strip_tags(str_replace("\xc2\xa0",' ',str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'<h1 class="h1-back-sen">','</h1>'))))));
+	  $result['mp']['source_code'] = $id;
 	  $result['mp']['name'] = $name;
 	  $foto_part = ScraperUtils::getFirstString($html,'<div class="foto">','/>');
-	  $result['mp']['photo'] = 'http://senat.cz/'. ScraperUtils::getFirstString($foto_part,'img src="../','"');
+	  $result['mp']['image_url'] = 'http://senat.cz/'. ScraperUtils::getFirstString($foto_part,'img src="../','"');
 	  $result['mp']['party'] = trim(strip_tags(ScraperUtils::getFirstString($html,'Pol. příslušnost:','</dd>')));
 	  $result['mp']['party_en'] = trim(strip_tags(ScraperUtils::getFirstString($html_en,'Political affiliation:','</dd>')));
 	  $result['mp']['region_code'] = trim(strip_tags(str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'Volební obvod:</dt><dd>č.','</dd>'))));
@@ -152,11 +208,12 @@ class ScrapeCzSenat
 		}
 	  }
 	  $address = explode('<br />',ScraperUtils::getFirstString($html,'Adresa senátorské kanceláře:','</dd>'));
+	  $result['mp']['office'] = '';
 	  if (strlen(strip_tags($address[0])) > 1) {
 	    foreach ((array) $address as $a) {
-	      $result['mp']['office_address'] .= trim(strip_tags($a),', ') . ', ';
+	      $result['mp']['office'] .= trim(trim(strip_tags($a)),', ') . ', ';
 		}
-		$result['mp']['office_address'] = trim(trim($result['office_address']),',');
+		$result['mp']['office'] = trim(trim($result['mp']['office']),',');
 	  }
 	  $assistents = explode(', ',trim(trim(strip_tags(ScraperUtils::getFirstString($html,'Asistenti senátora:','</dd>'))),','));
 	  if ($assistents[0] != '') {
@@ -178,9 +235,15 @@ class ScrapeCzSenat
 	  if ($emails[0] != '') {
 	    $a = 1;
 	    foreach ((array) $emails as $email) {
-		  $result['email']['email_'.$a] = trim(str_replace('&nbsp;',' ',$email));
+		  $result['mp']['email']['email_'.$a] = trim(str_replace('&nbsp;',' ',$email));
 		  $a++;
 		}
+	  }
+	  //sex
+	  if (strpos($html,'Jak jsem hlasovala') > 0) {
+	    $result['mp']['sex'] = 'f';
+	  } else {
+	    $result['mp']['sex'] = 'm';
 	  }
 	}
 	//print_r($result);die();
@@ -366,7 +429,7 @@ class ScrapeCzSenat
     if (isset($params['date'])) {
    	 $d = $params['date'];
    	} else {
-   	 $date_oo = new DateTime($date);
+   	 $date_oo = new DateTime();
 	 $d = $date_oo->format('d.m.Y');
 	 }
 	//there are 4 types of groups, par_1=
@@ -413,7 +476,7 @@ class ScrapeCzSenat
     if (isset($params['date'])) {
    	 $d = $params['date'];
    	} else {
-   	 $date_oo = new DateTime($date);
+   	 $date_oo = new DateTime();
 	 $d = $date_oo->format('d.m.Y');
 	}
 	//download the files
@@ -483,7 +546,7 @@ class ScrapeCzSenat
     if (isset($params['date'])) {
    	 $d = $params['date'];
    	} else {
-   	 $date_oo = new DateTime($date);
+   	 $date_oo = new DateTime();
 	 $d = $date_oo->format('d.m.Y');
 	}
 	//download the file

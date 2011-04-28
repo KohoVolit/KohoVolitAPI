@@ -80,8 +80,9 @@ class ScraperUtils
 	  } unset ($row);
 	  $which_title = 'title_before';
 	  $which_name = 'first_name';
+	  $out = array('title_before' => '','title_after' =>'', 'first_name' =>'', 'last_name' => '');
 	  if ($name_ar2[0] != '') {
-		  foreach ($name_ar2 as $row) {
+		  foreach ((array)$name_ar2 as $row) {
 			if (strpos($row,'.') > 0) {
 			  //if (substr($row,-1) == ',') {
 			  //  $row = rtrim($row,',');
