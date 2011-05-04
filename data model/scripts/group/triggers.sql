@@ -19,7 +19,7 @@ begin
 end; $$ language plpgsql;
 
 create trigger group_kind_attribute_temporal_check
-	before insert or update /* of since, until */ on group_kind_attribute
+	before insert or update on group_kind_attribute
 	for each row execute procedure group_kind_attribute_temporal_check();
 
 create or replace function group_attribute_temporal_check()
@@ -40,7 +40,7 @@ begin
 end; $$ language plpgsql;
 
 create trigger group_attribute_temporal_check
-	before insert or update /* of since, until */ on group_attribute
+	before insert or update on group_attribute
 	for each row execute procedure group_attribute_temporal_check();
 
 create or replace function role_attribute_temporal_check()
@@ -61,7 +61,7 @@ begin
 end; $$ language plpgsql;
 
 create trigger role_attribute_temporal_check
-	before insert or update /* of since, until */ on role_attribute
+	before insert or update on role_attribute
 	for each row execute procedure role_attribute_temporal_check();
 
 create or replace function party_attribute_temporal_check()
@@ -82,7 +82,7 @@ begin
 end; $$ language plpgsql;
 
 create trigger party_attribute_temporal_check
-	before insert or update /* of since, until */ on party_attribute
+	before insert or update on party_attribute
 	for each row execute procedure party_attribute_temporal_check();
 
 create or replace function mp_in_group_temporal_check()
@@ -103,7 +103,7 @@ begin
 end; $$ language plpgsql;
 
 create trigger mp_in_group_temporal_check
-	before insert or update /* of since, until */ on mp_in_group
+	before insert or update on mp_in_group
 	for each row execute procedure mp_in_group_temporal_check();
 
 create or replace function group_archive_value(a_group_id integer, a_column_name varchar, a_column_value varchar, a_update_date timestamp)

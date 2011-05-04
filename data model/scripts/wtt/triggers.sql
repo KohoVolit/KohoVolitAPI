@@ -19,5 +19,5 @@ begin
 end; $$ language plpgsql;
 
 create trigger letter_attribute_temporal_check
-	before insert or update /* of since, until */ on letter_attribute
+	before insert or update on letter_attribute
 	for each row execute procedure letter_attribute_temporal_check();

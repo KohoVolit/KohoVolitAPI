@@ -19,7 +19,7 @@ begin
 end; $$ language plpgsql;
 
 create trigger language_attribute_temporal_check
-	before insert or update /* of since, until */ on language_attribute
+	before insert or update on language_attribute
 	for each row execute procedure language_attribute_temporal_check();
 
 create or replace function country_attribute_temporal_check()
@@ -40,5 +40,5 @@ begin
 end; $$ language plpgsql;
 
 create trigger country_attribute_temporal_check
-	before insert or update /* of since, until */ on country_attribute
+	before insert or update on country_attribute
 	for each row execute procedure country_attribute_temporal_check();

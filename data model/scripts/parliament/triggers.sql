@@ -19,7 +19,7 @@ begin
 end; $$ language plpgsql;
 
 create trigger parliament_kind_attribute_temporal_check
-	before insert or update /* of since, until */ on parliament_kind_attribute
+	before insert or update on parliament_kind_attribute
 	for each row execute procedure parliament_kind_attribute_temporal_check();
 
 create or replace function parliament_attribute_temporal_check()
@@ -40,9 +40,9 @@ begin
 end; $$ language plpgsql;
 
 create trigger parliament_attribute_temporal_check
-	before insert or update /* of since, until */ on parliament_attribute
+	before insert or update on parliament_attribute
 	for each row execute procedure parliament_attribute_temporal_check();
-	
+
 -- also table TERM has columns 'since' and 'until', but there is no temporal check because terms often overlaps each other by a few days in practice
 
 create or replace function term_attribute_temporal_check()
@@ -63,8 +63,29 @@ begin
 end; $$ language plpgsql;
 
 create trigger term_attribute_temporal_check
-	before insert or update /* of since, until */ on term_attribute
+	before insert or update on term_attribute
 	for each row execute procedure term_attribute_temporal_check();
+
+create or replace function constituency_temporal_check()
+returns trigger as $$
+begin
+	if tg_op = 'INSERT' then
+		perform * from constituency where (name_, parliament_code) = (new.name_, new.parliament_code) and until > new.since and since < new.until limit 1;
+	else  -- tg_op = 'UPDATE'
+		perform * from constituency where (name_, parliament_code) = (new.name_, new.parliament_code) and until > new.since and since < new.until
+			and (name_, parliament_code, since) != (old.name_, old.parliament_code, old.since)
+			limit 1;
+	end if;
+	if found then
+		raise exception 'Time period in the row (id=%, name_=''%'', short_name=''%'', description=''%'', parliament_code=''%'', since=''%'', until=''%'') being inserted (or updated) into CONSTITUENCY overlaps with another period of the constituency.',
+			new.id, new.name_, new.short_name, new.description, new.parliament_code, new.since, new.until;
+	end if;
+	return new;
+end; $$ language plpgsql;
+
+create trigger constituency_temporal_check
+	before insert or update on constituency
+	for each row execute procedure constituency_temporal_check();
 
 create or replace function constituency_attribute_temporal_check()
 returns trigger as $$
@@ -84,30 +105,5 @@ begin
 end; $$ language plpgsql;
 
 create trigger constituency_attribute_temporal_check
-	before insert or update /* of since, until */ on constituency_attribute
+	before insert or update on constituency_attribute
 	for each row execute procedure constituency_attribute_temporal_check();
-
-create or replace function constituency_archive_value(a_constituency_id integer, a_column_name varchar, a_column_value varchar, a_update_date timestamp)
-returns void as $$
-declare
-	l_since timestamp;
-begin
-	select until into l_since from constituency_attribute where constituency_id = a_constituency_id and name_ = a_column_name and lang = '-' and parl = '-' order by until desc limit 1;
-	if not found then l_since = '-infinity'; end if;
-	insert into constituency_attribute(constituency_id, name_, value_, since, until) values (a_constituency_id, a_column_name, a_column_value, l_since, a_update_date);
-end; $$ language plpgsql;
-
-create or replace function constituency_changed_values_archivation()
-returns trigger as $$
-begin
-	if new.last_updated_on is null then new.last_updated_on = 'now'; end if;
-	if new.last_updated_on < old.last_updated_on then return null; end if;
-	if new.name_ is distinct from old.name_ then perform constituency_archive_value(old.id, 'name_', old.name_, new.last_updated_on); end if;
-	if new.short_name is distinct from old.short_name then perform constituency_archive_value(old.id, 'short_name', old.short_name, new.last_updated_on); end if;
-	if new.description is distinct from old.description then perform constituency_archive_value(old.id, 'description', old.description, new.last_updated_on); end if;
-	return new;
-end; $$ language plpgsql;
-
-create trigger constituency_changed_values_archivation
-	before update on constituency
-	for each row execute procedure constituency_changed_values_archivation();

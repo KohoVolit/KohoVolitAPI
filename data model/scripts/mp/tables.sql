@@ -24,8 +24,8 @@ create table office
 	parliament_code varchar references parliament on delete restrict on update cascade,
 	address varchar,
 	phone varchar,
-	since timestamp default '-infinity',
-	until timestamp default 'infinity',
+	since timestamp not null default '-infinity',
+	until timestamp not null default 'infinity',
 	primary key (mp_id, parliament_code, address, since),
 	check (since <= until)
 );

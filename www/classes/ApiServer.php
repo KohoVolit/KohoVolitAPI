@@ -6,23 +6,20 @@
 class ApiServer
 {
 	private static $put_request_data;
-	
+
 	/**
 	 * ...
 	 */
 	public static function processHttpRequest()
 	{
 		$request_method = strtoupper($_SERVER['REQUEST_METHOD']);
-		
+
 		// data of PUT request can be read only once, store them for multiple use
 		if ($request_method == 'PUT')
-		{
-			parse_str(file_get_contents('php://input'), $input);
-			self::$put_request_data = $input['data'];
-		}
+			parse_str(file_get_contents('php://input'), self::$put_request_data);
 
 		self::logRequest();
-		
+
 		// include the underlying class of the requested API function
 		$api_class = $_GET['function'];
 		if (file_exists($api_class_file = "api/$api_class.php"))
@@ -45,15 +42,13 @@ class ApiServer
 				break;
 
 			case 'POST':
-				$data = unserialize($_POST['data']);
 				if (method_exists($api_class, 'create'))
-					return $api_class::create($data);
+					return $api_class::create($_POST);
 				break;
 
 			case 'PUT':
-				$data = unserialize(self::$put_request_data);
 				if (method_exists($api_class, 'update'))
-					return $api_class::update($params, $data);
+					return $api_class::update($params, self::$put_request_data);
 				break;
 
 			case 'DELETE':
@@ -70,7 +65,7 @@ class ApiServer
 	 * ...
 	 */
 	public static function sendHttpResponse($status_code, $data)
-	{	
+	{
 		// in case of successfull API request, format the result according to requested content type
 		if ($status_code == 200)
 		{
@@ -79,7 +74,7 @@ class ApiServer
 			$content_type = $first_accept[0];
 			if (empty($content_type))
 				$content_type = 'text/xml';
-				
+
 			switch ($content_type)
 			{
 				case 'text/plain':
@@ -108,7 +103,7 @@ class ApiServer
 					$data = "Result of the API call is not available in the requested format <em>$content_type</em>.";
 			}
 		}
-		
+
 		// if the API request failed, make an error page
 		if ($status_code != 200)
 		{
@@ -199,9 +194,9 @@ class ApiServer
 		$referrer = $_SERVER['REMOTE_ADDR'];
 		$data = null;
 		if ($method == 'POST')
-			$data = $_POST['data'];
+			$data = json_encode($_POST);
 		else if ($method == 'PUT')
-			$data = self::$put_request_data;
+			$data = json_encode(self::$put_request_data);
 
 		if ($project == 'kohovolit')
 			return Db::query('insert into api_log(method, function_, query, data_, format, referrer) values ($1, $2, $3, $4, $5, $6)',

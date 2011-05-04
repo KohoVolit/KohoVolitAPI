@@ -26,6 +26,9 @@ class UpdateCzPsp
 	/// array of MPs in this parliament that have the same name as an already existing MP in the database
 	private $conflict_mps;
 
+	/// mapping of constituency names to constituency id-s for the updated term
+	private $constituencies;
+
 	/// constants for actions in updating of an MP, actions may be combined
 	const MP_INSERT = 0x1;
 	const MP_INSERT_SOURCE_CODE = 0x2;
@@ -68,6 +71,7 @@ class UpdateCzPsp
 
 		$this->updateParliament();
 		$this->term_id = $this->updateTerm($params);
+		$this->constituencies = $this->updateConstituencies($params);
 		$this->conflict_mps = $this->parseConflictMps($params);
 
 		// remember already updated groups' source codes to update each group only once and the same for roles
@@ -94,15 +98,15 @@ class UpdateCzPsp
 
 			// update other MP attributes and offices
 			$this->updateMpAttribute($src_mp, $mp_id, 'email');
-			$this->updateMpAttribute($src_mp, $mp_id, 'webpage');
+			$this->updateMpAttribute($src_mp, $mp_id, 'website');
 			$this->updateMpAttribute($src_mp, $mp_id, 'address');
 			$this->updateMpAttribute($src_mp, $mp_id, 'phone');
 			$this->updateMpAttribute($src_mp, $mp_id, 'assistant', ', ');
 			$this->updateMpImage($src_mp, $mp_id);
 			$this->updateOffices($src_mp, $mp_id);
 
-			// update (or insert) constituency of the MP
-			$constituency_id = $this->updateConstituency(array('name' => $src_mp['constituency']));
+			// get constituency of the MP
+			$constituency_id = $this->constituencies[$src_mp['constituency']];
 
 			$src_groups = $src_mp['group'];
 			foreach ($src_groups as $src_group)
@@ -145,7 +149,7 @@ class UpdateCzPsp
 
 				// skip wrong memberships on the official cz/psp parliament website
 				if (($src_mp['id'] == 377 && $src_group['id'] == 478 && $role_code == 'member' && $src_group['since'] == '2000-07-11') ||
-					($src_mp['id'] == 310 && $src_group['id'] == 596 && $role_code == '1mistopredseda' && $src_group['since'] == '2002-09-17') ||
+					($src_mp['id'] == 310 && $src_group['id'] == 596 && $role_code == '1. mistopredseda' && $src_group['since'] == '2002-09-17') ||
 					($src_mp['id'] == 250 && $src_group['id'] == 599 && $role_code == 'vice-chairman' && $src_group['since'] == '2005-12-13'))
 				{
 					$this->log->write('Skipping wrong membership (' . print_r($src_group, true) . ") in MP (source id = {$src_mp['id']}).", Log::ERROR);
@@ -273,6 +277,31 @@ class UpdateCzPsp
 	}
 
 	/**
+	 * Update information about all constituencies for this term and close the older ones.
+	 *
+	 * \returns mapping of all constituency names for this term to their id-s.
+	 */
+	private function updateConstituencies($params)
+	{
+		$this->log->write("Updating constituencies.", Log::DEBUG);
+
+		// update constituencies of this term
+		$src_constituencies = $this->ac->read('Scrape', array('resource' => 'constituency_list', 'term' => $this->term_src_code));
+		$res = array();
+		foreach ($src_constituencies['constituency'] as $src_constituency)
+			$res[$src_constituency['name']] = $this->updateConstituency($src_constituency);
+
+		// close all older constituencies
+		$open_constituencies = $this->ac->read('Constituency', array('parliament_code' => $this->parliament_code, 'datetime' => $this->update_date));
+		if (isset($open_constituencies['constituency'][0]))
+			foreach ($open_constituencies['constituency'] as $open_constituency)
+				if (!array_key_exists($open_constituency['name_'], $res))
+					$this->ac->update('Constituency', array('id' => $open_constituency['id']), array('until' => $this->term_since));
+
+		return $res;
+	}
+
+	/**
 	 * Update information about a constituency. If it is not present in database, insert it.
 	 *
 	 * \param $src_constituency array of key => value pairs with properties of a scraped constituency
@@ -283,27 +312,49 @@ class UpdateCzPsp
 	{
 		$this->log->write("Updating constituency '{$src_constituency['name']}'.", Log::DEBUG);
 
-		$constituency = $this->ac->read('Constituency', array('parliament_code' => $this->parliament_code, 'name_' => $src_constituency['name']));
-		if (isset($constituency['constituency'][0]))
+		// if constituency is already in the database, update its data
+		$src_code = $src_constituency['id'];
+		$src_code_in_db = $this->ac->read('ConstituencyAttribute', array('name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
+		if (isset($src_code_in_db['constituency_attribute'][0]))
 		{
-			// update existing constituency
-			$data = array('last_updated_on' => $this->update_date);
+			$constituency_id = $src_code_in_db['constituency_attribute'][0]['constituency_id'];
+			$data = array('name_' => $src_constituency['name']);
 			if (isset($src_constituency['short_name']))
 				$data['short_name'] = $src_constituency['short_name'];
 			if (isset($src_constituency['description']))
 				$data['description'] = $src_constituency['description'];
-			$this->ac->update('Constituency', array('parliament_code' => $this->parliament_code, 'name_' => $src_constituency['name']), $data);
-			return $constituency['constituency'][0]['id'];
+			$this->ac->update('Constituency', array('id' => $constituency_id), $data);
+		}
+		// if constituency is not in the database, insert it and its source code
+		else
+		{
+			// in case that another constituency with the same name for this parliament exists in database, close its validity
+			$other_constituency = $this->ac->read('Constituency', array('name_' => $src_constituency['name'], 'parliament_code' => $this->parliament_code, 'datetime' => $this->update_date));
+			if (isset($other_constituency['constituency'][0]))
+				$this->ac->update('Constituency', array('id' => $other_constituency['constituency'][0]['id']), array('until' => $this->term_since));
+
+			// insert the constituency
+			$data = array('name_' => $src_constituency['name'], 'parliament_code' => $this->parliament_code, 'since' => $this->term_since);
+			if (isset($src_constituency['short_name']))
+				$data['short_name'] = $src_constituency['short_name'];
+			if (isset($src_constituency['description']))
+				$data['description'] = $src_constituency['description'];
+			$constituency_id = $this->ac->create('Constituency', array($data));
+			$constituency_id = $constituency_id[0];
+
+			// insert source code of the constituency
+			$this->ac->create('ConstituencyAttribute', array(array('constituency_id' => $constituency_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code)));
 		}
 
-		// insert a new constituency
-		$data = array('name_' => $src_constituency['name'], 'parliament_code' => $this->parliament_code, 'last_updated_on' => $this->update_date);
-		if (isset($src_constituency['short_name']))
-			$data['short_name'] = $src_constituency['short_name'];
-		if (isset($src_constituency['description']))
-			$data['description'] = $src_constituency['description'];
-		$constituency_id = $this->ac->create('Constituency', array($data));
-		return $constituency_id[0];
+		// in case of current constituency, update its areas
+		if ($this->update_date == 'now')
+		{
+			$area = $this->ac->read('Area', array('constituency_id' => $constituency_id));
+			if (!isset($area['area'][0]))
+				$this->ac->create('Area', array(array('constituency_id' => $constituency_id, 'administrative_area_level_1' => $src_constituency['name'], 'country' => 'Česká republika')));
+		}
+
+		return $constituency_id;
 	}
 
 	/**
@@ -330,7 +381,7 @@ class UpdateCzPsp
 		{
 			// check for an MP in database with the same name
 			$other_mp = $this->ac->read('Mp', array('first_name' => $src_mp['first_name'], 'last_name' => $src_mp['last_name']));
-			if (!isset($other_mp['mp'][0]['id']))
+			if (!isset($other_mp['mp'][0]))
 				$action = self::MP_INSERT | self::MP_INSERT_SOURCE_CODE;
 			else
 			{

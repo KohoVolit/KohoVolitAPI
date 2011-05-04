@@ -3,7 +3,7 @@
 /**
  * Class Constituency provides information about constituencies of a parliament through API and implements CRUD operations on database table CONSTITUENCY.
  *
- * Columns of table CONSTITUENCY are: <em>id, name_, short_name, description, parliament_code, last_updated_on</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Columns of table CONSTITUENCY are: <em>id, name_, short_name, description, parliament_code, since, until</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
 class Constituency extends Entity
 {
@@ -12,7 +12,7 @@ class Constituency extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'parliament_code', 'last_updated_on');
+		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'parliament_code', 'since', 'until');
 		self::$roColumns = array('id');
 	}
 
@@ -22,10 +22,12 @@ class Constituency extends Entity
 	 * \param $params An array of pairs <em>column => value</em> specifying the constituencies to select. Only constituencies satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of constituencies with structure <code>array('constituency' => array(array('id' => 123, 'name_' => 'Praha 9', 'short_name' => '9', 'description' => null, 'cz/praha'), ...))</code>.
+	 *
+	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only constituencies valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get constituencies valid at this moment.
 	 */
 	public static function read($params)
 	{
-		return parent::readEntity($params, 'constituency');
+		return parent::readEntity($params, 'constituency', true);
 	}
 
 	/**

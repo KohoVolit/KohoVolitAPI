@@ -42,8 +42,10 @@ create table constituency
 	short_name varchar,
 	description text,
 	parliament_code varchar not null references parliament on delete cascade on update cascade,
-	last_updated_on timestamp not null default current_timestamp,
-	unique (name_, parliament_code)
+	since timestamp not null default '-infinity',
+	until timestamp not null default 'infinity',
+	unique (name_, parliament_code, since),
+	check (since <= until)
 );
 
 --attributes
