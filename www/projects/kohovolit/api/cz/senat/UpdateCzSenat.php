@@ -183,17 +183,19 @@ class UpdateCzSenat
 				$this->updateMembership($src_group, $mp_id, $group_id, $role_code, $cid, $date);
 			}
 			// close all memberships that do not exist anymore for scraped mps
-			$all_memb = $this->ac->read('MpInGroup', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, 'datetime' => $date->date));
-			$this->closeMemberships($all_memb['mp_in_group'],$src_groups,$date);	
+			//***porad s chybama, uzavira to i kdyz nema
+			//$all_memb = $this->ac->read('MpInGroup', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, 'datetime' => $date->date));
+			//$this->closeMemberships($all_memb['mp_in_group'],$src_groups,$date);	
 						
 			//record mp_ids
 			$mp_ids[] = $mp_id;
 			//break;
 		}
 		//close all memberships of mps that are no longer in parliament
-		$total_all_memb = $this->ac->read('MpInGroup', array('parl' => $this->parliament_code, 'datetime' => $date->date));
-		$memb_ending_mps = $this->selectEndingMpsMemberships($total_all_memb,$mp_ids);
-		$this->closeMemberships($memb_ending_mps,array(),$date);
+		//***mozna porad s chybama, uzavira to i kdyz nema
+		//$total_all_memb = $this->ac->read('MpInGroup', array('parl' => $this->parliament_code, 'datetime' => $date->date));
+		//$memb_ending_mps = $this->selectEndingMpsMemberships($total_all_memb,$mp_ids);
+		//$this->closeMemberships($memb_ending_mps,array(),$date);
 	}
 	
 	/**
@@ -277,7 +279,7 @@ class UpdateCzSenat
 	private function updateMembership($src_group, $mp_id, $group_id, $role_code, $constituency_id, $date)
 	{
 		$this->log->write("Updating membership (mp_id=$mp_id, group_id=$group_id, role_code='$role_code').", Log::DEBUG);
-	$this->log->write('aaa'.print_r($date,1), Log::DEBUG);
+	//$this->log->write('aaa'.print_r($date,1), Log::DEBUG);
 		// if membership is already present in database, update its details
 		$memb = $this->ac->read('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'datetime' => $date->date));
 		$this->log->write('bbb'.print_r($memb,1), Log::DEBUG);
