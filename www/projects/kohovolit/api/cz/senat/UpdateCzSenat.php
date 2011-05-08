@@ -193,6 +193,9 @@ class UpdateCzSenat
 	        );
 	        //Praha, Ostrava, Brno, Plzeň
 	        if (isset($src_regions_3['regions']['region']['uzemi'])) {
+	          if (!isset($src_regions_3['regions']['region']['uzemi']['region']))
+	            $this->log->write("Something is wrong with uzemi. Notice: Undefined index: region - ". print_r($src_regions_3['regions']['region'],1), Log::WARNING);
+	          else
 	          foreach ((array) $src_regions_3['regions']['region']['uzemi']['region'] as $uzemi) {
 	            $src_regions_4 = $this->ac->read('Scrape', array('resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number'], 'uzemi' => $uzemi['number']));
 	            $constituency = $src_regions_4['regions']['constituency'];
@@ -202,11 +205,11 @@ class UpdateCzSenat
 
 		          case 'Brno':
 	                $subs = explode('-',$uzemi['name']);
+	                $subs2 = explode (' a ',$subs[1]);
 	                //correct for 'Brno-jih'
 	                if ($subs[1] == mb_convert_case($subs[1], MB_CASE_LOWER, "UTF-8"))
-	                  $subs[1] = $subs; 
+	                  $subs2 = array($subs); 
 	                  
-	                $subs2 = explode (' a ',$subs[1]);
 	                foreach ((array) $subs2 as $sub) {
 	                  $data['sublocality'] = $sub;
 	                  $this->updateArea($data,$constituency);
