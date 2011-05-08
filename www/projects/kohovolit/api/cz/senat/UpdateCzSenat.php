@@ -68,7 +68,7 @@ class UpdateCzSenat
 		$this->log->write('Started with parameters: ' . print_r($params, true));
 		
 		//update areas only if param 'area' is set (approx. 2 hours of updating)
-		if (isset($params['area'])
+		if (isset($params['area']))
 		  $this->updateAreas();
 		
 		//update parliament and term
