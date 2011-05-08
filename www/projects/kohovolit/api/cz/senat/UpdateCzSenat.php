@@ -67,9 +67,9 @@ class UpdateCzSenat
 	{
 		$this->log->write('Started with parameters: ' . print_r($params, true));
 		
-		$areas = $this->ac->read('Scrape', array('resource' => 'region', 'kraj' => 19, 'okres' => 3100, 'obec' => 554782));
-		$this->log->write(print_r($areas, true));
-		die();
+		//update areas only if param 'area' is set (approx. 2 hours of updating)
+		if (isset($params['area'])
+		  $this->updateAreas();
 		
 		//update parliament and term
 		$this->updateParliament();
@@ -151,6 +151,202 @@ class UpdateCzSenat
 			//break;
 		}	
 		$this->closeMemberships($marked);		
+	}
+	
+	/**
+	* update areas (of constituencies)
+	*
+	* kraj, okres, obec ~ administrative_area_1,administrative_area_2,locality
+	* Praha: Praha 3 ~ sublocality; (Praha-)Bubeneč~neigborhood
+	* Plzeň: Plzeň 4 ~ sublocality; (Plzeň 10-)Lhota ~ sublocality !
+	* Ostrava: Slezská Ostrava ~ sublocality
+	* Brno: (Brno-)Kohoutovice ~ sublocality
+	*
+	* warnings: 
+	* Ostrava: Moravská Ostrava a Přívoz, ... (split it)
+	* Plzeň: Plzeň 10-Lhota (split it)
+	* Brno: Brno-jih (sublocality, small letter 'jih'), (Brno-)Řečkovice a Morká Hora, ... (split it)
+	* Praha: (Praha 10-)Hrdlořezy,Malešice (split it)
+	*
+	* errors:
+	* Praha: Praha 5 (bez části k.ú.Malá Strana) + Praha 5-Malá Strana have the same constituency (wrong!), ...
+	* 
+	*/
+	private function updateAreas() {
+	  $src_regions_0 = $this->ac->read('Scrape', array('resource' => 'region'));
+	  //kraje
+	  foreach((array) $src_regions_0['regions']['region']['kraj']['region'] as $kraj) {
+	    $src_regions_1 = $this->ac->read('Scrape', array('resource' => 'region', 'kraj' => $kraj['number']));
+	    //okresy
+	    foreach((array) $src_regions_1['regions']['region']['okres']['region'] as $okres) {
+	      $src_regions_2 = $this->ac->read('Scrape', array('resource' => 'region','kraj'=>$kraj['number'], 'okres' => $okres['number']));
+	      //obce
+	      foreach((array) $src_regions_2['regions']['region']['obec']['region'] as $obec) {
+	        $src_regions_3 = $this->ac->read('Scrape', array('resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number']));
+	        
+	        //set data (kraj,okres,obec)
+	        $data = array(
+	          'country' => 'CZ',
+	          'administrative_area_level_1' => $kraj['name'],
+	          'administrative_area_level_2' => $okres['name'],
+	          'locality' => $obec['name'],
+	        );
+	        //Praha, Ostrava, Brno, Plzeň
+	        if (isset($src_regions_3['regions']['region']['uzemi'])) {
+	          foreach ((array) $src_regions_3['regions']['region']['uzemi']['region'] as $uzemi) {
+	            $src_regions_4 = $this->ac->read('Scrape', array('resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number'], 'uzemi' => $uzemi['number']));
+	            $constituency = $src_regions_4['regions']['constituency'];
+	            
+	            //treat every city differently
+	            switch($obec['name']) {
+
+		          case 'Brno':
+	                $subs = explode('-',$uzemi['name']);
+	                //correct for 'Brno-jih'
+	                if ($subs[1] == mb_convert_case($subs[1], MB_CASE_LOWER, "UTF-8"))
+	                  $subs[1] = $subs; 
+	                  
+	                $subs2 = explode (' a ',$subs[1]);
+	                foreach ((array) $subs2 as $sub) {
+	                  $data['sublocality'] = $sub;
+	                  $this->updateArea($data,$constituency);
+	                }
+	                break;
+	            
+		          case 'Plzeň':
+	                $subs = explode('-',$uzemi['name']);
+	                foreach ((array) $subs as $sub) {
+	                  $data['sublocality'] = $sub;
+	                  $this->updateArea($data,$constituency);
+	                }
+	                break;
+	                            
+	              case 'Ostrava':
+	                $subs = explode(' a ',$uzemi['name']);
+	                foreach ((array) $subs as $sub) {
+	                  $data['sublocality'] = $sub;
+	                  $this->updateArea($data,$constituency);
+	                }
+	                break;
+	                
+	              case 'Praha';
+	                
+	                $subs = explode('-',$uzemi['name']);
+	                
+	                //strip part in (), e.g.Praha 10(bez části k.ú.Vinohrady)
+	                $subs2 = explode('(',$subs[0]);
+	                $data['sublocality'] = $subs2[0];
+	                
+	                if (isset($subs[1])) { //if isset neigborhood
+	                  $subs3 = explode(',',$subs[1]); //Hrdlořezy,Malešice
+	                  foreach ((array) $subs3 as $sub3) {
+	                    $data['neigborhood'] = $sub3;
+	                    //correct errors
+	                    if ($corr_const = $this->correctPrahaAreaErrors($data['sublocality'],$data['neigborhood']))
+	                      $constituency = $corr_const;
+	                    $this->updateArea($data,$constituency);
+	                  }
+	                  
+	                } else {
+	                  unset($data['neigborhood']);
+	                  //correct errors
+	                  if ($corr_const = $this->correctPrahaAreaErrors($data['sublocality']))
+	                      $constituency = $corr_const;
+	                  $this->updateArea($data,$constituency);
+	                }
+					break;
+	            }
+	          }
+	        } else { //not Praha, Ostrava, Brno, Plzeň
+	          $constituency = $src_regions_3['regions']['constituency'];
+	          $this->updateArea($data,$constituency);
+	        }
+	      }
+	        
+	      
+	    }
+	  }
+	
+	}
+	
+	/**
+	* treat errors in Praha area
+	*
+	* @param $sublocality
+	* @param $neigborhood
+	*
+	* @return false if no error; array(array('number' => constituency_number)) otherwise
+	*/
+	private function correctPrahaAreaErrors($sublocality,$neigborhood = false) {
+	  switch ($sublocality) {
+	    case 'Praha 10':
+	      if ($neigborhood) $const = 26;
+	      else $const = 22;
+	      break;
+	    case 'Praha 2':
+	      if ($neigborhood) $const = 27;
+	      else $const = 26;
+	      break;
+	    case 'Praha 4':
+	      if ($neigborhood) $const = 17;
+	      else $const = 20;
+	      break;
+	    case 'Praha 5':
+	      if ($neigborhood) $const = 27;
+	      else $const = 21;
+	      break;
+	    case 'Praha 6':
+	      if ($neigborhood) $const = 27;
+	      else $const = 25;
+	      break;
+	    case 'Praha 9':
+	      if ($neigborhood) $const = 26;
+	      else $const = 24;
+	      break;  
+	  }
+	  if (isset($const))
+	    return array(array('number' => $const));
+	  else
+	    return false;
+	}
+	/**
+	* update or insert area
+	*
+	* @param $data array of (administrative_area_level_1, administrative_area_level_2,...)
+	* @param $constituency array
+	*/	
+	private function updateArea($data,$constituency) {
+	  //constituency number
+	  foreach((array) $constituency as $c) 
+	    $const_number = $c['number'];
+	  //get constituency id from db
+	  $const_db = $this->ac->read('Constituency',array('short_name' => $const_number,'parliament_code' => $this->parliament_code));
+	  $data['constituency_id'] = $const_db['constituency'][0]['id'];
+	  
+	  //full area:
+	  $data_full = array(
+	    'constituency_id' => '*',
+	    'country' => '*',
+	    'administrative_area_level_1' => '*',
+	    'administrative_area_level_2' => '*',
+	    'administrative_area_level_3' => '*',
+	    'locality' => '*',
+	    'sublocality' => '*',
+	    'neigborhood' => '*',
+	    'route' => '*',
+	    'street_number' => '*',
+	  );
+	  foreach((array) $data as $key => $d) {
+	    $data_full[$key] = $d;
+	  }
+	  //get area from db
+	  $area_db = $this->ac->read('Area', $data);
+	  //insert area if not in db
+	  if (!isset($area_db['area'][0])) {
+	    $this->ac->create('Area',array($data_full));
+	    $this->log->write("Inserted new area: {$data_full['administrative_area_level_1']}, {$data_full['administrative_area_level_2']}, {$data_full['locality']}, {$data_full['sublocality']}, {$data_full['neigborhood']}", Log::DEBUG);
+	  }
+	
 	}
 	
 	/**
@@ -351,7 +547,6 @@ class UpdateCzSenat
 		if (isset($constituency['constituency'][0]))
 		{
 			// update existing constituency
-			$data = array('last_updated_on' => $this->update_date);
 			$data['short_name'] = $region_code;
 			if (isset($src_constituency['description']))
 				$data['description'] = $src_constituency['description'];
@@ -360,7 +555,7 @@ class UpdateCzSenat
 		}
 
 		// insert a new constituency
-		$data = array('name_' => $src_constituency['name'] . ' (' .$region_code.')', 'parliament_code' => $this->parliament_code, 'last_updated_on' => $this->update_date);
+		$data = array('name_' => $src_constituency['name'] . ' (' .$region_code.')', 'parliament_code' => $this->parliament_code);
 		$data['short_name'] = $region_code;
 		if (isset($src_constituency['description']))
 			$data['description'] = $src_constituency['description'];
