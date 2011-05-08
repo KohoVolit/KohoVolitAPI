@@ -45,7 +45,7 @@ class ScraperUtils
 	* curl downloader, with possible options
 	* @return html
 	* example:
-	* grabber('http://example.com',array(CURLOPT_TIMEOUT,180));
+	* grabber('http://example.com',array(array(CURLOPT_TIMEOUT, 180)));
 	*/
 	public static function grabber($url,$options = array())
 	{

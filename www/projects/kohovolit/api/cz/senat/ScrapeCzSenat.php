@@ -68,13 +68,15 @@ class ScrapeCzSenat
 	  $region_type = ScraperUtils::getFirstString($tp,'name="','"');
 	  $result['region'][$region_type]['region_type'] = $region_type;  
 	  $rows = ScraperUtils::returnSubstrings($tp, '<option', '/option');
+	  $i = 1;
 	  foreach ((array) $rows as $r) 
 	  {
 	    $number = ScraperUtils::getFirstString($r, 'value="', '">');
 	    if ($number != '0') {
-	      $result['region'][$region_type]['region']['region_'.$number]['number'] = $number;
-	      $result['region'][$region_type]['region']['region_'.$number]['name'] = ScraperUtils::getFirstString($r, '">', '<');
+	      $result['region'][$region_type]['region']['region_'.$i]['number'] = $number;
+	      $result['region'][$region_type]['region']['region_'.$i]['name'] = ScraperUtils::getFirstString($r, '">', '<');
 	    }
+	    $i++;
 	  }
 	  $result['region'][$region_type]['number'] = ScraperUtils::getFirstString($tp, 'selected" value="', '"');
 	}
@@ -215,11 +217,11 @@ class ScrapeCzSenat
 		}
 		$result['mp']['office'] = trim(trim($result['mp']['office']),',');
 	  }
-	  $assistents = explode(', ',trim(trim(strip_tags(ScraperUtils::getFirstString($html,'Asistenti senátora:','</dd>'))),','));
-	  if ($assistents[0] != '') {
+	  $assistants = explode(', ',trim(trim(strip_tags(ScraperUtils::getFirstString($html,'Asistenti senátora:','</dd>'))),','));
+	  if ($assistants[0] != '') {
 	    $a = 1;
-	    foreach ((array) $assistents as $assistent) {
-		  $result['mp']['assistent']['assistent_'.$a] = trim(str_replace('&nbsp;',' ',$assistent));
+	    foreach ((array) $assistants as $assistant) {
+		  $result['mp']['assistant']['assistant_'.$a] = trim(str_replace('&nbsp;',' ',$assistant));
 		  $a++;
 		}
 	  }
@@ -433,7 +435,7 @@ class ScrapeCzSenat
 	 $d = $date_oo->format('d.m.Y');
 	 }
 	//there are 4 types of groups, par_1=
-	$group_kinds = array('V','M','D','K');
+	$group_kinds = array('S','V','M','D','K','O','P');
 	foreach ((array) $group_kinds as $group_kind) {
 		$url = 'http://www.senat.cz/organy/index.php?lng=cz&ke_dni='.$d.'&par_1='.$group_kind;
 		$html = self::download($url);
@@ -461,6 +463,7 @@ class ScrapeCzSenat
 		}
 		
 	}
+		
 	return $result;
   }
   
@@ -571,9 +574,9 @@ class ScrapeCzSenat
 	 * downloads the page and checks if downloaded a reasonable page
 	 * @return html page
 	 */
-	private static function download($url, $lo_limit = 0)
+	private static function download($url, $lo_limit = 0, $curl_options = array())
 	{
-		$html = ScraperUtils::grabber($url);
+		$html = ScraperUtils::grabber($url,$curl_options);
 		if ((strlen($html) < 7500) and strlen($html >= $lo_limit))
 			throw new Exception('Downloaded file too short.', 503);
 		return $html;
