@@ -157,7 +157,7 @@ class UpdateCzSenat
 	* update areas (of constituencies)
 	*
 	* kraj, okres, obec ~ administrative_area_1,administrative_area_2,locality
-	* Praha: Praha 3 ~ sublocality; (Praha-)Bubeneč~neigborhood
+	* Praha: Praha 3 ~ sublocality; (Praha-)Bubeneč~neighborhood
 	* Plzeň: Plzeň 4 ~ sublocality; (Plzeň 10-)Lhota ~ sublocality !
 	* Ostrava: Slezská Ostrava ~ sublocality
 	* Brno: (Brno-)Kohoutovice ~ sublocality
@@ -240,18 +240,18 @@ class UpdateCzSenat
 	                $subs2 = explode('(',$subs[0]);
 	                $data['sublocality'] = $subs2[0];
 	                
-	                if (isset($subs[1])) { //if isset neigborhood
+	                if (isset($subs[1])) { //if isset neighborhood
 	                  $subs3 = explode(',',$subs[1]); //Hrdlořezy,Malešice
 	                  foreach ((array) $subs3 as $sub3) {
-	                    $data['neigborhood'] = $sub3;
+	                    $data['neighborhood'] = $sub3;
 	                    //correct errors
-	                    if ($corr_const = $this->correctPrahaAreaErrors($data['sublocality'],$data['neigborhood']))
+	                    if ($corr_const = $this->correctPrahaAreaErrors($data['sublocality'],$data['neighborhood']))
 	                      $constituency = $corr_const;
 	                    $this->updateArea($data,$constituency);
 	                  }
 	                  
 	                } else {
-	                  unset($data['neigborhood']);
+	                  unset($data['neighborhood']);
 	                  //correct errors
 	                  if ($corr_const = $this->correctPrahaAreaErrors($data['sublocality']))
 	                      $constituency = $corr_const;
@@ -276,34 +276,34 @@ class UpdateCzSenat
 	* treat errors in Praha area
 	*
 	* @param $sublocality
-	* @param $neigborhood
+	* @param $neighborhood
 	*
 	* @return false if no error; array(array('number' => constituency_number)) otherwise
 	*/
-	private function correctPrahaAreaErrors($sublocality,$neigborhood = false) {
+	private function correctPrahaAreaErrors($sublocality,$neighborhood = false) {
 	  switch ($sublocality) {
 	    case 'Praha 10':
-	      if ($neigborhood) $const = 26;
+	      if ($neighborhood) $const = 26;
 	      else $const = 22;
 	      break;
 	    case 'Praha 2':
-	      if ($neigborhood) $const = 27;
+	      if ($neighborhood) $const = 27;
 	      else $const = 26;
 	      break;
 	    case 'Praha 4':
-	      if ($neigborhood) $const = 17;
+	      if ($neighborhood) $const = 17;
 	      else $const = 20;
 	      break;
 	    case 'Praha 5':
-	      if ($neigborhood) $const = 27;
+	      if ($neighborhood) $const = 27;
 	      else $const = 21;
 	      break;
 	    case 'Praha 6':
-	      if ($neigborhood) $const = 27;
+	      if ($neighborhood) $const = 27;
 	      else $const = 25;
 	      break;
 	    case 'Praha 9':
-	      if ($neigborhood) $const = 26;
+	      if ($neighborhood) $const = 26;
 	      else $const = 24;
 	      break;  
 	  }
@@ -335,7 +335,7 @@ class UpdateCzSenat
 	    'administrative_area_level_3' => '*',
 	    'locality' => '*',
 	    'sublocality' => '*',
-	    'neigborhood' => '*',
+	    'neighborhood' => '*',
 	    'route' => '*',
 	    'street_number' => '*',
 	  );
@@ -347,7 +347,7 @@ class UpdateCzSenat
 	  //insert area if not in db
 	  if (!isset($area_db['area'][0])) {
 	    $this->ac->create('Area',array($data_full));
-	    $this->log->write("Inserted new area: {$data_full['administrative_area_level_1']}, {$data_full['administrative_area_level_2']}, {$data_full['locality']}, {$data_full['sublocality']}, {$data_full['neigborhood']}", Log::DEBUG);
+	    $this->log->write("Inserted new area: {$data_full['administrative_area_level_1']}, {$data_full['administrative_area_level_2']}, {$data_full['locality']}, {$data_full['sublocality']}, {$data_full['neighborhood']}", Log::DEBUG);
 	  }
 	
 	}

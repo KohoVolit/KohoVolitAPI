@@ -3,7 +3,7 @@
 /**
  * Class Area provides information about constituencies' areas through API and implements CRUD operations on database table AREA.
  *
- * Columns of table AREA are: <em>constituency_id, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3, locality, sublocality, neigborhood, route, street_number</em>. All columns are allowed to write to.
+ * Columns of table AREA are: <em>constituency_id, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3, locality, sublocality, neighborhood, route, street_number</em>. All columns are allowed to write to.
  */
 class Area extends Entity
 {
@@ -12,7 +12,7 @@ class Area extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('constituency_id', 'country', 'administrative_area_level_1', 'administrative_area_level_2', 'administrative_area_level_3', 'locality', 'sublocality', 'neigborhood', 'route', 'street_number');
+		self::$tableColumns = array('constituency_id', 'country', 'administrative_area_level_1', 'administrative_area_level_2', 'administrative_area_level_3', 'locality', 'sublocality', 'neighborhood', 'route', 'street_number');
 		self::$roColumns = array();
 	}
 

@@ -8,7 +8,7 @@ create table mp
 	middle_names varchar not null default '',
 	last_name varchar not null,
 	disambiguation varchar not null default '',
-	sex char check (sex = 'm' or sex = 'f'),
+	sex char check (sex in ('m', 'f')),
 	pre_title varchar,
 	post_title varchar,
 	born_on date,
