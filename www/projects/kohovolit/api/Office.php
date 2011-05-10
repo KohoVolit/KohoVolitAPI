@@ -3,7 +3,7 @@
 /**
  * Class Office provides information about MPs' offices through API and implements CRUD operations on database table OFFICE.
  *
- * Columns of table OFFICE are: <em>mp_id, parliament_code, address, phone, since, until</em>. All columns are allowed to write to.
+ * Columns of table OFFICE are: <em>mp_id, parliament_code, address, phone, latitude, longitude, relevance, since, until</em>. All columns are allowed to write to.
  */
 class Office extends Entity
 {
@@ -12,7 +12,7 @@ class Office extends Entity
 	 */
 	public static function initColumnNames()
 	{
-		self::$tableColumns = array('mp_id', 'parliament_code', 'address', 'phone', 'since', 'until');
+		self::$tableColumns = array('mp_id', 'parliament_code', 'address', 'phone', 'latitude', 'longitude', 'relevance', 'since', 'until');
 		self::$roColumns = array();
 	}
 

@@ -549,7 +549,8 @@ class UpdateCzPsp
 			if (!$found)
 			{
 				$phone = isset($src_office['phone']) ? $src_office['phone'] : '';
-				$data = array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'phone' => $phone, 'since' => $this->update_date, 'until' => $this->next_term_since);
+				$relevance = ($src_parsed_address == '|Sněmovní|4|Praha 1|118 26|Česká republika') ? 0.5 : 1.0;
+				$data = array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'phone' => $phone, 'relevance' => $relevance, 'since' => $this->update_date, 'until' => $this->next_term_since);
 				$this->ac->create('Office', array($data));
 			}
 		}
