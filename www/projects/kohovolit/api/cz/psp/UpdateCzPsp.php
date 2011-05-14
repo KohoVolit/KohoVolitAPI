@@ -550,7 +550,15 @@ class UpdateCzPsp
 			{
 				$phone = isset($src_office['phone']) ? $src_office['phone'] : '';
 				$relevance = ($src_parsed_address == '|Sněmovní|4|Praha 1|118 26|Česká republika') ? 0.5 : 1.0;
+    		
 				$data = array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'phone' => $phone, 'relevance' => $relevance, 'since' => $this->update_date, 'until' => $this->next_term_since);
+				//geocode
+			    $geo = $this->ac->read('Scrape', array('resource' => 'geocode', 'address' => $src_mp['office']));
+	    		if ($geo['coordinates']['ok']) {
+	    		  $data['latitude'] = $geo['coordinates']['lat'];
+	    		  $data['longitude'] = $geo['coordinates']['lng'];
+	    		}
+	    		  
 				$this->ac->create('Office', array($data));
 			}
 		}

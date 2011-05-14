@@ -28,10 +28,42 @@ class ScrapeCzSenat
 			case 'division': return self::scrapeDivision($params);
 			case 'constituency': return self::scrapeConstituency($params);
 			case 'region': return self::scrapeRegion($params);
+			case 'geocode': return self::scrapeGeocode($params);
 			default:
 				throw new Exception("Scraping of the resource <em>$resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
 	}
+
+  /**
+  * geocode address using google services
+  * 
+  * see http://code.google.com/apis/maps/documentation/geocoding/index.html
+  * using settings: region=cz, language=cs, sensor=false
+  *
+  * @param address
+  *
+  * @return array('coordinates' => array(lat, lng, ok))
+  *
+  * example: Scrape?parliament=cz/senat&resource=region&address=Plasy
+  */
+  public static function scrapeGeocode($params) {
+    $lat = '';
+    $lng = '';
+	//download  
+     $url = 'http://maps.googleapis.com/maps/api/geocode/json?region=cz&language=cs&sensor=false&address=' . urlencode($params['address']);
+     //geocode
+     $geo_object = json_decode(file_get_contents($url));
+     //check if ok
+     if ($geo_object->status == 'OK') {
+       $lat = $geo_object->results[0]->geometry->location->lat;
+       $lng = $geo_object->results[0]->geometry->location->lng;
+       $ok = true;
+     } else {
+       $ok = false;
+     }
+     return array('coordinates' => array('lat' => $lat, 'lng' => $lng,'ok' => $ok));   
+  }
+  
 
   /**
   * scrape regions for constituencies

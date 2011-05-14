@@ -102,7 +102,8 @@ class UpdateCzSenat
 			$this->updateMpAttribute($src_mp['mp'], $mp_id, 'website');
 			$this->updateMpAttribute($src_mp['mp'], $mp_id, 'phone', ', ');
 			$this->updateMpAttribute($src_mp['mp'], $mp_id, 'assistant', ', ');
-			$this->updateMpAttribute($src_mp['mp'], $mp_id, 'office');
+			//$this->updateMpAttribute($src_mp['mp'], $mp_id, 'office');
+			$this->updateOffice($src_mp['mp'], $mp_id, 'office');
 			$this->updateMpImage($src_mp['mp'], $mp_id);
 			
 			// update (or insert) constituency of the MP
@@ -148,9 +149,10 @@ class UpdateCzSenat
 			  
 
 			}
-			//break;
+			//die();
 		}	
-		$this->closeMemberships($marked);		
+		$this->closeMemberships($marked);
+		$this->closeOffice($marked);		
 	}
 	
 	/**
@@ -350,6 +352,34 @@ class UpdateCzSenat
 	    $this->log->write("Inserted new area: {$data_full['administrative_area_level_1']}, {$data_full['administrative_area_level_2']}, {$data_full['locality']}, {$data_full['sublocality']}, {$data_full['neighborhood']}", Log::DEBUG);
 	  }
 	
+	}
+	
+	/**
+	* close all offices of MPs no longer in parliament
+	*
+	* @param $marker array of valid memberships; if one membership for a MP exists, do not close office
+	*/
+	private function closeOffice($marked) {
+	  //get Senát's id
+	  $parl_db = $this->ac->read('Group', array('name_' => 'Senát','term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
+	  $parl_id = $parl_db['group'][0]['id'];
+	  
+	    //get all mps in Senát
+	  $mps_db = $this->ac->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', 'datetime' => $this->date->format('Y-m-d')));
+	  
+	  //loop through all mps
+	  foreach((array) $mps_db['mp_in_group'] as $row) {
+	    if (!isset($marked[$row['mp_id']])) { //mp no longer in parliament
+	      //get his office(s)
+	      $offices = $this->ac->read('Office', array('mp_id' => $row['mp_id'], 'parliament_code' => $this->parliament_code, 'datetime' => $this->date->format('Y-m-d')));
+	      //close them
+	      foreach((array) $offices['office'] as $office) {
+	        $this->log->write("Closing office (mp_id={$row['mp_id']}, address={$office['address']}, since={$row['since']}).", Log::DEBUG);
+	      $this->ac->update('Office', array('mp_id' => $row['mp_id'], 'address' => $office['address'], 'since' => $office['since'], 'parliament_code' => $this->parliament_code), array('until' => $this->date->format('Y-m-d')));
+	      }
+	    }
+	  
+	  }
 	}
 	
 	/**
@@ -564,6 +594,38 @@ class UpdateCzSenat
 			$data['description'] = $src_constituency['description'];
 		$constituency_id = $this->ac->create('Constituency', array($data));
 		return $constituency_id[0];
+	}
+	
+	/**
+	* Update info about MP's office
+	*
+	* Note: There is max. 1 office for each senator at senat.cz
+	*
+	* @param $src_mp array 'office' => value
+	* @param mp_id \e id of that MP in db
+	*/
+	private function updateOffice($src_mp, $mp_id) {
+	  $this->log->write("Updating MP's office", Log::DEBUG);
+	  // check for existing office in db
+	  $office_in_db = $this->ac->read('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office']));
+	  
+	  //if new office, insert it and close previous one
+	  if ((!isset($office_in_db['office'][0])) and ($src_mp['office'] != '')) { //new office
+	    //close previous
+	    $this->ac->update('Office', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, 'datetime' => $this->date->format('Y-m-d')), array('until' => $this->date->format('Y-m-d')));
+	    //insert the new one
+	    $geo = $this->ac->read('Scrape', array('resource' => 'geocode', 'address' => $src_mp['office']));
+	    if ($geo['coordinates']['ok'])
+	      $this->ac->create('Office', array(array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'],'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since, 'latitude' => $geo['coordinates']['lat'], 'longitude' => $geo['coordinates']['lng'])));
+	    else
+	      $this->ac->create('Office', array(array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'],'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since)));
+	      
+	  } else { //no new office
+	    //check if any office at all, if not, close all
+	    if ($src_mp['office'] == '') { //no src office
+	      $this->ac->update('Office', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, 'datetime' => $this->date->format('Y-m-d')), array('until' => $this->date->format('Y-m-d')));
+	    }
+	  }
 	}
 	
 	/**
