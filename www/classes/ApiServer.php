@@ -36,6 +36,9 @@ class ApiServer
 				if (method_exists($function, 'read'))
 					return $function::read($params);
 				break;
+/*
+The public API access is read-only.
+Data modifying request methods are not allowed from remote, on localhost use ApiDirect class instead.
 
 			case 'POST':
 				if (method_exists($function, 'create'))
@@ -51,6 +54,7 @@ class ApiServer
 				if (method_exists($function, 'delete'))
 					return $function::delete($params);
 				break;
+*/
 		}
 
 		throw new Exception("The API function <em>$function</em> does not accept " . $_SERVER['REQUEST_METHOD'] . " requests.", 405);

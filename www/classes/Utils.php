@@ -22,6 +22,30 @@ class Utils
 		$datetime = DateTime::createFromFormat($input_format, $date);
 		return $datetime->format('Y-m-d');
 	}
+
+	/**
+	 * ...
+	 */
+	public static function formatArray($array, $format)
+	{
+		switch ($format)
+		{
+			case 'serialized':
+				return serialize($array);
+
+			case 'json':
+				return json_encode($array, JSON_FORCE_OBJECT);
+
+			case 'csv':
+				return self::arrayToCsv($array);
+
+			case 'xml':
+				return self::arrayToXml($data);
+
+			default:
+				throw new \InvalidArgumentException("Formatting an array into an uknown format <em>$format</em>.");
+		}
+	}
 	
 	/**
 	 * ...

@@ -2,40 +2,81 @@
 
 /**
  * ...
- */ 
-class ApiLocalClient
+ */
+class ApiDirect
 {
-	public function __construct($parliament = '', $language = '-')
-	{
-		$this->parliament = $parliament;
-		$this->language = $language;
-	}
-	
+	/// KohoVolit.eu project to access through this API client
+	private $project;
+
+	/// default search params - parameters to include for each function call
+	private $default_params;
+
+	/// default data - data to include for each function call
+	private $default_data;
+
 	/**
 	 * ...
-	 */ 
-	public function get($function, $params = null)
+	 */
+	public function __construct($project = 'kohovolit', $default_params = null, $default_data = null)
 	{
-		$specific_function = "api/$this->parliament/$function.php";
-		$general_function = "api/$function.php";
-
-		if (file_exists($specific_function)
-			include $specific_function;
-		else
-			include $general_function;
-
-		$params['parliament'] = $this->parliament;
-		$params['language'] = $this->language;
-		$params['function'] = $function;
-
-		return $function($params);
+		$this->project = $project;
+		$this->default_params = $default_params;
+		$this->default_data = $default_data;
 	}
 
-	/// parliament to get data from
-	private $parliament;
+	/**
+	 * ...
+	 */
+	public function read($function, $params = null)
+	{
+		$this->includeApiFunctionClass($function);
+		$full_params = (array)$params + (array)$this->default_params;
+		return $function::read($full_params);
+	}
 
-	/// preferred language of the returned data
-	private $language;		
+	/**
+	 * ...
+	 */
+	public function create($function, $data = null)
+	{
+		$this->includeApiFunctionClass($function);
+		$full_data = (array)$data + (array)$this->default_data;
+		return $function::create($full_data);
+	}
+
+	/**
+	 * ...
+	 */
+	public function update($function, $params = null, $data = null)
+	{
+		$this->includeApiFunctionClass($function);
+		$full_params = (array)$params + (array)$this->default_params;
+		$full_data = (array)$data + (array)$this->default_data;
+		return $function::update($full_params, $full_data);
+	}
+
+	/**
+	 * ...
+	 */
+	public function delete($function, $params = null)
+	{
+		$this->includeApiFunctionClass($function);
+		$full_params = (array)$params + (array)$this->default_params;
+		return $function::delete($full_params);
+	}
+
+	/**
+	 * ...
+	 */
+	private function includeApiFunctionClass($function)
+	{
+		$api_path = 'd:/projekty/KohoVolit.eu/KVG4/api.kohovolit.eu/www';
+		require_once  "$api_path/conf/settings.php";
+		@include_once "$api_path/projects/{$this->project}/conf/settings.php";
+		$ok = @include_once "projects/{$this->project}/api/$function.php";
+		if (!$ok)
+			throw new \Exception("There is no API function <em>$function</em>.", 404);
+	}
 }
 
 ?>
