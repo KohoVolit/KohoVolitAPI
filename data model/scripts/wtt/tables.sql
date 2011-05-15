@@ -21,7 +21,7 @@ create table letter_to_mp
 (
 	letter_id integer references letter on delete cascade on update cascade,
 	mp_id integer references mp on delete cascade on update cascade,
-	parliament_code integer references parliament on delete set null on update cascade,
+	parliament_code varchar references parliament on delete set null on update cascade,
 	primary key (letter_id, mp_id)
 );
 

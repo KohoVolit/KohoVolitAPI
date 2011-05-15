@@ -3,15 +3,15 @@
 /**
  * This class updates data in the database for a given term of office to the state scraped from Parliament of the Czech republic - Senate official website www.senat.cz.
  */
-class UpdateCzSenat
+class UpdaterCzSenat
 {
   	/// API client reference used for all API calls
 	private $ac;
-	
+
 	/// id and source code (ie. id on the official website) of the term of office to update the data for
 	private $term_id;
 	private $term_src_code;
-	
+
 	/// code of this updated parliament
 	private $parliament_code;
 
@@ -23,7 +23,7 @@ class UpdateCzSenat
 	const MP_INSERT_SOURCE_CODE = 0x2;
 	const MP_DISAMBIGUATE = 0x4;
 	const MP_UPDATE = 0x8;
-	
+
 	/// date for update
 	private $date; //class DateTime
 	private $update_date; //formatted date/time
@@ -36,9 +36,9 @@ class UpdateCzSenat
 	{
 		$this->parliament_code = $params['parliament'];
 		$this->ac = new ApiDirect('kohovolit', array('parliament' => $this->parliament_code));
-		$this->log = new Log(LOGS_DIRECTORY . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d') . '.log');
+		$this->log = new Log(LOGS_DIRECTORY . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log');
 		$this->log->setMinLogLevel(Log::DEBUG);
-		
+
 		//convert $param['date'] into DateTime object, default = today
 		if (isset($params['date']))
 	  		$this->date = new DateTime($params['date']);
@@ -46,15 +46,17 @@ class UpdateCzSenat
 	  		$this->date = new DateTime();
 		//$this->update_date = $this->date->format('Y-m-d H:i:s');
 	}
-	
+
 	/**
 	 * Main method called from API function Update - it scrapes data and updates the database.
 	 *
 	 * \param $params An array of pairs <em>param => value</em> specifying the update process.
-	 * Parameter <em>$param['conflict_mps']</em> specifies how to resolve the cases when there is an MP in the database with the same name as a new MP scraped from this parliament.
 	 *
 	 * Parameter <em>$param['date']</em> is date in Czech format ('1.1.2001', '20.2.1976'). If ommitted, current date is assumed.
 	 *
+	 * Parameter <em>$param['area']</em> If set constituency areas are updated as well.
+	 *
+	 * Parameter <em>$param['conflict_mps']</em> specifies how to resolve the cases when there is an MP in the database with the same name as a new MP scraped from this parliament.
 	 * The variable maps the source codes of conflicting MPs being scraped to either parliament code/source code of an MP in the database to merge with (eg. <em>cz/psp/5229</em>)
 	 * or to nothing to create a new MP with the same name.
 	 * In the latter case the new created MP will have a generated value in the disambiguation column that should be later changed by hand.
@@ -62,41 +64,42 @@ class UpdateCzSenat
 	 *<em>mp_src_code-></em>.
 	 *
 	 * \return Result of the update process.
-	 */ 
+	 */
 	public function update($params)
 	{
 		$this->log->write('Started with parameters: ' . print_r($params, true));
-		
+
 		//update areas only if param 'area' is set (approx. 2 hours of updating)
 		if (isset($params['area']))
 		  $this->updateAreas();
-		
+
 		//update parliament and term
 		$this->updateParliament();
 		$this->term_id = $this->updateTerm($params);
-		
+		$this->conflict_mps = $this->parseConflictMps($params);
+
 		// read list of all MPs in the term of office to update data for
-		$src_mps = $this->ac->read('Scrape', array('resource' => 'mp_list'));
-		$src_mps = $src_mps['mps'];	
-		
+		$src_mps = $this->ac->read('Scraper', array('resource' => 'mp_list'));
+		$src_mps = $src_mps['mps'];
+
 		//prepare variable to mark (still valid) memberships
 		$marked = array();
-		
+
 		//update group_kinds and groups
-		$src_groups = $this->ac->read('Scrape', array('resource' => 'group_list'));
+		$src_groups = $this->ac->read('Scraper', array('resource' => 'group_list'));
 		$this->updateGroups($src_groups);
-		
-		
+
+
 		// update (or insert) all MPs in the list
 		foreach((array) $src_mps as $src_mp)
 		{
 			// scrape details of the MP
-			$src_mp = $this->ac->read('Scrape', array('resource' => 'mp', 'id' => $src_mp['source_code']));
-			
+			$src_mp = $this->ac->read('Scraper', array('resource' => 'mp', 'id' => $src_mp['source_code']));
+
 			// update the MP personal details
 			$mp_id = $this->updateMp($src_mp['mp']);
 			if (is_null($mp_id)) continue;		// skip conflicting MPs with no given conflict resolution
-			
+
 			// update other MP attributes and offices, mps
 			$this->updateMpAttribute($src_mp['mp'], $mp_id, 'email', ', ');
 			$this->updateMpAttribute($src_mp['mp'], $mp_id, 'website');
@@ -105,10 +108,10 @@ class UpdateCzSenat
 			//$this->updateMpAttribute($src_mp['mp'], $mp_id, 'office');
 			$this->updateOffice($src_mp['mp'], $mp_id, 'office');
 			$this->updateMpImage($src_mp['mp'], $mp_id);
-			
+
 			// update (or insert) constituency of the MP
 			$constituency_id = $this->updateConstituency($src_mp['mp']['region_code']);
-			
+
 			//every senator is member of senate
 			$src_groups = $src_mp['mp']['group'];
 			array_unshift($src_groups,array (
@@ -119,9 +122,9 @@ class UpdateCzSenat
 				'role_en' => 'member',
 				)
 			);
-			
+
 			//update (or insert) memberships
-			
+
 			foreach ((array) $src_groups as $src_group) {
 			  //get group_id
 			  $group_db = $this->ac->read('Group',array('name_' => $src_group['name'],'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
@@ -131,30 +134,33 @@ class UpdateCzSenat
 			    $this->log->write("Group {$src_group['name']} (source id: {$src_group['group_id']} is not in db! Membership of MP ({$mp_id}) skipped. Check probably ScrapeCzSenat.php, function scrapeGroupList(), line with: group_kinds = array('S','V','M' ...; might have missing some of the 'S','V','M', ...", Log::WARNING);
 			    continue;
 			  }
-			  
+
 			  //update (or insert) role
 			  $role_code = $this->updateRole(array('male_name' => $src_group['role_en'], 'female_name' => $src_group['role_en']));
-			  
+
 			  //check (or insert) membership
 			    //for parliament add constituency_id
 			  if (isset($src_group['kind']) and ($role_code == 'member'))
 			    $const_id = $constituency_id;
-			  else 
+			  else
 			    $const_id = null;
-			    
+
 			  $this->updateMembership($mp_id,$group_id,$role_code,$const_id);
-			  
+
 			  //mark the membership
 			  $marked[$mp_id][$group_id][$role_code] = true;
-			  
+
 
 			}
 			//die();
-		}	
+		}
 		$this->closeMemberships($marked);
-		$this->closeOffice($marked);		
+		$this->closeOffice($marked);
+
+		$this->log->write('Completed.');
+		return array('update' => 'OK');
 	}
-	
+
 	/**
 	* update areas (of constituencies)
 	*
@@ -164,7 +170,7 @@ class UpdateCzSenat
 	* Ostrava: Slezská Ostrava ~ sublocality
 	* Brno: (Brno-)Kohoutovice ~ sublocality
 	*
-	* warnings: 
+	* warnings:
 	* Ostrava: Moravská Ostrava a Přívoz, ... (split it)
 	* Plzeň: Plzeň 10-Lhota (split it)
 	* Brno: Brno-jih (sublocality, small letter 'jih'), (Brno-)Řečkovice a Morká Hora, ... (split it)
@@ -172,20 +178,20 @@ class UpdateCzSenat
 	*
 	* errors:
 	* Praha: Praha 5 (bez části k.ú.Malá Strana) + Praha 5-Malá Strana have the same constituency (wrong!), ...
-	* 
+	*
 	*/
 	private function updateAreas() {
-	  $src_regions_0 = $this->ac->read('Scrape', array('resource' => 'region'));
+	  $src_regions_0 = $this->ac->read('Scraper', array('resource' => 'region'));
 	  //kraje
 	  foreach((array) $src_regions_0['regions']['region']['kraj']['region'] as $kraj) {
-	    $src_regions_1 = $this->ac->read('Scrape', array('resource' => 'region', 'kraj' => $kraj['number']));
+	    $src_regions_1 = $this->ac->read('Scraper', array('resource' => 'region', 'kraj' => $kraj['number']));
 	    //okresy
 	    foreach((array) $src_regions_1['regions']['region']['okres']['region'] as $okres) {
-	      $src_regions_2 = $this->ac->read('Scrape', array('resource' => 'region','kraj'=>$kraj['number'], 'okres' => $okres['number']));
+	      $src_regions_2 = $this->ac->read('Scraper', array('resource' => 'region','kraj'=>$kraj['number'], 'okres' => $okres['number']));
 	      //obce
 	      foreach((array) $src_regions_2['regions']['region']['obec']['region'] as $obec) {
-	        $src_regions_3 = $this->ac->read('Scrape', array('resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number']));
-	        
+	        $src_regions_3 = $this->ac->read('Scraper', array('resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number']));
+
 	        //set data (kraj,okres,obec)
 	        $data = array(
 	          'country' => 'CZ',
@@ -199,9 +205,9 @@ class UpdateCzSenat
 	            $this->log->write("Something is wrong with uzemi. Notice: Undefined index: region - ". print_r($src_regions_3['regions']['region'],1), Log::WARNING);
 	          else
 	          foreach ((array) $src_regions_3['regions']['region']['uzemi']['region'] as $uzemi) {
-	            $src_regions_4 = $this->ac->read('Scrape', array('resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number'], 'uzemi' => $uzemi['number']));
+	            $src_regions_4 = $this->ac->read('Scraper', array('resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number'], 'uzemi' => $uzemi['number']));
 	            $constituency = $src_regions_4['regions']['constituency'];
-	            
+
 	            //treat every city differently
 	            switch($obec['name']) {
 
@@ -210,14 +216,14 @@ class UpdateCzSenat
 	                $subs2 = explode (' a ',$subs[1]);
 	                //correct for 'Brno-jih'
 	                if ($subs[1] == mb_convert_case($subs[1], MB_CASE_LOWER, "UTF-8"))
-	                  $subs2 = array($subs); 
-	                  
+	                  $subs2 = array($subs);
+
 	                foreach ((array) $subs2 as $sub) {
 	                  $data['sublocality'] = $sub;
 	                  $this->updateArea($data,$constituency);
 	                }
 	                break;
-	            
+
 		          case 'Plzeň':
 	                $subs = explode('-',$uzemi['name']);
 	                foreach ((array) $subs as $sub) {
@@ -225,7 +231,7 @@ class UpdateCzSenat
 	                  $this->updateArea($data,$constituency);
 	                }
 	                break;
-	                            
+
 	              case 'Ostrava':
 	                $subs = explode(' a ',$uzemi['name']);
 	                foreach ((array) $subs as $sub) {
@@ -233,15 +239,15 @@ class UpdateCzSenat
 	                  $this->updateArea($data,$constituency);
 	                }
 	                break;
-	                
+
 	              case 'Praha';
-	                
+
 	                $subs = explode('-',$uzemi['name']);
-	                
+
 	                //strip part in (), e.g.Praha 10(bez části k.ú.Vinohrady)
 	                $subs2 = explode('(',$subs[0]);
 	                $data['sublocality'] = $subs2[0];
-	                
+
 	                if (isset($subs[1])) { //if isset neighborhood
 	                  $subs3 = explode(',',$subs[1]); //Hrdlořezy,Malešice
 	                  foreach ((array) $subs3 as $sub3) {
@@ -251,7 +257,7 @@ class UpdateCzSenat
 	                      $constituency = $corr_const;
 	                    $this->updateArea($data,$constituency);
 	                  }
-	                  
+
 	                } else {
 	                  unset($data['neighborhood']);
 	                  //correct errors
@@ -267,13 +273,13 @@ class UpdateCzSenat
 	          $this->updateArea($data,$constituency);
 	        }
 	      }
-	        
-	      
+
+
 	    }
 	  }
-	
+
 	}
-	
+
 	/**
 	* treat errors in Praha area
 	*
@@ -307,7 +313,7 @@ class UpdateCzSenat
 	    case 'Praha 9':
 	      if ($neighborhood) $const = 26;
 	      else $const = 24;
-	      break;  
+	      break;
 	  }
 	  if (isset($const))
 	    return array(array('number' => $const));
@@ -319,15 +325,15 @@ class UpdateCzSenat
 	*
 	* @param $data array of (administrative_area_level_1, administrative_area_level_2,...)
 	* @param $constituency array
-	*/	
+	*/
 	private function updateArea($data,$constituency) {
 	  //constituency number
-	  foreach((array) $constituency as $c) 
+	  foreach((array) $constituency as $c)
 	    $const_number = $c['number'];
 	  //get constituency id from db
 	  $const_db = $this->ac->read('Constituency',array('short_name' => $const_number,'parliament_code' => $this->parliament_code));
 	  $data['constituency_id'] = $const_db['constituency'][0]['id'];
-	  
+
 	  //full area:
 	  $data_full = array(
 	    'constituency_id' => '*',
@@ -351,9 +357,9 @@ class UpdateCzSenat
 	    $this->ac->create('Area',array($data_full));
 	    $this->log->write("Inserted new area: {$data_full['administrative_area_level_1']}, {$data_full['administrative_area_level_2']}, {$data_full['locality']}, {$data_full['sublocality']}, {$data_full['neighborhood']}", Log::DEBUG);
 	  }
-	
+
 	}
-	
+
 	/**
 	* close all offices of MPs no longer in parliament
 	*
@@ -363,10 +369,10 @@ class UpdateCzSenat
 	  //get Senát's id
 	  $parl_db = $this->ac->read('Group', array('name_' => 'Senát','term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
 	  $parl_id = $parl_db['group'][0]['id'];
-	  
+
 	    //get all mps in Senát
 	  $mps_db = $this->ac->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', 'datetime' => $this->date->format('Y-m-d')));
-	  
+
 	  //loop through all mps
 	  foreach((array) $mps_db['mp_in_group'] as $row) {
 	    if (!isset($marked[$row['mp_id']])) { //mp no longer in parliament
@@ -378,10 +384,10 @@ class UpdateCzSenat
 	      $this->ac->update('Office', array('mp_id' => $row['mp_id'], 'address' => $office['address'], 'since' => $office['since'], 'parliament_code' => $this->parliament_code), array('until' => $this->date->format('Y-m-d')));
 	      }
 	    }
-	  
+
 	  }
 	}
-	
+
 	/**
 	* close all memberships that are no longer valid
 	*
@@ -392,33 +398,33 @@ class UpdateCzSenat
 	    //get Senát's id
 	  $parl_db = $this->ac->read('Group', array('name_' => 'Senát','term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
 	  $parl_id = $parl_db['group'][0]['id'];
-	  
+
 	    //get all mps in Senát
 	  $mps_db = $this->ac->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', 'datetime' => $this->date->format('Y-m-d')));
-	  
+
 	  //loop through all mps
 	  foreach((array) $mps_db['mp_in_group'] as $row) {
 	    //get all memberships of MP
 	    $membs = $this->ac->read('MpInGroup', array('mp_id' => $row['mp_id'], 'datetime' => $this->date->format('Y-m-d')));
 	    //loop through all mp's memberships
 	    foreach((array) $membs['mp_in_group'] as $memb) {
-	    
+
 	      //leave the membership if it is marked
 	      if (isset($marked[$memb['mp_id']][$memb['group_id']][$memb['role_code']]))
 	        continue;
-	        
+
 	      //leave the membership if it is not in this parliament
 	      $group_db = $this->ac->read('Group', array('id' => $memb['group_id']));
 	      if ($group_db['group'][0]['parliament_code'] != $this->parliament_code)
 	        continue;
-	        
+
 	      //otherwise close the membership
 	      $this->log->write("Closing membership (mp_id={$memb['mp_id']}, group_id={$memb['group_id']}, role_code='{$memb['role_code']}', since={$memb['since']}).", Log::DEBUG);
 	      $this->ac->update('MpInGroup', array('mp_id' => $memb['mp_id'], 'group_id' => $memb['group_id'], 'role_code' => $memb['role_code'], 'since' => $memb['since']), array('until' => $this->date->format('Y-m-d')));
 	    }
-	  
+
 	  }
-	
+
 	}
 
 	/**
@@ -487,24 +493,24 @@ class UpdateCzSenat
 	* @param $src_groups array of scraped groups
 	*/
 	private function updateGroups($src_groups) {
-		  
+
 	  foreach((array) $src_groups['group_kind'] as $src_group_kind) {
 	    //update or insert group_kinds
 	    $this->log->write("Updating group kind '{$src_group_kind['group_kind_plural_en']}'", Log::DEBUG);
-	    
+
 	    $src_group_kind_code = strtolower($src_group_kind['group_kind_plural_en']);
 	    //correction for 'Senate'
-	    if ($src_group_kind_code == 'senate') 
+	    if ($src_group_kind_code == 'senate')
 	      $src_group_kind_code = 'parliament';
-	    
+
 	    //common data (both update and insert)
 	    $data = array(
 	        'name_' => $src_group_kind['group_kind_plural_en'],
 	        'code' => $src_group_kind_code,
 	        'subkind_of' => 'parliament',
 	    );
-	    
-	    $group_kind_db = $this->ac->read('GroupKind', array('code' => $src_group_kind_code));   
+
+	    $group_kind_db = $this->ac->read('GroupKind', array('code' => $src_group_kind_code));
 	    if (isset($group_kind_db['group_kind'][0])) {
 	      //update
 	      $this->ac->update('GroupKind', array('code' => $src_group_kind_code),$data);
@@ -512,13 +518,13 @@ class UpdateCzSenat
 	      //insert
 	      $this->ac->create('GroupKind',array($data));
 	    }
-	    
+
 	    foreach ((array) $src_group_kind['group'] as $src_group) {
 	      //update or insert groups
 	      $this->log->write("Updating group '{$src_group['name']}'", Log::DEBUG);
-	      
+
 	      unset($group_id);
-	      
+
 	      //find parent group id
 	      if ($src_group_kind_code != 'parliament') {
 			  $parent_group = $this->ac->read('Group', array('name_' => 'Senát','term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
@@ -528,12 +534,12 @@ class UpdateCzSenat
 				$parent_group_id = null;
 		  } else
 		  		$parent_group_id = null;
-		  		  
-		  //if group exists in db, it has source_code in group_attributes 
+
+		  //if group exists in db, it has source_code in group_attributes
 		  $src_code_in_db = $this->ac->read('GroupAttribute', array('name_' => 'source_code', 'value_' => $src_group['source_code'], 'parl' => $this->parliament_code));
 		  if (isset($src_code_in_db['group_attribute'][0]))
 			$group_id = $src_code_in_db['group_attribute'][0]['group_id'];
-			
+
 	      //construct array of values
 		  $data = array (
 		  	'name_' => $src_group['name'],
@@ -552,31 +558,31 @@ class UpdateCzSenat
 	        //insert
 	        $group_id = $this->ac->create('Group', array($data));
 			$group_id = $group_id[0];
-			
+
 			// insert group's source code
 			$this->ac->create('GroupAttribute', array(array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['source_code'], 'parl' => $this->parliament_code)));
-	      } 
+	      }
 	    }
 	  }
 	}
-		
+
 
 	/**
 	 * Update information about a constituency. If it is not present in database, download info, scrape it and insert it.
 	 *
-	 * \param $region_code 
+	 * \param $region_code
 	 *
 	 * \returns id of the updated or inserted constituency.
 	 */
 	private function updateConstituency($region_code)
 	{
 		$this->log->write("Updating constituency '{$region_code}'.", Log::DEBUG);
-		
-		$src_constituency = $this->ac->read('Scrape', array('resource' => 'constituency', 'id' => $region_code));
+
+		$src_constituency = $this->ac->read('Scraper', array('resource' => 'constituency', 'id' => $region_code));
 		$src_constituency = $src_constituency['constituency'];
 
 		$constituency = $this->ac->read('Constituency', array('parliament_code' => $this->parliament_code, 'name_' => $src_constituency['name'] . ' (' .$region_code.')'));
-		
+
 		if (isset($constituency['constituency'][0]))
 		{
 			// update existing constituency
@@ -595,7 +601,7 @@ class UpdateCzSenat
 		$constituency_id = $this->ac->create('Constituency', array($data));
 		return $constituency_id[0];
 	}
-	
+
 	/**
 	* Update info about MP's office
 	*
@@ -608,18 +614,18 @@ class UpdateCzSenat
 	  $this->log->write("Updating MP's office", Log::DEBUG);
 	  // check for existing office in db
 	  $office_in_db = $this->ac->read('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office']));
-	  
+
 	  //if new office, insert it and close previous one
 	  if ((!isset($office_in_db['office'][0])) and ($src_mp['office'] != '')) { //new office
 	    //close previous
 	    $this->ac->update('Office', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, 'datetime' => $this->date->format('Y-m-d')), array('until' => $this->date->format('Y-m-d')));
 	    //insert the new one
-	    $geo = $this->ac->read('Scrape', array('resource' => 'geocode', 'address' => $src_mp['office']));
+	    $geo = $this->ac->read('Scraper', array('resource' => 'geocode', 'address' => $src_mp['office']));
 	    if ($geo['coordinates']['ok'])
 	      $this->ac->create('Office', array(array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'],'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since, 'latitude' => $geo['coordinates']['lat'], 'longitude' => $geo['coordinates']['lng'])));
 	    else
 	      $this->ac->create('Office', array(array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'],'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since)));
-	      
+
 	  } else { //no new office
 	    //check if any office at all, if not, close all
 	    if ($src_mp['office'] == '') { //no src office
@@ -627,13 +633,13 @@ class UpdateCzSenat
 	    }
 	  }
 	}
-	
+
 	/**
 	 * Update information about image of an MP.
 	 *
 	 * Not a full update is implemented, only if an image for this term-of-office is not present in the database and it is detected on the source website, it is inserted into database.
 	 * Change of the image during the term is to be detected.
-	 * Image filenames stay the same even during more terms at www.senat.cz. 
+	 * Image filenames stay the same even during more terms at www.senat.cz.
 	 * (It may require to compare images by file content)
 	 *
 	 * \param $src_mp array of key => value pairs with properties of a scraped MP
@@ -691,7 +697,7 @@ class UpdateCzSenat
 		if (isset($src_value))
 			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since)));
 	}
-	
+
 	/**
 	 * Update personal information about an MP. If MP is not present in database, insert him.
 	 *
@@ -755,19 +761,19 @@ class UpdateCzSenat
 		}
 
 		// extract column values to update or insert from the scraped MP
-		if (isset($src_mp['name']['first_name'])) 
+		if (isset($src_mp['name']['first_name']))
 			$data['first_name'] = $src_mp['name']['first_name'];
-		if (isset($src_mp['name']['last_name'])) 
-			$data['last_name'] = $src_mp['name']['last_name'];		
-		if (isset($src_mp['sex'])) 
-			$data['sex'] = $src_mp['sex'];	
-		if (isset($src_mp['name']['title_after'])) 
-			$data['post_title'] = $src_mp['name']['title_after'];			
-		if (isset($src_mp['name']['title_before'])) 
+		if (isset($src_mp['name']['last_name']))
+			$data['last_name'] = $src_mp['name']['last_name'];
+		if (isset($src_mp['sex']))
+			$data['sex'] = $src_mp['sex'];
+		if (isset($src_mp['name']['title_after']))
+			$data['post_title'] = $src_mp['name']['title_after'];
+		if (isset($src_mp['name']['title_before']))
 			$data['pre_title'] = $src_mp['name']['title_before'];
 		//date now
 		$data['last_updated_on'] = date('Y-m-d H:i:s.u');
-								
+
 		// perform appropriate actions to update or insert MP
 		if ($action & self::MP_INSERT)
 		{
@@ -798,40 +804,40 @@ class UpdateCzSenat
 	private function updateTerm($params)
 	{
 		$this->log->write("Updating term.", Log::DEBUG);
-		
-		
-		$term_ar = $this->ac->read('Scrape', array('resource' => 'term_list'));
+
+
+		$term_ar = $this->ac->read('Scraper', array('resource' => 'term_list'));
 		$term_list = $term_ar['term'];
-		
-		//find scraped term for the date		
+
+		//find scraped term for the date
 		foreach((array) $term_ar['term'] as $t) {
 		  if ($t['until'] != '') { //if it is not current term
 		    $until = new DateTime($t['until']);
 		    $until->add(new DateInterval('P1D'));	//add 1 day
 		    $since = new DateTime($t['since']);
-		    if (($this->date < $until) and ($this->date >= $since)) 
+		    if (($this->date < $until) and ($this->date >= $since))
 		      $term_to_update = $t;
 		  } else { //it is current term
 		    $since = new DateTime($t['since']);
-		    if ($this->date >= $since) 
-		      $term_to_update = $t;		    
+		    if ($this->date >= $since)
+		      $term_to_update = $t;
 		  }
 		}
 		// if there is no such term in the term list, terminate with error (class Log writing a message with level FATAL_ERROR throws an exception)
 		if (!isset($term_to_update))
 		  $this->log->write("The date {$this->date->format('Y-m-d')} for updating parliament {$this->parliament_code}  does not belong to any term, check http://api.kohovolit.eu/kohovolit/Scrape?parliament={$this->parliament_code}&resource=term_list", Log::FATAL_ERROR, 400);
-		  
+
 		//set "global" variables
 		$this->term_src_code = $term_to_update['term_code'];
-				
+
 		// if the term is present in the database, update it and get its id
 		$src_code_in_db = $this->ac->read('TermAttribute', array('name_' => 'source_code', 'value_' => $term_to_update['term_code'], 'parl' => $this->parliament_code));
 		if (isset($src_code_in_db['term_attribute'][0])) {
 		  $term_id = $src_code_in_db['term_attribute'][0]['term_id'];
 		  $data = array('name_' => $term_to_update['name'], 'since' => $term_to_update['since'], 'short_name' => $term_to_update['term_code']);
-		 if ((isset($term_to_update['until'])) and ($term_to_update['until'] != '')) 
+		 if ((isset($term_to_update['until'])) and ($term_to_update['until'] != ''))
 		   $data['until'] = $term_to_update['until'];
-		 $this->ac->update('Term', array('id' => $term_id), $data);  
+		 $this->ac->update('Term', array('id' => $term_id), $data);
 		} else {
 		  // if term is not in the database, insert it and get its id
 		  $data = array('name_' => $term_to_update['name'], 'country_code' => 'cz', 'parliament_kind_code' => 'national-upper', 'since' => $term_to_update['since'], 'short_name' => $term_to_update['term_code']);
@@ -839,11 +845,11 @@ class UpdateCzSenat
 			$data['until'] = $term_to_update['until'];
 		  $term_id = $this->ac->create('Term', array($data));
 		  $term_id = $term_id[0];
-		  
+
 		  	// insert term's source code as an attribute
 			$this->ac->create('TermAttribute', array(array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_to_update['term_code'], 'parl' => $this->parliament_code)));
 		}
-		
+
 		// prepare start date of this term and start date of the following term
 		$this->term_since = $term_to_update['since'];
 		$index = array_search($term_to_update, $term_list);
@@ -851,10 +857,10 @@ class UpdateCzSenat
 
 		// set the effective date which the update process actually runs to
 		$this->update_date = ($this->next_term_since == 'infinity') ? 'now' : $this->term_since;
-					
-		return $term_id;	
+
+		return $term_id;
 	}
-	
+
 	/**
 	 * Update the last_updated timestamp for this parliament. If the parliament is not present in database yet, insert it.
 	 *
@@ -891,6 +897,29 @@ class UpdateCzSenat
 		$this->ac->update('Parliament', array('code' => $this->parliament_code), array('last_updated_on' => 'now'));
 
 		return $this->parliament_code;
+	}
+
+
+	/**
+	 * Decodes parameter with conflicitng MPs to an array.
+	 *
+	 * \param $params['conflict_mps'] list of conflicting MPs in a string of the form <em>pair1,pair2,...</em> where each pair is either
+	 * <em>mp_src_code->parliament_code/mp_src_code</em> or <em>mp_src_code-></em>.
+	 *
+	 * \returns mapping of conflicting MPs in an array corresponding to the given list
+	 */
+	private function parseConflictMps($params)
+	{
+		if (!isset($params['conflict_mps'])) return array();
+
+		$cmps = explode(',', $params['conflict_mps']);
+		$res = array();
+		foreach ($cmps as $mp)
+		{
+			$p = strpos($mp, '->');
+			$res[trim(substr($mp, 0, $p))] = trim(substr($mp, $p + 2));
+		}
+		return $res;
 	}
 }
 

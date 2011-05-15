@@ -47,9 +47,9 @@ class ApiClient
 	/**
 	 * ...
 	 */
-	public function read($function, $params = null)
+	public function read($resource, $params = null)
 	{
-		$url = $this->makeUrl($function, $params);
+		$url = $this->makeUrl($resource, $params);
 		$curl_options = array(CURLOPT_URL => $url);
 		return $this->executeHttpRequest($curl_options);
 	}
@@ -57,9 +57,9 @@ class ApiClient
 	/**
 	 * ...
 	 */
-	public function create($function, $data = null)
+	public function create($resource, $data = null)
 	{
-		$url = $this->makeUrl($function);
+		$url = $this->makeUrl($resource);
 		$request_body = $this->makeRequestBody($data);
 		$curl_options = array(CURLOPT_URL => $url, CURLOPT_POST => true, CURLOPT_POSTFIELDS => $request_body);
 		return $this->executeHttpRequest($curl_options);
@@ -68,9 +68,9 @@ class ApiClient
 	/**
 	 * ...
 	 */
-	public function update($function, $params = null, $data = null)
+	public function update($resource, $params = null, $data = null)
 	{
-		$url = $this->makeUrl($function, $params);
+		$url = $this->makeUrl($resource, $params);
 		$request_body = $this->makeRequestBody($data);
 		$curl_options = array(CURLOPT_URL => $url, CURLOPT_CUSTOMREQUEST => 'PUT', CURLOPT_POSTFIELDS => $request_body);
 		return $this->executeHttpRequest($curl_options);
@@ -79,9 +79,9 @@ class ApiClient
 	/**
 	 * ...
 	 */
-	public function delete($function, $params = null)
+	public function delete($resource, $params = null)
 	{
-		$url = $this->makeUrl($function, $params);
+		$url = $this->makeUrl($resource, $params);
 		$curl_options = array(CURLOPT_URL => $url, CURLOPT_CUSTOMREQUEST => 'DELETE');
 		return $this->executeHttpRequest($curl_options);
 	}
@@ -89,10 +89,10 @@ class ApiClient
 	/**
 	 * ...
 	 */
-	private function makeUrl($function, $params = null)
+	private function makeUrl($resource, $params = null)
 	{
 		$full_params = (array)$params + (array)$this->default_params;
-		$url = "http://api.kohovolit.eu/{$this->project}/$function?" . http_build_query(self::encodeNullValues($full_params), '', '&');
+		$url = "http://api.kohovolit.eu/{$this->project}/$resource?" . http_build_query(self::encodeNullValues($full_params), '', '&');
 		return $url;
 	}
 

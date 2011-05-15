@@ -65,7 +65,7 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.'),
 ('group in parliament', 'cs', 'name_', 'Skupina v parlamentu'),
 ('group in parliament', 'cs', 'short_name', 'Skupina'),
-('group in parliement', 'cs', 'description', 'Skupina v parlamentu jinak nespecifikovaná');
+('group in parliament', 'cs', 'description', 'Skupina v parlamentu jinak nespecifikovaná');
 
 insert into role_ (code, male_name, female_name, description) values
 ('member', 'member', 'member', null),

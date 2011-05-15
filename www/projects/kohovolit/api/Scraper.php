@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Class Scrape (and the API function of the same name) downloads and parses data from given resources.
+ * Class Scraper downloads and parses data from a given web resource.
  *
  * This class is an entry point to scraping classes for individual parliaments.
  */
-class Scrape
+class Scraper
 {
 	/**
 	 * Downloads and parses data from a resource for a given parliament.
 	 *
-	 * It actually includes a Scrape<parliament code> class specific for the given parliament and returns the result of its read() method.
+	 * It actually includes a Scraper<parliament code> class specific for the given parliament and returns the result of its read() method.
 	 *
 	 * \param $params An array of pairs <em>param => value</em> specifying the resource to scrape. Common parameters are \e parliament and \e resource.
 	 *
@@ -19,10 +19,10 @@ class Scrape
 	public static function read($params)
 	{
 		$parliament = $params['parliament'];
-		$api_class = 'Scrape' . str_replace(' ', '', ucwords(strtr($parliament, '/-', '  ')));
+		$api_class = 'Scraper' . str_replace(' ', '', ucwords(strtr($parliament, '/-', '  ')));
 		$ok = @include_once "projects/kohovolit/api/$parliament/$api_class.php";
 		if (!$ok)
-			throw new Exception("The API function <em>Scrape</em> is not implemented for parliament <em>$parliament</em>.", 400);
+			throw new Exception("The API resource <em>Scraper</em> is not implemented for parliament <em>$parliament</em>.", 400);
 
 		return $api_class::scrape($params);
 	}

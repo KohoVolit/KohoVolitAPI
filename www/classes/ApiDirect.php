@@ -8,10 +8,10 @@ class ApiDirect
 	/// KohoVolit.eu project to access through this API client
 	private $project;
 
-	/// default search params - parameters to include for each function call
+	/// default search params - parameters to include to each API resource request
 	private $default_params;
 
-	/// default data - data to include for each function call
+	/// default data - data to include to each API resource request
 	private $default_data;
 
 	/**
@@ -27,55 +27,55 @@ class ApiDirect
 	/**
 	 * ...
 	 */
-	public function read($function, $params = null)
+	public function read($resource, $params = null)
 	{
-		$this->includeApiFunctionClass($function);
+		$this->includeApiResourceClass($resource);
 		$full_params = (array)$params + (array)$this->default_params;
-		return $function::read($full_params);
+		return $resource::read($full_params);
 	}
 
 	/**
 	 * ...
 	 */
-	public function create($function, $data = null)
+	public function create($resource, $data = null)
 	{
-		$this->includeApiFunctionClass($function);
+		$this->includeApiResourceClass($resource);
 		$full_data = (array)$data + (array)$this->default_data;
-		return $function::create($full_data);
+		return $resource::create($full_data);
 	}
 
 	/**
 	 * ...
 	 */
-	public function update($function, $params = null, $data = null)
+	public function update($resource, $params = null, $data = null)
 	{
-		$this->includeApiFunctionClass($function);
+		$this->includeApiResourceClass($resource);
 		$full_params = (array)$params + (array)$this->default_params;
 		$full_data = (array)$data + (array)$this->default_data;
-		return $function::update($full_params, $full_data);
+		return $resource::update($full_params, $full_data);
 	}
 
 	/**
 	 * ...
 	 */
-	public function delete($function, $params = null)
+	public function delete($resource, $params = null)
 	{
-		$this->includeApiFunctionClass($function);
+		$this->includeApiResourceClass($resource);
 		$full_params = (array)$params + (array)$this->default_params;
-		return $function::delete($full_params);
+		return $resource::delete($full_params);
 	}
 
 	/**
 	 * ...
 	 */
-	private function includeApiFunctionClass($function)
+	private function includeApiResourceClass($resource)
 	{
 		$api_path = 'd:/projekty/KohoVolit.eu/KVG4/api.kohovolit.eu/www';
 		require_once  "$api_path/conf/settings.php";
 		@include_once "$api_path/projects/{$this->project}/conf/settings.php";
-		$ok = @include_once "projects/{$this->project}/api/$function.php";
+		$ok = @include_once "projects/{$this->project}/api/$resource.php";
 		if (!$ok)
-			throw new \Exception("There is no API function <em>$function</em>.", 404);
+			throw new \Exception("There is no API resource <em>$resource</em>.", 404);
 	}
 }
 

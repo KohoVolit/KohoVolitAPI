@@ -3,7 +3,7 @@
 /**
  * This class downloads and parses data from given resources for Parliament of the Czech republic - Senate.
  */
-class ScrapeCzSenat
+class ScraperCzSenat
 {
 	/**
 	 * Downloads and parses data from a given resource.
@@ -36,7 +36,7 @@ class ScrapeCzSenat
 
   /**
   * geocode address using google services
-  * 
+  *
   * see http://code.google.com/apis/maps/documentation/geocoding/index.html
   * using settings: region=cz, language=cs, sensor=false
   *
@@ -49,7 +49,7 @@ class ScrapeCzSenat
   public static function scrapeGeocode($params) {
     $lat = '';
     $lng = '';
-	//download  
+	//download
      $url = 'http://maps.googleapis.com/maps/api/geocode/json?region=cz&language=cs&sensor=false&address=' . urlencode($params['address']);
      //geocode
      $geo_object = json_decode(file_get_contents($url));
@@ -61,9 +61,9 @@ class ScrapeCzSenat
      } else {
        $ok = false;
      }
-     return array('coordinates' => array('lat' => $lat, 'lng' => $lng,'ok' => $ok));   
+     return array('coordinates' => array('lat' => $lat, 'lng' => $lng,'ok' => $ok));
   }
-  
+
 
   /**
   * scrape regions for constituencies
@@ -84,7 +84,7 @@ class ScrapeCzSenat
    	} else {
    	 $date_oo = new DateTime();
 	 $d = $date_oo->format('d.m.Y');
-	} 
+	}
 	//download the page
 	$str = (isset($params['kraj']) ? '&kraj=' . $params['kraj'] : '') .
 			(isset($params['okres']) ? '&okres=' . $params['okres'] : '') .
@@ -98,10 +98,10 @@ class ScrapeCzSenat
 	foreach ((array) $text_parts as $tp)
 	{
 	  $region_type = ScraperUtils::getFirstString($tp,'name="','"');
-	  $result['region'][$region_type]['region_type'] = $region_type;  
+	  $result['region'][$region_type]['region_type'] = $region_type;
 	  $rows = ScraperUtils::returnSubstrings($tp, '<option', '/option');
 	  $i = 1;
-	  foreach ((array) $rows as $r) 
+	  foreach ((array) $rows as $r)
 	  {
 	    $number = ScraperUtils::getFirstString($r, 'value="', '">');
 	    if ($number != '0') {
@@ -112,13 +112,13 @@ class ScrapeCzSenat
 	  }
 	  $result['region'][$region_type]['number'] = ScraperUtils::getFirstString($tp, 'selected" value="', '"');
 	}
-	
+
 	$constituencies = ScraperUtils::returnSubstrings($html,'o_obvodu.php?kod=','"');
 	foreach ((array) $constituencies as $c) {
 	  $result['constituency']['constituency_'.$c]['number'] = $c;
 	}
 	return array('regions' => $result);
-	
+
   }
 
   /**
@@ -204,7 +204,7 @@ class ScrapeCzSenat
 	$url_en = 'http://www.senat.cz/senatori/index.php?lng=en&ke_dni='.$d.'&par_3='.$id;
 	$html_en = self::download($url_en);
 	//$result['original_url'] = $url;
-	//$result['original_url_en'] = $url_en;	  
+	//$result['original_url_en'] = $url_en;
 	//extract info
 	if (strpos($html,'V daném období nemá senátor/ka platný mandát') > 0) {
 	  throw new Exception('The senator does not have a legitimate mandate during this period',404);
@@ -283,15 +283,15 @@ class ScrapeCzSenat
 	//print_r($result);die();
 	return $result;
   }
-  
+
   /**
   * scrape list of terms
-  * example: 
+  * example:
   *     scrapeTermList();
   * note: 'until' should add +1 day when used
   */
   private static function scrapeTermList($params)
-  { 
+  {
   	//get html
 	$url = 'http://senat.cz/datum/datum.php';
 	$html = self::download($url);
@@ -318,15 +318,15 @@ class ScrapeCzSenat
 	  }
 	return $result;
   }
-  
+
   /**
   * scrape list of elected MPs in given year
   * @param year
-  * example: 
+  * example:
   *     scrapeElectedMpList(array('year' => 2010));
   */
   private static function scrapeElectedMpList($params)
-  { 
+  {
   	//get html
     $year = $params['year'];
     $url = 'http://senat.cz/volby/v'.$year.'.php';
@@ -362,11 +362,11 @@ class ScrapeCzSenat
 	//print_r($result);die();
 	return $result;
   }
-  
+
   /**
   * scrape voting records from one division
   * @param id
-  * example: 
+  * example:
   */
   private static function scrapeDivision($params)
   {
@@ -379,7 +379,7 @@ class ScrapeCzSenat
 		$pom = explode('.',$head[0]);
 		$result['division']['session'] = $pom[0];
 		$pom = explode('.',trim($head[1]));
-		$result['division']['number_in_session'] = $pom[0];	
+		$result['division']['number_in_session'] = $pom[0];
 		$d_date = new DateTime(trim($head[2]));
 		$result['division']['divided_on'] = $d_date->format('Y-m-d');
 		$text_part = ScraperUtils::getFirstString($html,'<h2>','</h2>');
@@ -401,7 +401,7 @@ class ScrapeCzSenat
 		$result['division']['name'] = $tp_ar[0];
 		$result['division']['action'] = $tp_ar[1];
 		$result['division']['note'] = trim(strip_tags(ScraperUtils::getFirstString($html,'Pozn.:','</b>')));
-		
+
 		$result['division']['result_text'] = ScraperUtils::getFirstString($html,'<center>','<hr');
 		$result2approved = array(
 		  'NÁVRH BYL PŘIJAT' => 'yes',
@@ -415,7 +415,7 @@ class ScrapeCzSenat
 		$result['division']['no'] = ScraperUtils::getFirstString($html,'NE=',' ');
 		$result['division']['not_present'] = ScraperUtils::getFirstString($html,'NEPŘÍTOMEN=',' ');
 		$result['division']['abstain'] = ScraperUtils::getFirstString($html,'ZDRŽEL SE=',' ');
-		
+
 		$groups = ScraperUtils::returnSubstrings($html,'<h3','<hr />');
 		if (strlen($groups[0]) > 1) {
 		  $i = 1;
@@ -442,23 +442,23 @@ class ScrapeCzSenat
 			  }
 			}
 		  }
-		
+
 		}
 	} else {
 	  throw new Exception('Wrong division ID. No data.',404);
 	}
 	return $result;
   }
-  
+
   /**
   * scrape list of groups
   * @param params['date']
-  * example: 
+  * example:
   *     scrapeGroupList();
   *     scrapeGroupList(array('date' => '20.2.2002'));
   */
   private static function scrapeGroupList($params)
-  {  
+  {
     //set date
     if (isset($params['date'])) {
    	 $d = $params['date'];
@@ -493,20 +493,20 @@ class ScrapeCzSenat
 			$i++;
 		  }
 		}
-		
+
 	}
-		
+
 	return $result;
   }
-  
+
   /**
   * scrape list of groups
   * @param params['date']
-  * example: 
+  * example:
   *     scrapeGroupList(array('id' => 66, 'date' => '20.2.2002'));
   */
   private static function scrapeGroup($params)
-  {  
+  {
     //set date
     if (isset($params['date'])) {
    	 $d = $params['date'];
@@ -554,7 +554,7 @@ class ScrapeCzSenat
 			}
 			$i++;
 		  }
-		
+
 		}
 		//check number of members
 		$number = ScraperUtils::getFirstString($html,'počet členů:&nbsp;<strong>','<strong>');
@@ -572,11 +572,11 @@ class ScrapeCzSenat
   /**
   * scrape constituency
   * @param params['id']
-  * example: 
+  * example:
   *     scrapeConstituency(array('id' => '8'));
   */
   private static function scrapeConstituency($params)
-  { 
+  {
     //set date
     if (isset($params['date'])) {
    	 $d = $params['date'];

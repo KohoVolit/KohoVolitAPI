@@ -6,9 +6,6 @@ set role to kohovolit;
 
 comment on database kohovolit is 'Project KohoVolit.';
 
-revoke usage on language plpgsql from public;
-grant usage on language plpgsql to kohovolit, kv_admin;
-
 \i types.sql
 \i base/tables.sql
 \i base/triggers.sql

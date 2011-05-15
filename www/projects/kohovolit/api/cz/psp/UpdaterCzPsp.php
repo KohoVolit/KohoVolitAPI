@@ -3,7 +3,7 @@
 /**
  * This class updates data in the database for a given term of office to the state scraped from Parliament of the Czech republic - Chamber of deputies official website www.psp.cz.
  */
-class UpdateCzPsp
+class UpdaterCzPsp
 {
 	/// API client reference used for all API calls
 	private $ac;
@@ -50,7 +50,7 @@ class UpdateCzPsp
 	}
 
 	/**
-	 * Main method called from API function Update - it scrapes data and updates the database.
+	 * Main method called by API resource Updater - it scrapes data and updates the database.
 	 *
 	 * \param $params An array of pairs <em>param => value</em> specifying the update process.
 	 *
@@ -82,14 +82,14 @@ class UpdateCzPsp
 		$this->groups_with_parent = array();
 
 		// read list of all MPs in the term of office to update data for
-		$src_mps = $this->ac->read('Scrape', array('resource' => 'group', 'term' => $this->term_src_code, 'list_members' => 'true'));
+		$src_mps = $this->ac->read('Scraper', array('resource' => 'group', 'term' => $this->term_src_code, 'list_members' => 'true'));
 		$src_mps = $src_mps['group']['mp'];
 
 		// update (or insert) all MPs in the list
 		foreach($src_mps as $src_mp)
 		{
 			// scrape details of the MP
-			$src_mp = $this->ac->read('Scrape', array('resource' => 'mp', 'term' => $this->term_src_code, 'id' => $src_mp['id'], 'list_memberships' => 'true'));
+			$src_mp = $this->ac->read('Scraper', array('resource' => 'mp', 'term' => $this->term_src_code, 'id' => $src_mp['id'], 'list_memberships' => 'true'));
 			$src_mp = $src_mp['mp'];
 
 			// update the MP personal details
@@ -221,13 +221,13 @@ class UpdateCzPsp
 			$term_src_code = $params['term'];
 		else
 		{
-			$current_term = $this->ac->read('Scrape', array('resource' => 'current_term'));
+			$current_term = $this->ac->read('Scraper', array('resource' => 'current_term'));
 			$term_src_code = $current_term['term']['id'];
 		}
 		$this->term_src_code = $term_src_code;
 
 		// get details of the term
-		$term_list = $this->ac->read('Scrape', array('resource' => 'term_list'));
+		$term_list = $this->ac->read('Scraper', array('resource' => 'term_list'));
 		$term_list = $term_list['term'];
 		foreach($term_list as $term)
 			if ($term['id'] == $term_src_code)
@@ -286,7 +286,7 @@ class UpdateCzPsp
 		$this->log->write("Updating constituencies.", Log::DEBUG);
 
 		// update constituencies of this term
-		$src_constituencies = $this->ac->read('Scrape', array('resource' => 'constituency_list', 'term' => $this->term_src_code));
+		$src_constituencies = $this->ac->read('Scraper', array('resource' => 'constituency_list', 'term' => $this->term_src_code));
 		$res = array();
 		foreach ($src_constituencies['constituency'] as $src_constituency)
 			$res[$src_constituency['name']] = $this->updateConstituency($src_constituency);
@@ -550,15 +550,17 @@ class UpdateCzPsp
 			{
 				$phone = isset($src_office['phone']) ? $src_office['phone'] : '';
 				$relevance = ($src_parsed_address == '|Sněmovní|4|Praha 1|118 26|Česká republika') ? 0.5 : 1.0;
-    		
+
 				$data = array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'phone' => $phone, 'relevance' => $relevance, 'since' => $this->update_date, 'until' => $this->next_term_since);
+
 				//geocode
-			    $geo = $this->ac->read('Scrape', array('resource' => 'geocode', 'address' => $src_mp['office']));
-	    		if ($geo['coordinates']['ok']) {
-	    		  $data['latitude'] = $geo['coordinates']['lat'];
-	    		  $data['longitude'] = $geo['coordinates']['lng'];
-	    		}
-	    		  
+				$geo = $this->ac->read('Scraper', array('resource' => 'geocode', 'address' => $src_office['address']));
+				if ($geo['coordinates']['ok'])
+				{
+					$data['latitude'] = $geo['coordinates']['lat'];
+					$data['longitude'] = $geo['coordinates']['lng'];
+				}
+
 				$this->ac->create('Office', array($data));
 			}
 		}
@@ -588,7 +590,7 @@ class UpdateCzPsp
 				$group_id = $src_code_in_db['group_attribute'][0]['group_id'];
 
 			// and scrape further details about the group
-			$grp = $this->ac->read('Scrape', array('resource' => 'group', 'term' => $this->term_src_code, 'id' => $src_group['id']));
+			$grp = $this->ac->read('Scraper', array('resource' => 'group', 'term' => $this->term_src_code, 'id' => $src_group['id']));
 			$src_group['short_name'] = (isset($grp['group']['short_name'])) ? $grp['group']['short_name'] : null;
 			$src_group['parent_name'] = (isset($grp['group']['parent_name'])) ? $grp['group']['parent_name'] : null;
 

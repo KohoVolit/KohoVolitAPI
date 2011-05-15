@@ -20,44 +20,44 @@ class ApiServer
 
 		self::logRequest();
 
-		// include the underlying class of the requested API function
-		$function = $_GET['function'];
-		$ok = @include "./api/$function.php";
+		// include the underlying class of the requested API resource
+		$resource = $_GET['resource'];
+		$ok = @include "./api/$resource.php";
 		if (!$ok)
-			throw new Exception("There is no API function <em>$function</em>.", 404);
+			throw new Exception("There is no API resource <em>$resource</em>.", 404);
 
 		// get the search criteria for the record to work with
 		$params = self::decodeNullValues($_GET);
 
-		// call the proper method of the API function class depending on the HTTP request method
+		// call the proper method of the API resource class depending on the HTTP request method
 		switch ($request_method)
 		{
 			case 'GET':
-				if (method_exists($function, 'read'))
-					return $function::read($params);
+				if (method_exists($resource, 'read'))
+					return $resource::read($params);
 				break;
 /*
 The public API access is read-only.
 Data modifying request methods are not allowed from remote, on localhost use ApiDirect class instead.
 
 			case 'POST':
-				if (method_exists($function, 'create'))
-					return $function::create(self::decodeNullValues($_POST));
+				if (method_exists($resource, 'create'))
+					return $resource::create(self::decodeNullValues($_POST));
 				break;
 
 			case 'PUT':
-				if (method_exists($function, 'update'))
-					return $function::update($params, self::decodeNullValues(self::$put_request_data));
+				if (method_exists($resource, 'update'))
+					return $resource::update($params, self::decodeNullValues(self::$put_request_data));
 				break;
 
 			case 'DELETE':
-				if (method_exists($function, 'delete'))
-					return $function::delete($params);
+				if (method_exists($resource, 'delete'))
+					return $resource::delete($params);
 				break;
 */
 		}
 
-		throw new Exception("The API function <em>$function</em> does not accept " . $_SERVER['REQUEST_METHOD'] . " requests.", 405);
+		throw new Exception("The API resource <em>$resource</em> does not accept " . $_SERVER['REQUEST_METHOD'] . " requests.", 405);
 	}
 
 
@@ -187,7 +187,7 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 		$p1 = strpos($_SERVER['REQUEST_URI'], '/', 1);
 		$p2 = strpos($_SERVER['REQUEST_URI'], '?', $p1 + 1);
 		$project = substr($_SERVER['REQUEST_URI'], 1, $p1 - 1);
-		$function = substr($_SERVER['REQUEST_URI'], $p1 + 1, $p2 - $p1 - 1);
+		$resource = substr($_SERVER['REQUEST_URI'], $p1 + 1, $p2 - $p1 - 1);
 		$query = urldecode(substr($_SERVER['REQUEST_URI'], $p2 + 1));
 		$method = strtoupper($_SERVER['REQUEST_METHOD']);
 		$format = $_SERVER['HTTP_ACCEPT'];
@@ -199,8 +199,8 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 			$data = json_encode(self::decodeNullValues(self::$put_request_data));
 
 		if ($project == 'kohovolit')
-			return Db::query('insert into api_log(method, function_, query, data_, format, referrer) values ($1, $2, $3, $4, $5, $6)',
-				array($method, $function, $query, $data, $format, $referrer),
+			return Db::query('insert into api_log(method, resource, query, data_, format, referrer) values ($1, $2, $3, $4, $5, $6)',
+				array($method, $resource, $query, $data, $format, $referrer),
 				'kv_admin');
 	}
 	
