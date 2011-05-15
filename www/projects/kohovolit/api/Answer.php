@@ -6,15 +6,20 @@
  * Columns of table ANSWER are: <em>letter_id, mp_id, subject, body_, received_on</em>. All columns are allowed to write to.
  */
 
-class Answer extends Entity
+class Answer
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $entity;
+
 	/**
-	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 * Initialize information about the entity table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns = array('letter_id', 'mp_id', 'subject', 'body_', 'received_on');
-		self::$roColumns = array();
+		self::$entity = new Entity(
+			'answer',
+			array('letter_id', 'mp_id', 'subject', 'body_', 'received_on')
+		);
 	}
 
 	/**
@@ -26,7 +31,7 @@ class Answer extends Entity
 	 */
 	public static function read($params)
 	{
-		return parent::readEntity($params, 'answer');
+		return self::$entity->read($params);
 	}
 
 	/**
@@ -38,7 +43,7 @@ class Answer extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($data, 'answer');
+		return self::$entity->create($data);
 	}
 
 	/**
@@ -51,7 +56,7 @@ class Answer extends Entity
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateEntity($params, $data, 'answer');
+		return self::$entity->update($params, $data);
 	}
 
 	/**
@@ -63,10 +68,10 @@ class Answer extends Entity
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteEntity($params, 'answer');
+		return self::$entity->delete($params);
 	}
 }
 
-Answer::initColumnNames();
+Answer::init();
 
 ?>

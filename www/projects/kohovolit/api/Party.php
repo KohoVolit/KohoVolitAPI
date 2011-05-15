@@ -5,15 +5,22 @@
  *
  * Columns of table PARTY are: <em>id, name_, short_name, description, country_code, last_updated_on</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
-class Party extends Entity
+class Party
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $entity;
+
 	/**
-	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 * Initialize information about the entity table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns = array('id', 'name_', 'short_name', 'description', 'country_code', 'last_updated_on');
-		self::$roColumns = array('id');
+		self::$entity = new Entity(
+			'party',
+			array('id', 'name_', 'short_name', 'description', 'country_code', 'last_updated_on'),
+			'id',
+			array('id')
+		);
 	}
 
 	/**
@@ -25,7 +32,7 @@ class Party extends Entity
 	 */
 	public static function read($params)
 	{
-		return parent::readEntity($params, 'party');
+		return self::$entity->read($params);
 	}
 
 	/**
@@ -37,7 +44,7 @@ class Party extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($data, 'party', 'id');
+		return self::$entity->create($data);
 	}
 
 	/**
@@ -50,7 +57,7 @@ class Party extends Entity
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateEntity($params, $data, 'party', 'id');
+		return self::$entity->update($params, $data);
 	}
 
 	/**
@@ -62,10 +69,10 @@ class Party extends Entity
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteEntity($params, 'party', 'id');
+		return self::$entity->delete($params);
 	}
 }
 
-Party::initColumnNames();
+Party::init();
 
 ?>

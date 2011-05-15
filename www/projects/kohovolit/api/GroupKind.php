@@ -5,15 +5,21 @@
  *
  * Columns of table GROUP_KIND are: <em>code, name_, short_name, description, subkind_of</em>. All columns are allowed to write to.
  */
-class GroupKind extends Entity
+class GroupKind
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $entity;
+
 	/**
-	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 * Initialize information about the entity table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns = array('code', 'name_', 'short_name', 'description', 'subkind_of');
-		self::$roColumns = array();
+		self::$entity = new Entity(
+			'group_kind',
+			array('code', 'name_', 'short_name', 'description', 'subkind_of'),
+			'code'
+		);
 	}
 
 	/**
@@ -25,7 +31,7 @@ class GroupKind extends Entity
 	 */
 	public static function read($params)
 	{
-		return parent::readEntity($params, 'group_kind');
+		return self::$entity->read($params);
 	}
 
 	/**
@@ -37,7 +43,7 @@ class GroupKind extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($data, 'group_kind', 'code');
+		return self::$entity->create($data);
 	}
 
 	/**
@@ -50,7 +56,7 @@ class GroupKind extends Entity
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateEntity($params, $data, 'group_kind', 'code');
+		return self::$entity->update($params, $data);
 	}
 
 	/**
@@ -62,10 +68,10 @@ class GroupKind extends Entity
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteEntity($params, 'group_kind', 'code');
+		return self::$entity->delete($params);
 	}
 }
 
-GroupKind::initColumnNames();
+GroupKind::init();
 
 ?>

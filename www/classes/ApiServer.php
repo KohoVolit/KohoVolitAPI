@@ -21,43 +21,39 @@ class ApiServer
 		self::logRequest();
 
 		// include the underlying class of the requested API function
-		$api_class = $_GET['function'];
-		if (file_exists($api_class_file = "api/$api_class.php"))
-			include $api_class_file;
-		else
-			throw new Exception("There is no API function <em>$api_class</em>.", 404);
+		$function = $_GET['function'];
+		$ok = @include "./api/$function.php";
+		if (!$ok)
+			throw new Exception("There is no API function <em>$function</em>.", 404);
 
-		// get the search criteria for the record to work with and decode \\N values to nulls
-		$params = $_GET;
-		foreach ($params as &$value)
-			if ($value == '\\N')
-				$value = null;
+		// get the search criteria for the record to work with
+		$params = self::decodeNullValues($_GET);
 
 		// call the proper method of the API function class depending on the HTTP request method
 		switch ($request_method)
 		{
 			case 'GET':
-				if (method_exists($api_class, 'read'))
-					return $api_class::read($params);
+				if (method_exists($function, 'read'))
+					return $function::read($params);
 				break;
 
 			case 'POST':
-				if (method_exists($api_class, 'create'))
-					return $api_class::create($_POST);
+				if (method_exists($function, 'create'))
+					return $function::create(self::decodeNullValues($_POST));
 				break;
 
 			case 'PUT':
-				if (method_exists($api_class, 'update'))
-					return $api_class::update($params, self::$put_request_data);
+				if (method_exists($function, 'update'))
+					return $function::update($params, self::decodeNullValues(self::$put_request_data));
 				break;
 
 			case 'DELETE':
-				if (method_exists($api_class, 'delete'))
-					return $api_class::delete($params);
+				if (method_exists($function, 'delete'))
+					return $function::delete($params);
 				break;
 		}
 
-		throw new Exception("The API function <em>$api_class</em> does not accept " . $_SERVER['REQUEST_METHOD'] . " requests.", 405);
+		throw new Exception("The API function <em>$function</em> does not accept " . $_SERVER['REQUEST_METHOD'] . " requests.", 405);
 	}
 
 
@@ -194,14 +190,26 @@ class ApiServer
 		$referrer = $_SERVER['REMOTE_ADDR'];
 		$data = null;
 		if ($method == 'POST')
-			$data = json_encode($_POST);
+			$data = json_encode(self::decodeNullValues($_POST));
 		else if ($method == 'PUT')
-			$data = json_encode(self::$put_request_data);
+			$data = json_encode(self::decodeNullValues(self::$put_request_data));
 
 		if ($project == 'kohovolit')
 			return Db::query('insert into api_log(method, function_, query, data_, format, referrer) values ($1, $2, $3, $4, $5, $6)',
 				array($method, $function, $query, $data, $format, $referrer),
 				'kv_admin');
+	}
+	
+	/**
+	 *	...
+	 * decode all null values from \N
+	 */
+	private static function decodeNullValues($array, $null_code = '\\N')
+	{
+		$result = array();
+		foreach ((array)$array as $key => $value)
+			$result[$key] = ($value == $null_code) ? null : $value;
+		return $result;
 	}
 }
 

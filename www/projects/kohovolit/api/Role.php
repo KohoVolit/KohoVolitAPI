@@ -5,15 +5,21 @@
  *
  * Columns of table ROLE_ are: <em>code, male_name, female_name, description</em>. All columns are allowed to write to.
  */
-class Role extends Entity
+class Role
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $entity;
+
 	/**
-	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 * Initialize information about the entity table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns = array('code', 'male_name', 'female_name', 'description');
-		self::$roColumns = array();
+		self::$entity = new Entity(
+			'role_',
+			array('code', 'male_name', 'female_name', 'description'),
+			'code'
+		);
 	}
 
 	/**
@@ -25,7 +31,7 @@ class Role extends Entity
 	 */
 	public static function read($params)
 	{
-		return parent::readEntity($params, 'role_');
+		return self::$entity->read($params);
 	}
 
 	/**
@@ -37,7 +43,7 @@ class Role extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($data, 'role_', 'code');
+		return self::$entity->create($data);
 	}
 
 	/**
@@ -50,7 +56,7 @@ class Role extends Entity
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateEntity($params, $data, 'role_', 'code');
+		return self::$entity->update($params, $data);
 	}
 
 	/**
@@ -62,10 +68,10 @@ class Role extends Entity
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteEntity($params, 'role_', 'code');
+		return self::$entity->delete($params);
 	}
 }
 
-Role::initColumnNames();
+Role::init();
 
 ?>

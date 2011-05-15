@@ -23,4 +23,3 @@ grant usage on language plpgsql to kohovolit, kv_admin;
 \i group/triggers.sql
 \i group/inserts.sql
 \i wtt/tables.sql
-\i wtt/triggers.sql

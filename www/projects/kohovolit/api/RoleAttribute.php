@@ -5,15 +5,17 @@
  *
  * Columns of table ROLE_ATTRIBUTE are: <em>role_code, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
-class RoleAttribute extends Attribute
+class RoleAttribute
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $attribute;
+
 	/**
-	 * Add a table specific column to the list of common columns of all attribute tables.
+	 * Initialize information about the attribute table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns[] = 'parl';
-		self::$tableColumns[] = 'role_code';
+		self::$attribute = new Attribute('role_attribute', array('role_code', 'parl'));
 	}
 
 	/**
@@ -27,7 +29,7 @@ class RoleAttribute extends Attribute
 	 */
 	public static function read($params)
 	{
-		return parent::readAttribute($params, 'role_attribute');
+		return self::$attribute->read($params);
 	}
 
 	/**
@@ -39,7 +41,7 @@ class RoleAttribute extends Attribute
 	 */
 	public static function create($data)
 	{
-		return parent::createAttribute($data, 'role_attribute');
+		return self::$attribute->create($data);
 	}
 
 	/**
@@ -52,7 +54,7 @@ class RoleAttribute extends Attribute
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateAttribute($params, $data, 'role_attribute');
+		return self::$attribute->update($params, $data);
 	}
 
 	/**
@@ -64,10 +66,10 @@ class RoleAttribute extends Attribute
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteAttribute($params, 'role_attribute');
+		return self::$attribute->delete($params);
 	}
 }
 
-RoleAttribute::initColumnNames();
+RoleAttribute::init();
 
 ?>

@@ -4,15 +4,18 @@
  * Class CountryAttribute provides information about countries' additional attributes through API and implements CRUD operations on database table COUNTRY_ATTRIBUTE.
  *
  * Columns of table COUNTRY_ATTRIBUTE are: <em>country_code</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
- */ 
-class CountryAttribute extends Attribute
+ */
+class CountryAttribute
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $attribute;
+
 	/**
-	 * Add a table specific column to the list of common columns of all attribute tables.
+	 * Initialize information about the attribute table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns[] = 'country_code';
+		self::$attribute = new Attribute('country_attribute', array('country_code'));
 	}
 
 	/**
@@ -26,7 +29,7 @@ class CountryAttribute extends Attribute
 	 */
 	public static function read($params)
 	{
-		return parent::readAttribute($params, 'country_attribute');
+		return self::$attribute->read($params);
 	}
 
 	/**
@@ -38,7 +41,7 @@ class CountryAttribute extends Attribute
 	 */
 	public static function create($data)
 	{
-		return parent::createAttribute($data, 'country_attribute');
+		return self::$attribute->create($data);
 	}
 
 	/**
@@ -51,7 +54,7 @@ class CountryAttribute extends Attribute
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateAttribute($params, $data, 'country_attribute');
+		return self::$attribute->update($params, $data);
 	}
 
 	/**
@@ -63,10 +66,10 @@ class CountryAttribute extends Attribute
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteAttribute($params, 'country_attribute');
+		return self::$attribute->delete($params);
 	}
 }
 
-CountryAttribute::initColumnNames();
+CountryAttribute::init();
 
 ?>

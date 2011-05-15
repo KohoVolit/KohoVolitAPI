@@ -5,15 +5,20 @@
  *
  * Columns of table AREA are: <em>constituency_id, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3, locality, sublocality, neighborhood, route, street_number</em>. All columns are allowed to write to.
  */
-class Area extends Entity
+class Area
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $entity;
+
 	/**
-	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 * Initialize information about the entity table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns = array('constituency_id', 'country', 'administrative_area_level_1', 'administrative_area_level_2', 'administrative_area_level_3', 'locality', 'sublocality', 'neighborhood', 'route', 'street_number');
-		self::$roColumns = array();
+		self::$entity = new Entity(
+			'area',
+			array('constituency_id', 'country', 'administrative_area_level_1', 'administrative_area_level_2', 'administrative_area_level_3', 'locality', 'sublocality', 'neighborhood', 'route', 'street_number')
+		);
 	}
 
 	/**
@@ -25,7 +30,7 @@ class Area extends Entity
 	 */
 	public static function read($params)
 	{
-		return parent::readEntity($params, 'area');
+		return self::$entity->read($params);
 	}
 
 	/**
@@ -37,7 +42,7 @@ class Area extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($data, 'area');
+		return self::$entity->create($data);
 	}
 
 	/**
@@ -50,7 +55,7 @@ class Area extends Entity
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateEntity($params, $data, 'area');
+		return self::$entity->update($params, $data);
 	}
 
 	/**
@@ -62,10 +67,10 @@ class Area extends Entity
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteEntity($params, 'area');
+		return self::$entity->delete($params);
 	}
 }
 
-Area::initColumnNames();
+Area::init();
 
 ?>

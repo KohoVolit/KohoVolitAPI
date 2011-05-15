@@ -5,15 +5,17 @@
  *
  * Columns of table LETTER_TO_MP are: <em>letter_id, mp_id, parliament_code</em>. All columns are allowed to write to.
  */
-class LetterToMp extends Entity
+class LetterToMp
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $entity;
+
 	/**
-	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 * Initialize information about the entity table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns = array('letter_id', 'mp_id', 'parliament_code');
-		self::$roColumns = array();
+		self::$entity = new Entity(array('letter_id', 'mp_id', 'parliament_code'));
 	}
 
 	/**
@@ -25,7 +27,7 @@ class LetterToMp extends Entity
 	 */
 	public static function read($params)
 	{
-		return parent::readEntity($params, 'letter_to_mp');
+		return self::$entity->read($params, 'letter_to_mp');
 	}
 
 	/**
@@ -37,7 +39,7 @@ class LetterToMp extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($data, 'letter_to_mp');
+		return self::$entity->create($data, 'letter_to_mp');
 	}
 
 	/**
@@ -50,7 +52,7 @@ class LetterToMp extends Entity
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateEntity($params, $data, 'letter_to_mp');
+		return self::$entity->update($params, $data, 'letter_to_mp');
 	}
 
 	/**
@@ -62,10 +64,10 @@ class LetterToMp extends Entity
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteEntity($params, 'letter_to_mp');
+		return self::$entity->delete($params, 'letter_to_mp');
 	}
 }
 
-LetterToMp::initColumnNames();
+LetterToMp::init();
 
 ?>

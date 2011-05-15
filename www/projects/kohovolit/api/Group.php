@@ -5,15 +5,22 @@
  *
  * Columns of table GROUP are: <em>id, name_, short_name, group_kind_code, term_id, parliament_code, subgroup_of, last_updated_on</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
-class Group extends Entity
+class Group
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $entity;
+
 	/**
-	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 * Initialize information about the entity table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns = array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'parliament_code', 'subgroup_of', 'last_updated_on');	
-		self::$roColumns = array('id');
+		self::$entity = new Entity(
+			'group_',
+			array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'parliament_code', 'subgroup_of', 'last_updated_on'),
+			'id',
+			array('id')
+		);
 	}
 
 	/**
@@ -25,7 +32,7 @@ class Group extends Entity
 	 */
 	public static function read($params)
 	{
-		return parent::readEntity($params, 'group_');
+		return self::$entity->read($params);
 	}
 
 	/**
@@ -37,7 +44,7 @@ class Group extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($data, 'group_', 'id');
+		return self::$entity->create($data);
 	}
 
 	/**
@@ -50,7 +57,7 @@ class Group extends Entity
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateEntity($params, $data, 'group_', 'id');
+		return self::$entity->update($params, $data);
 	}
 
 	/**
@@ -62,10 +69,10 @@ class Group extends Entity
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteEntity($params, 'group_', 'id');
+		return self::$entity->delete($params);
 	}
 }
 
-Group::initColumnNames();
+Group::init();
 
 ?>

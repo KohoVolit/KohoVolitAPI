@@ -5,15 +5,22 @@
  *
  * Columns of table MP are: <em>id, first_name, middle_names, last_name, disambiguation, sex, pre_title, post_title, born_on, died_on, last_updated_on</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
  */
-class Mp extends Entity
+class Mp
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $entity;
+
 	/**
-	 * Initialize list of column names of the table and which of them are read only (automatically generated on creation).
+	 * Initialize information about the entity table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns = array('id', 'first_name', 'middle_names', 'last_name', 'disambiguation', 'sex', 'pre_title', 'post_title', 'born_on', 'died_on', 'last_updated_on');
-		self::$roColumns = array('id');
+		self::$entity = new Entity(
+			'mp',
+			array('id', 'first_name', 'middle_names', 'last_name', 'disambiguation', 'sex', 'pre_title', 'post_title', 'born_on', 'died_on', 'last_updated_on'),
+			'id',
+			array('id')
+		);
 	}
 
 	/**
@@ -25,7 +32,7 @@ class Mp extends Entity
 	 */
 	public static function read($params)
 	{
-		return parent::readEntity($params, 'mp');
+		return self::$entity->read($params);
 	}
 
 	/**
@@ -37,7 +44,7 @@ class Mp extends Entity
 	 */
 	public static function create($data)
 	{
-		return parent::createEntity($data, 'mp', 'id');
+		return self::$entity->create($data);
 	}
 
 	/**
@@ -50,7 +57,7 @@ class Mp extends Entity
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateEntity($params, $data, 'mp', 'id');
+		return self::$entity->update($params, $data);
 	}
 
 	/**
@@ -62,10 +69,10 @@ class Mp extends Entity
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteEntity($params, 'mp', 'id');
+		return self::$entity->delete($params);
 	}
 }
 
-Mp::initColumnNames();
+Mp::init();
 
 ?>

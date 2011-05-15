@@ -92,13 +92,7 @@ class ApiClient
 	private function makeUrl($function, $params = null)
 	{
 		$full_params = (array)$params + (array)$this->default_params;
-
-		// encode all null values as \N
-		foreach ($full_params as &$value)
-			if (is_null($value))
-				$value = '\\N';
-
-		$url = "http://api.kohovolit.eu/{$this->project}/$function?" . http_build_query($full_params, '', '&');
+		$url = "http://api.kohovolit.eu/{$this->project}/$function?" . http_build_query(self::encodeNullValues($full_params), '', '&');
 		return $url;
 	}
 
@@ -108,10 +102,22 @@ class ApiClient
 	private function makeRequestBody($data)
 	{
 		$full_data = (array)$data + (array)$this->default_data;
-		$request_body = http_build_query($full_data);
+		$request_body = http_build_query(self::encodeNullValues($full_data));
 		return $request_body;
 	}
 	
+	/**
+	 *	...
+	 * encode all null values as \N
+	 */
+	private static function encodeNullValues($array, $null_code = '\\N')
+	{
+		$result = array();
+		foreach ($array as $key => $value)
+			$result[$key] = (is_null($value)) ? $null_code : $value;
+		return $result;
+	}
+
 	/**
 	 * ...
 	 */
@@ -135,7 +141,7 @@ class ApiClient
 			$response = unserialize($response);
 
 		return $response;
-	}	
+	}
 }
 
 ?>

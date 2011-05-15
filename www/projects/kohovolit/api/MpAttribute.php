@@ -5,15 +5,17 @@
  *
  * Columns of table MP_ATTRIBUTE are: <em>mp_id, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
-class MpAttribute extends Attribute
+class MpAttribute
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $attribute;
+
 	/**
-	 * Add a table specific columns to the list of common columns of all attribute tables.
+	 * Initialize information about the attribute table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns[] = 'parl';
-		self::$tableColumns[] = 'mp_id';
+		self::$attribute = new Attribute('mp_attribute', array('mp_id', 'parl'));
 	}
 
 	/**
@@ -27,7 +29,7 @@ class MpAttribute extends Attribute
 	 */
 	public static function read($params)
 	{
-		return parent::readAttribute($params, 'mp_attribute');
+		return self::$attribute->read($params);
 	}
 
 	/**
@@ -39,7 +41,7 @@ class MpAttribute extends Attribute
 	 */
 	public static function create($data)
 	{
-		return parent::createAttribute($data, 'mp_attribute');
+		return self::$attribute->create($data);
 	}
 
 	/**
@@ -52,7 +54,7 @@ class MpAttribute extends Attribute
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateAttribute($params, $data, 'mp_attribute');
+		return self::$attribute->update($params, $data);
 	}
 
 	/**
@@ -64,10 +66,10 @@ class MpAttribute extends Attribute
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteAttribute($params, 'mp_attribute');
+		return self::$attribute->delete($params);
 	}
 }
 
-MpAttribute::initColumnNames();
+MpAttribute::init();
 
 ?>

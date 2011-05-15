@@ -5,15 +5,17 @@
  *
  * Columns of table TERM_ATTRIBUTE are: <em>term_id, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
  */
-class TermAttribute extends Attribute
+class TermAttribute
 {
+	/// instance holding a list of table columns and table handling functions
+	private static $attribute;
+
 	/**
-	 * Add a table specific column to the list of common columns of all attribute tables.
+	 * Initialize information about the attribute table.
 	 */
-	public static function initColumnNames()
+	public static function init()
 	{
-		self::$tableColumns[] = 'parl';
-		self::$tableColumns[] = 'term_id';
+		self::$attribute = new Attribute('term_attribute', array('term_id', 'parl'));
 	}
 
 	/**
@@ -27,7 +29,7 @@ class TermAttribute extends Attribute
 	 */
 	public static function read($params)
 	{
-		return parent::readAttribute($params, 'term_attribute');
+		return self::$attribute->read($params);
 	}
 
 	/**
@@ -39,7 +41,7 @@ class TermAttribute extends Attribute
 	 */
 	public static function create($data)
 	{
-		return parent::createAttribute($data, 'term_attribute');
+		return self::$attribute->create($data);
 	}
 
 	/**
@@ -52,7 +54,7 @@ class TermAttribute extends Attribute
 	 */
 	public static function update($params, $data)
 	{
-		return parent::updateAttribute($params, $data, 'term_attribute');
+		return self::$attribute->update($params, $data);
 	}
 
 	/**
@@ -64,10 +66,10 @@ class TermAttribute extends Attribute
 	 */
 	public static function delete($params)
 	{
-		return parent::deleteAttribute($params, 'term_attribute');
+		return self::$attribute->delete($params);
 	}
 }
 
-TermAttribute::initColumnNames();
+TermAttribute::init();
 
 ?>
