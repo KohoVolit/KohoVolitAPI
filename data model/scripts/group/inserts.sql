@@ -9,8 +9,7 @@ insert into group_kind (code, name_, short_name, description, subkind_of) values
 ('commission', 'Parliamentary commission', 'Commission', 'Commission of a parliament.', 'parliament'),
 ('delegation', 'Parliamentary delegation', 'Delegation', 'Delegation of a parliament.', 'parliament'),
 ('friendship group', 'Interparliamentary friendship group', 'Friendship group', 'Friendship group with a parliament of a different country.', 'parliament'),
-('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament'),
-('group in parliament', 'Group in parliament', 'Group', 'Group in parliament otherwise unspecified.', 'parliament');
+('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament');
 
 insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('parliament', 'sk', 'name_', 'Parlament'),
@@ -62,10 +61,7 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('friendship group', 'cs', 'description', 'Meziparlamentní skupina v rámci MPU.'),
 ('working group', 'cs', 'name_', 'Pracovní skupina'),
 ('working group', 'cs', 'short_name', 'Prac. skupina'),
-('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.'),
-('group in parliament', 'cs', 'name_', 'Skupina v parlamentu'),
-('group in parliament', 'cs', 'short_name', 'Skupina'),
-('group in parliament', 'cs', 'description', 'Skupina v parlamentu jinak nespecifikovaná');
+('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.');
 
 insert into role_ (code, male_name, female_name, description) values
 ('member', 'member', 'member', null),
