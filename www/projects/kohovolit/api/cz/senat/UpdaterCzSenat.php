@@ -79,14 +79,14 @@ class UpdaterCzSenat
 		$this->conflict_mps = $this->parseConflictMps($params);
 
 		// read list of all MPs in the term of office to update data for
-		$src_mps = $this->ac->read('Scraper', array('resource' => 'mp_list'));
+		$src_mps = $this->ac->read('Scraper', array('remote_resource' => 'mp_list'));
 		$src_mps = $src_mps['mps'];
 
 		//prepare variable to mark (still valid) memberships
 		$marked = array();
 
 		//update group_kinds and groups
-		$src_groups = $this->ac->read('Scraper', array('resource' => 'group_list'));
+		$src_groups = $this->ac->read('Scraper', array('remote_resource' => 'group_list'));
 		$this->updateGroups($src_groups);
 
 
@@ -94,7 +94,7 @@ class UpdaterCzSenat
 		foreach((array) $src_mps as $src_mp)
 		{
 			// scrape details of the MP
-			$src_mp = $this->ac->read('Scraper', array('resource' => 'mp', 'id' => $src_mp['source_code']));
+			$src_mp = $this->ac->read('Scraper', array('remote_resource' => 'mp', 'id' => $src_mp['source_code']));
 
 			// update the MP personal details
 			$mp_id = $this->updateMp($src_mp['mp']);
@@ -181,16 +181,16 @@ class UpdaterCzSenat
 	*
 	*/
 	private function updateAreas() {
-	  $src_regions_0 = $this->ac->read('Scraper', array('resource' => 'region'));
+	  $src_regions_0 = $this->ac->read('Scraper', array('remote_resource' => 'region'));
 	  //kraje
 	  foreach((array) $src_regions_0['regions']['region']['kraj']['region'] as $kraj) {
-	    $src_regions_1 = $this->ac->read('Scraper', array('resource' => 'region', 'kraj' => $kraj['number']));
+	    $src_regions_1 = $this->ac->read('Scraper', array('remote_resource' => 'region', 'kraj' => $kraj['number']));
 	    //okresy
 	    foreach((array) $src_regions_1['regions']['region']['okres']['region'] as $okres) {
-	      $src_regions_2 = $this->ac->read('Scraper', array('resource' => 'region','kraj'=>$kraj['number'], 'okres' => $okres['number']));
+	      $src_regions_2 = $this->ac->read('Scraper', array('remote_resource' => 'region','kraj'=>$kraj['number'], 'okres' => $okres['number']));
 	      //obce
 	      foreach((array) $src_regions_2['regions']['region']['obec']['region'] as $obec) {
-	        $src_regions_3 = $this->ac->read('Scraper', array('resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number']));
+	        $src_regions_3 = $this->ac->read('Scraper', array('remote_resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number']));
 
 	        //set data (kraj,okres,obec)
 	        $data = array(
@@ -205,7 +205,7 @@ class UpdaterCzSenat
 	            $this->log->write("Something is wrong with uzemi. Notice: Undefined index: region - ". print_r($src_regions_3['regions']['region'],1), Log::WARNING);
 	          else
 	          foreach ((array) $src_regions_3['regions']['region']['uzemi']['region'] as $uzemi) {
-	            $src_regions_4 = $this->ac->read('Scraper', array('resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number'], 'uzemi' => $uzemi['number']));
+	            $src_regions_4 = $this->ac->read('Scraper', array('remote_resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number'], 'uzemi' => $uzemi['number']));
 	            $constituency = $src_regions_4['regions']['constituency'];
 
 	            //treat every city differently
@@ -578,7 +578,7 @@ class UpdaterCzSenat
 	{
 		$this->log->write("Updating constituency '{$region_code}'.", Log::DEBUG);
 
-		$src_constituency = $this->ac->read('Scraper', array('resource' => 'constituency', 'id' => $region_code));
+		$src_constituency = $this->ac->read('Scraper', array('remote_resource' => 'constituency', 'id' => $region_code));
 		$src_constituency = $src_constituency['constituency'];
 
 		$constituency = $this->ac->read('Constituency', array('parliament_code' => $this->parliament_code, 'name_' => $src_constituency['name'] . ' (' .$region_code.')'));
@@ -620,7 +620,7 @@ class UpdaterCzSenat
 	    //close previous
 	    $this->ac->update('Office', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, 'datetime' => $this->date->format('Y-m-d')), array('until' => $this->date->format('Y-m-d')));
 	    //insert the new one
-	    $geo = $this->ac->read('Scraper', array('resource' => 'geocode', 'address' => $src_mp['office']));
+	    $geo = $this->ac->read('Scraper', array('remote_resource' => 'geocode', 'address' => $src_mp['office']));
 	    if ($geo['coordinates']['ok'])
 	      $this->ac->create('Office', array(array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'],'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since, 'latitude' => $geo['coordinates']['lat'], 'longitude' => $geo['coordinates']['lng'])));
 	    else
@@ -806,7 +806,7 @@ class UpdaterCzSenat
 		$this->log->write("Updating term.", Log::DEBUG);
 
 
-		$term_ar = $this->ac->read('Scraper', array('resource' => 'term_list'));
+		$term_ar = $this->ac->read('Scraper', array('remote_resource' => 'term_list'));
 		$term_list = $term_ar['term'];
 
 		//find scraped term for the date
@@ -825,7 +825,7 @@ class UpdaterCzSenat
 		}
 		// if there is no such term in the term list, terminate with error (class Log writing a message with level FATAL_ERROR throws an exception)
 		if (!isset($term_to_update))
-		  $this->log->write("The date {$this->date->format('Y-m-d')} for updating parliament {$this->parliament_code}  does not belong to any term, check http://api.kohovolit.eu/kohovolit/Scrape?parliament={$this->parliament_code}&resource=term_list", Log::FATAL_ERROR, 400);
+		  $this->log->write("The date {$this->date->format('Y-m-d')} for updating parliament {$this->parliament_code}  does not belong to any term, check http://api.kohovolit.eu/kohovolit/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
 
 		//set "global" variables
 		$this->term_src_code = $term_to_update['term_code'];

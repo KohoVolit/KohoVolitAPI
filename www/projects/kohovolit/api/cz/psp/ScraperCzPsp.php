@@ -1,21 +1,21 @@
 <?php
 
 /**
- * This class downloads and parses data from given resources for Parliament of the Czech republic - Chamber of deputies.
+ * This class downloads and parses data from given remote resources for Parliament of the Czech republic - Chamber of deputies.
  */
 class ScraperCzPsp
 {
 	/**
-	 * Downloads and parses data from a given resource.
+	 * Downloads and parses data from a given remote resource.
 	 *
-	 * \param $params An array of pairs <em>param => value</em> specifying the resource to scrape. The resource is specified by a \e resource parameter.
+	 * \param $params An array of pairs <em>param => value</em> specifying the remote resource to scrape. The resource is specified by a \e remote_resource parameter.
 	 *
-	 * \return An array of data parsed from the resource.
+	 * \return An array of data parsed from the remote resource.
 	 */
 	public static function scrape($params)
 	{
-		$resource = $params['resource'];
-		switch ($resource)
+		$remote_resource = $params['remote_resource'];
+		switch ($remote_resource)
 		{
 			case 'current_term': return self::scrapeCurrentTerm($params);
 			case 'term_list': return self::scrapeTermList($params);
@@ -24,7 +24,7 @@ class ScraperCzPsp
 			case 'group': return self::scrapeGroup($params);
 			case 'geocode': return self::scrapeGeocode($params);
 			default:
-				throw new Exception("Scraping of the resource <em>$resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
+				throw new Exception("Scraping of the remote resource <em>$remote_resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
 	}
 
@@ -38,7 +38,7 @@ class ScraperCzPsp
 	*
 	* @return array('coordinates' => array(lat, lng, ok))
 	*
-	* example: Scraper?parliament=cz/senat&resource=region&address=Plasy
+	* example: Scraper?parliament=cz/psp&remote_resource=geocode&address=Plasy
 	*/
 	public static function scrapeGeocode($params)
 	{

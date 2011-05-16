@@ -1,21 +1,21 @@
 <?php
 
 /**
- * This class downloads and parses data from given resources for Parliament of the Czech republic - Senate.
+ * This class downloads and parses data from given remote resources for Parliament of the Czech republic - Senate.
  */
 class ScraperCzSenat
 {
 	/**
-	 * Downloads and parses data from a given resource.
+	 * Downloads and parses data from a given remote resource.
 	 *
-	 * \param $params An array of pairs <em>param => value</em> specifying the resource to scrape. The resource is specified by a \e resource parameter.
+	 * \param $params An array of pairs <em>param => value</em> specifying the remote resource to scrape. The resource is specified by a \e resource parameter.
 	 *
-	 * \return An array of data parsed from the resource.
+	 * \return An array of data parsed from the remote resource.
 	 */
 	public static function scrape($params)
 	{
-		$resource = $params['resource'];
-		switch ($resource)
+		$remote_resource = $params['remote_resource'];
+		switch ($remote_resource)
 		{
 			//case 'current_term': return self::scrapeCurrentTerm($params);
 			//case 'term_list': return self::scrapeTermList($params);
@@ -30,7 +30,7 @@ class ScraperCzSenat
 			case 'region': return self::scrapeRegion($params);
 			case 'geocode': return self::scrapeGeocode($params);
 			default:
-				throw new Exception("Scraping of the resource <em>$resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
+				throw new Exception("Scraping of the remote resource <em>$remote_resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
 	}
 
@@ -44,7 +44,7 @@ class ScraperCzSenat
   *
   * @return array('coordinates' => array(lat, lng, ok))
   *
-  * example: Scrape?parliament=cz/senat&resource=region&address=Plasy
+  * example: Scrape?parliament=cz/senat&remote_resource=geocode&address=Plasy
   */
   public static function scrapeGeocode($params) {
     $lat = '';
@@ -74,7 +74,7 @@ class ScraperCzSenat
   * @param obec
   * @param uzemi
   *
-  * example: Scrape?parliament=cz/senat&resource=region&kraj=43
+  * example: Scrape?parliament=cz/senat&remote_resource=region&kraj=43
   */
   private static function scrapeRegion($params)
   {
@@ -126,8 +126,8 @@ class ScraperCzSenat
   * @param date status at given date in Czech format
   * 		default today
   *
-  * example: Scrape?parliament=cz/senat&resource=mps
-  * 	Scrape?parliament=cz/senat&resource=mps&date=20.2.2002
+  * example: Scrape?parliament=cz/senat&remote_resource=mp_list
+  * 	Scrape?parliament=cz/senat&remote_resource=mp_list&date=20.2.2002
   */
   private static function scrapeMpList($params)
   {
@@ -177,7 +177,7 @@ class ScraperCzSenat
 	   $i++;
 	 }
    }
-   return array('mps' => $result);
+   return array('mp_list' => $result);
   }
 
   /**
@@ -185,8 +185,8 @@ class ScraperCzSenat
   * @param date status at given date in Czech format
   * 		default today
   *
-  * example: Scrape?parliament=cz/senat&resource=mp
-  * 	Scrape?parliament=cz/senat&resource=mp&date=20.2.2002
+  * example: Scrape?parliament=cz/senat&remote_resource=mp
+  * 	Scrape?parliament=cz/senat&remote_resource=mp&date=20.2.2002
   */
   private static function scrapeMp($params)
   {

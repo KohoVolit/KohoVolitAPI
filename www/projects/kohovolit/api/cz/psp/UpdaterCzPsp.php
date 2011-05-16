@@ -82,14 +82,14 @@ class UpdaterCzPsp
 		$this->groups_with_parent = array();
 
 		// read list of all MPs in the term of office to update data for
-		$src_mps = $this->ac->read('Scraper', array('resource' => 'group', 'term' => $this->term_src_code, 'list_members' => 'true'));
+		$src_mps = $this->ac->read('Scraper', array('remote_resource' => 'group', 'term' => $this->term_src_code, 'list_members' => 'true'));
 		$src_mps = $src_mps['group']['mp'];
 
 		// update (or insert) all MPs in the list
 		foreach($src_mps as $src_mp)
 		{
 			// scrape details of the MP
-			$src_mp = $this->ac->read('Scraper', array('resource' => 'mp', 'term' => $this->term_src_code, 'id' => $src_mp['id'], 'list_memberships' => 'true'));
+			$src_mp = $this->ac->read('Scraper', array('remote_resource' => 'mp', 'term' => $this->term_src_code, 'id' => $src_mp['id'], 'list_memberships' => 'true'));
 			$src_mp = $src_mp['mp'];
 
 			// update the MP personal details
@@ -221,13 +221,13 @@ class UpdaterCzPsp
 			$term_src_code = $params['term'];
 		else
 		{
-			$current_term = $this->ac->read('Scraper', array('resource' => 'current_term'));
+			$current_term = $this->ac->read('Scraper', array('remote_resource' => 'current_term'));
 			$term_src_code = $current_term['term']['id'];
 		}
 		$this->term_src_code = $term_src_code;
 
 		// get details of the term
-		$term_list = $this->ac->read('Scraper', array('resource' => 'term_list'));
+		$term_list = $this->ac->read('Scraper', array('remote_resource' => 'term_list'));
 		$term_list = $term_list['term'];
 		foreach($term_list as $term)
 			if ($term['id'] == $term_src_code)
@@ -235,7 +235,7 @@ class UpdaterCzPsp
 
 		// if there is no such term in the term list, terminate with error (class Log writing a message with level FATAL_ERROR throws an exception)
 		if (!isset($term_to_update))
-			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check http://api.kohovolit.eu/kohovolit/Scrape?parliament={$this->parliament_code}&resource=term_list", Log::FATAL_ERROR, 400);
+			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check http://api.kohovolit.eu/kohovolit/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
 
 		// if the term is present in the database, update it and get its id
 		$src_code_in_db = $this->ac->read('TermAttribute', array('name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code));
@@ -286,7 +286,7 @@ class UpdaterCzPsp
 		$this->log->write("Updating constituencies.", Log::DEBUG);
 
 		// update constituencies of this term
-		$src_constituencies = $this->ac->read('Scraper', array('resource' => 'constituency_list', 'term' => $this->term_src_code));
+		$src_constituencies = $this->ac->read('Scraper', array('remote_resource' => 'constituency_list', 'term' => $this->term_src_code));
 		$res = array();
 		foreach ($src_constituencies['constituency'] as $src_constituency)
 			$res[$src_constituency['name']] = $this->updateConstituency($src_constituency);
@@ -554,7 +554,7 @@ class UpdaterCzPsp
 				$data = array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'phone' => $phone, 'relevance' => $relevance, 'since' => $this->update_date, 'until' => $this->next_term_since);
 
 				//geocode
-				$geo = $this->ac->read('Scraper', array('resource' => 'geocode', 'address' => $src_office['address']));
+				$geo = $this->ac->read('Scraper', array('remote_resource' => 'geocode', 'address' => $src_office['address']));
 				if ($geo['coordinates']['ok'])
 				{
 					$data['latitude'] = $geo['coordinates']['lat'];
@@ -590,7 +590,7 @@ class UpdaterCzPsp
 				$group_id = $src_code_in_db['group_attribute'][0]['group_id'];
 
 			// and scrape further details about the group
-			$grp = $this->ac->read('Scraper', array('resource' => 'group', 'term' => $this->term_src_code, 'id' => $src_group['id']));
+			$grp = $this->ac->read('Scraper', array('remote_resource' => 'group', 'term' => $this->term_src_code, 'id' => $src_group['id']));
 			$src_group['short_name'] = (isset($grp['group']['short_name'])) ? $grp['group']['short_name'] : null;
 			$src_group['parent_name'] = (isset($grp['group']['parent_name'])) ? $grp['group']['parent_name'] : null;
 
