@@ -20,3 +20,4 @@ comment on database kohovolit is 'Project KohoVolit.';
 \i group/triggers.sql
 \i group/inserts.sql
 \i wtt/tables.sql
+\i wtt/functions.sql
