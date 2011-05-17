@@ -34,23 +34,29 @@ class AddressRepresentatives
 		$query->appendParam(isset($params['street_number']) ? $params['street_number'] : null);
 		$reps = $query->execute();
 
-		// make a hierarchical representation of the list structured by parliament name and political group
+		// make a hierarchical representation of the list structured by parliament, constituency and political group
 		foreach ($reps as $rep)
 		{
 			$parliament_name = $rep['parliament_name'];
 			$parliaments[$parliament_name]['name'] = $rep['parliament_name'];
-			$parliaments[$parliament_name]['constituency_name'] = $rep['constituency_name'];
+
+			$constituency_name = $rep['constituency_name'];
+			$parliaments[$parliament_name]['constituency'][$constituency_name]['name'] = $constituency_name;
 
 			$political_group = $rep['political_group'];
 			$mp = $rep;
 			unset($mp['parliament_name'], $mp['constituency_name'], $mp['political_group']);
-			$parliaments[$parliament_name]['group'][$political_group]['name'] = $political_group;
-			$parliaments[$parliament_name]['group'][$political_group]['mp'][] = $mp;
+			$parliaments[$parliament_name]['constituency'][$constituency_name]['group'][$political_group]['name'] = $political_group;
+			$parliaments[$parliament_name]['constituency'][$constituency_name]['group'][$political_group]['mp'][] = $mp;
 		}
 
 		// reindex the arrays from names to integer numbers to be covertable to XML format
 		foreach ($parliaments as &$parliament)
-			$parliament['group'] = array_values($parliament['group']);
+		{
+			$parliament['constituency'] = array_values($parliament['constituency']);
+			foreach ($parliament['constituency'] as &$constituency)
+				$constituency['group'] = array_values($constituency['group']);
+		}
 		return array('parliament' => array_values($parliaments));
 	}
 }

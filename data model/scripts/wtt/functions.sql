@@ -63,5 +63,5 @@ as $$
 		left join (select distinct on (mp_id, parliament_code) mp_id, parliament_code, address, latitude, longitude from office
 			where since <= 'now' and until > 'now' order by mp_id, parliament_code, relevance desc) as o
 			on o.mp_id = mp.id and o.parliament_code = c.parliament_code
-	order by p.code, club.short_name, distance
+	order by p.name_, c.name_, club.short_name, distance
 $$ language sql stable;
