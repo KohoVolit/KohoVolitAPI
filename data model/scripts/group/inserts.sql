@@ -9,7 +9,8 @@ insert into group_kind (code, name_, short_name, description, subkind_of) values
 ('commission', 'Parliamentary commission', 'Commission', 'Commission of a parliament.', 'parliament'),
 ('delegation', 'Parliamentary delegation', 'Delegation', 'Delegation of a parliament.', 'parliament'),
 ('friendship group', 'Interparliamentary friendship group', 'Friendship group', 'Friendship group with a parliament of a different country.', 'parliament'),
-('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament');
+('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament'),
+('other', 'Other group', 'Other', 'Other group.', 'parliament');
 
 insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('parliament', 'sk', 'name_', 'Parlament'),
@@ -35,7 +36,10 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('friendship group', 'sk', 'description', 'Medziparlamentná skupina priateľstva s parlamentom inej krajiny.'),
 ('working group', 'sk', 'name_', 'Pracovná skupina'),
 ('working group', 'sk', 'short_name', 'Prac. skupina'),
-('working group', 'sk', 'description', 'Pracovná alebo expertná skupina.');
+('working group', 'sk', 'description', 'Pracovná alebo expertná skupina.'),
+('other', 'sk', 'name_', 'Iná skupina'),
+('other', 'sk', 'short_name', 'Iná'),
+('other', 'sk', 'description', 'Iná skupina.');
 
 insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('parliament', 'cs', 'name_', 'Parlament'),
@@ -61,7 +65,10 @@ insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
 ('friendship group', 'cs', 'description', 'Meziparlamentní skupina v rámci MPU.'),
 ('working group', 'cs', 'name_', 'Pracovní skupina'),
 ('working group', 'cs', 'short_name', 'Prac. skupina'),
-('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.');
+('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.'),
+('other', 'cs', 'name_', 'Jiná skupina'),
+('other', 'cs', 'short_name', 'Jiná'),
+('other', 'cs', 'description', 'Jiná skupina.');
 
 insert into role_ (code, male_name, female_name, description) values
 ('member', 'member', 'member', null),
