@@ -767,10 +767,10 @@ class UpdaterCzSenat
 			$data['last_name'] = $src_mp['name']['last_name'];
 		if (isset($src_mp['sex']))
 			$data['sex'] = $src_mp['sex'];
-		if (isset($src_mp['name']['title_after']))
-			$data['post_title'] = $src_mp['name']['title_after'];
-		if (isset($src_mp['name']['title_before']))
-			$data['pre_title'] = $src_mp['name']['title_before'];
+		if (isset($src_mp['name']['post_title']))
+			$data['post_title'] = $src_mp['name']['post_title'];
+		if (isset($src_mp['name']['pre_title']))
+			$data['pre_title'] = $src_mp['name']['pre_title'];
 		//date now
 		$data['last_updated_on'] = date('Y-m-d H:i:s.u');
 

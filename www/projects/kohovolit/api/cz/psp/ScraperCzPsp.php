@@ -121,13 +121,7 @@ class ScraperCzPsp
 
 		// pole udaju o poslanci
 		$name_full = str_replace('&nbsp;', ' ', ScraperUtils::getFirstString($html, "<h2>", "</h2>"));
-		preg_match('/([^,]+\.)? ?(\S+) ([^,]+)(, *.+)?/u', $name_full, $matches);
-		$out['pre_title'] = $matches[1];
-		$out['first_name'] = $matches[2];
-		$last_name_ar = explode(' ', $matches[3]);
-		$out['last_name'] = $last_name_ar[0];
-		$out['disambiguation'] = (isset($last_name_ar[1])) ? rtrim($last_name_ar[1], '.') : '';
-		$out['post_title'] = (isset($matches[4])) ? ltrim($matches[4], ', ') : '';
+		$out += ScraperUtils::tokenizeName($name_full);
 
 		//poslanec vs. poslankyne
 		if (strpos($html, 'Narozena') > 0)

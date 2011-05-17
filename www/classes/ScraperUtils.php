@@ -42,6 +42,25 @@ class ScraperUtils
 	}
 	
 	/**
+	 * Returns structured information about a given name with titles (academic degrees).
+	 *
+	 * \param $name A full name with titles before and/or behind it.
+	 *
+	 * \returns Array containing keys <em>pre_title, first_name, last_name, disambiguation, post_title</em>.
+	 */
+	public static function tokenizeName($name)
+	{
+		preg_match('/([^,]+\.)? *(\S+) ([^,]+)(, *.+)?/u', $name, $matches);
+		$res['pre_title'] = $matches[1];
+		$res['first_name'] = $matches[2];
+		$last_name_ar = explode(' ', $matches[3]);
+		$res['last_name'] = $last_name_ar[0];
+		$res['disambiguation'] = (isset($last_name_ar[1])) ? rtrim($last_name_ar[1], '.') : '';
+		$res['post_title'] = (isset($matches[4])) ? ltrim($matches[4], ', ') : '';
+		return $res;
+	}
+	
+	/**
 	* curl downloader, with possible options
 	* @return html
 	* example:
@@ -59,75 +78,7 @@ class ScraperUtils
 			}
 		}
 		return curl_exec($ch);
-		//curl_close ($ch);
-	}
-	
-	/**
-	* cut names into parts first_name, last_name, title_before, title_after
-	* @return array of names
-	* example:
-	* name2array("Mgr. Michal Skop, Ph.D.") returns array('title_before' => 'Mgr.', title_after => 'Ph.D.', first_name => 'Michal', last_name => 'Skop')
-	**/
-	public static function name2array($name) {
-	  $name = str_replace ('.','. ',$name);
-	  $name = str_replace (',',' ',$name);
-	  $name = preg_replace('/\s\s+/', ' ', $name);		//double space
-	  $name_ar1 = explode(' ',$name);
-	  foreach ($name_ar1 as $row) {
-		if ($row != '') {
-		  $name_ar2[] = $row;
-		}
-	  } unset ($row);
-	  $which_title = 'title_before';
-	  $which_name = 'first_name';
-	  $out = array('title_before' => '','title_after' =>'', 'first_name' =>'', 'last_name' => '');
-	  if ($name_ar2[0] != '') {
-		  foreach ((array)$name_ar2 as $row) {
-			if (strpos($row,'.') > 0) {
-			  //if (substr($row,-1) == ',') {
-			  //  $row = rtrim($row,',');
-			  //}
-			  if (substr($row,-1) == '.') {
-				$out[$which_title] .= $row;
-			  } else {
-				$pom = explode('.',$row);
-				if (count($pom) > 1) {
-				  $pom = array_pop($pom);
-				  print_r($pom);
-				  $out[$which_title] .= implode('.',$pom);
-				} else {
-				  $out[$which_name] = $pom[0];
-				  $which_name = 'last_name';
-				  $which_title = 'title_after';
-				}
-			  } 
-			} else {
-			  if (self::false_title($row)) {
-				$out[$which_title] .= $row;
-			  } else {
-				$out[$which_name] = $row;
-				$which_name = 'last_name';
-				$which_title = 'title_after';
-			  }
-			}
-		  } unset($row);
-	  }
-	  $out['last_name'] = rtrim($out['last_name'],',');
-	  return $out;
-	}
-
-	/**
-	* helper function for name2array: checks for wrong titles - without '.'
-	**/
-	public static function false_title ($name) {
-	 $array = array (
-	   'MBA','CSc','Ing','Bc','Mgr','PhD','MPH','akad','soch',
-	 );
-	 if (in_array($name,$array)) {
-	   return TRUE;
-	 } else {
-	   return FALSE;
-	 }
+		curl_close ($ch);
 	}
 }
 
