@@ -37,17 +37,18 @@ class AddressRepresentatives
 		// make a hierarchical representation of the list structured by parliament, constituency and political group
 		foreach ($reps as $rep)
 		{
-			$parliament_name = $rep['parliament_name'];
-			$parliaments[$parliament_name]['name'] = $rep['parliament_name'];
+			$parliament_code = $rep['parliament_code'];
+			$parliaments[$parliament_code]['code'] = $parliament_code;
+			$parliaments[$parliament_code]['name'] = $rep['parliament_name'];
 
 			$constituency_name = $rep['constituency_name'];
-			$parliaments[$parliament_name]['constituency'][$constituency_name]['name'] = $constituency_name;
+			$parliaments[$parliament_code]['constituency'][$constituency_name]['name'] = $constituency_name;
 
 			$political_group = $rep['political_group'];
 			$mp = $rep;
 			unset($mp['parliament_name'], $mp['constituency_name'], $mp['political_group']);
-			$parliaments[$parliament_name]['constituency'][$constituency_name]['group'][$political_group]['name'] = $political_group;
-			$parliaments[$parliament_name]['constituency'][$constituency_name]['group'][$political_group]['mp'][] = $mp;
+			$parliaments[$parliament_code]['constituency'][$constituency_name]['group'][$political_group]['name'] = $political_group;
+			$parliaments[$parliament_code]['constituency'][$constituency_name]['group'][$political_group]['mp'][] = $mp;
 		}
 
 		// reindex the arrays from names to integer numbers to be covertable to XML format

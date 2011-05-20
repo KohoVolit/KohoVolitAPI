@@ -40,11 +40,12 @@ create or replace function address_representatives(
 	neighborhood varchar = null,
 	route varchar = null,
 	street_number varchar = null)
-returns table(parliament_name varchar, constituency_name varchar, id integer, first_name varchar, last_name varchar, disambiguation varchar,
+returns table(parliament_name varchar, parliament_code varchar, constituency_name varchar, id integer, first_name varchar, last_name varchar, disambiguation varchar,
 	political_group varchar, office_town varchar, office_distance double precision)
 as $$
 	select
 		p.name_,
+		p.code,
 		c.name_,
 		mp.id, mp.first_name, mp.last_name, mp.disambiguation,
 		club.short_name,
