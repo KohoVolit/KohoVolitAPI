@@ -1,5 +1,5 @@
-/www/conf/*
-/www/projects/kohovolit/conf/*
+/www/config/
+/www/projects/kohovolit/config/
 /data model/description.odt
 /data model/description3.odt
 /data model/diagram3.odg

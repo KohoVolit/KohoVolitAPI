@@ -37,7 +37,7 @@ class Db
 	 */
 	private static function open($user)
 	{
-		self::$connection = pg_connect(file_get_contents("conf/db/$user", true));
+		self::$connection = pg_connect(file_get_contents(API_ROOT . "/config/db/$user"));
 		
 		if (!self::$connection)
 			throw new Exception('Could not connect to database.', 503);

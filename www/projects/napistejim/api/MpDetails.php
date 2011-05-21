@@ -40,6 +40,7 @@ class MpDetails
 
 		// aggregate each MP's attributes to one row, rows in the same order as MPs in the input list
 		$prev_id = null;
+		$mp_details = null;
 		foreach ($rows as $row)
 		{
 			$i = $id_to_order[$row['id']];
@@ -51,7 +52,9 @@ class MpDetails
 			$mp_details[$i][$row['attr_name']] = $row['attr_value'];
 			$prev_id = $row['id'];
 		}
-		ksort($mp_details);
+		if (!empty($mp_details))
+			ksort($mp_details);
+			
 		return array('mp_details' => $mp_details);
 	}
 }
