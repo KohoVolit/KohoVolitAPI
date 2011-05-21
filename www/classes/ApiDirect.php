@@ -70,9 +70,8 @@ class ApiDirect
 	 */
 	private function includeApiResourceClass($resource)
 	{
-		$api_path = 'd:/projekty/KohoVolit.eu/KVG4/api.kohovolit.eu/www';
-		require_once  "$api_path/conf/settings.php";
-		@include_once "$api_path/projects/{$this->project}/conf/settings.php";
+		require_once  API_ROOT . '/conf/settings.php';
+		@include_once API_ROOT . "/projects/{$this->project}/conf/settings.php";
 		$ok = @include_once "projects/{$this->project}/api/$resource.php";
 		if (!$ok)
 			throw new \Exception("There is no API resource <em>$resource</em>.", 404);
