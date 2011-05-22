@@ -142,6 +142,13 @@ class UpdaterCzSenat
 			    $const_id = null;
 
 			  $this->updateMembership($mp_id,$group_id,$role_code,$const_id);
+			  
+			  //every person with other role than 'member' (e.g.,'chairman' must be also a 'member')
+			  if ($role_code != 'member') {
+			    //Senát is already updated with constituency
+			    if ($src_group['name'] != 'Senát')
+			      $this->updateMembership($mp_id,$group_id,'member',null);
+			  }
 
 			  //mark the membership
 			  $marked[$mp_id][$group_id][$role_code] = true;
