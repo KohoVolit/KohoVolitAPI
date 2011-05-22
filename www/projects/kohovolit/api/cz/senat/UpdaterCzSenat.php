@@ -582,6 +582,10 @@ class UpdaterCzSenat
 			'last_updated_on' => $this->update_date,
 			'subgroup_of' => $parent_group_id,
 		  );
+		  
+		  //add short_name for political groups:
+		  if ($src_group_kind_code == 'caucuses')
+		    $data['short_name'] = $this->senateShortName($src_group['name']);
 
 	      if (isset($group_id))
 	        //update
@@ -597,6 +601,35 @@ class UpdaterCzSenat
 	    }
 	  }
 	}
+	
+	/**
+	* transform name into short name for political group in Senate (not present in senat.cz)
+	* issue warning if a new political group is formed
+	*
+	* example: senateShortName('Senátorský klub České strany sociálně demokratické') -> 'ČSSD'
+	*
+	* @param $name
+	* 
+	* @return $short_name
+	*/
+	private function senateShortName($name) {
+	  switch ($name) {
+	    case "Senátorský klub České strany sociálně demokratické":
+	      return "ČSSD";
+	    case "Senátorský klub Občanské demokratické strany":
+	      return "ODS";
+	    case "Senátorský klub Křesťanské a demokratické unie - Československé strany lidové":
+	      return "KDU-ČSL";
+	    case "Klub TOP 09 a Starostové":
+	      return "TOP09-S";
+	    case "Senátoři nezařazení do klubu":
+	      return "Nezařazení";
+	    default:
+	      $this->log->write("New political group found: {$name}'. Add its short name into senateShortName() in UpdaterCzSenat.", Log::WARNING);
+	      return $name;
+	  }
+	}
+	
 
 	/**
 	* transform group_kind_code as at senat.cz into standard ones for db
