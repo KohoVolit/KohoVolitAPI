@@ -50,6 +50,9 @@ create table area
 	primary key (constituency_id, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3, locality, sublocality, neighborhood, route, street_number)
 );
 
+-- indexes (except PRIMARY KEY and UNIQUE constraints, for which the indexes have been created automatically)
+create index letter_reply_code on letter(reply_code);
+
 -- privileges on objects
 grant select
 	on table letter, letter_to_mp, answer, area

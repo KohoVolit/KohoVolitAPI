@@ -21,7 +21,7 @@ class MpDetails
 		// get the MPs' details from database
 		$query = new Query();
 		$query->setQuery(
-			"select id, first_name, middle_names, last_name, disambiguation, mpa.name_ as attr_name, mpa.value_ as attr_value, p.code as parl_code, p.name_ as parl_name from mp\n" .
+			"select id, first_name, middle_names, last_name, disambiguation, mpa.name_ as attr_name, mpa.value_ as attr_value, p.code as parliament_code, p.name_ as parliament_name from mp\n" .
 			"left join mp_attribute as mpa on mpa.mp_id = mp.id and mpa.since <= 'now' and mpa.until > 'now'\n" .
 			"left join parliament as p on p.code = mpa.parl\n" .
 			"where false\n"
@@ -38,6 +38,9 @@ class MpDetails
 		}
 		$rows = $query->execute();
 
+		// include settings of kohovolit project API to get a path to kohovolit data (DATA_DIRECTORY)
+		require_once API_ROOT . '/projects/kohovolit/config/settings.php';
+
 		// aggregate each MP's attributes to one row, rows in the same order as MPs in the input list
 		$prev_id = null;
 		$mp_details = null;
@@ -50,11 +53,13 @@ class MpDetails
 				unset($mp_details[$i]['attr_name'], $mp_details[$i]['attr_value']);
 			}
 			$mp_details[$i][$row['attr_name']] = $row['attr_value'];
+			if ($row['attr_name'] == 'image')
+				$mp_details[$i]['image'] = DATA_DIRECTORY . '/' . $row['parliament_code'] . '/images/mp/' . $row['attr_value'];
 			$prev_id = $row['id'];
 		}
 		if (!empty($mp_details))
 			ksort($mp_details);
-			
+
 		return array('mp_details' => $mp_details);
 	}
 }

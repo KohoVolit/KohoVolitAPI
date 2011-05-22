@@ -52,7 +52,7 @@ as $$
 		split_part(o.address, '|', 4),
 		acos(sin(radians(o.latitude)) * sin(radians($1)) + cos(radians(o.latitude)) * cos(radians($1)) * cos(radians($2 - o.longitude))) * 6371 as distance
 	from
-		area_match($3, $4, $5, $6, $7, $8, $9, $10, $11) as a
+		(select distinct constituency_id from area_match($3, $4, $5, $6, $7, $8, $9, $10, $11)) as a
 		join constituency as c on c.id = a.constituency_id
 		join parliament as p on p.code = c.parliament_code
 		join mp_in_group as mig_parl on mig_parl.constituency_id = c.id and mig_parl.role_code = 'member' and mig_parl.since <= 'now' and mig_parl.until > 'now'
