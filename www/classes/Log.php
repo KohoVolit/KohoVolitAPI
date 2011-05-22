@@ -30,7 +30,7 @@ class Log
 	/**
 	 * ...
 	 */
-	public function __construct($filename)
+	public function __construct($filename, $mode = 'a')
 	{
 		$this->minLogLevel = self::NOTICE;
 	
@@ -41,9 +41,9 @@ class Log
 		if (!empty($path) && !file_exists($path))
 			mkdir($path, 0775, true);
 	
-		$this->file = fopen($filename, 'w');
+		$this->file = fopen($filename, $mode);
 		if ($this->file === false)
-			throw new Exception("Cannot open log file '$filename' for write.", 500);
+			throw new Exception("Cannot open log file '$filename' for " . ($mode == 'a') ? 'append' : 'write' . '.', 500);
 		
 		// set immediate write to the file without buffering
 		set_file_buffer($this->file, 0);

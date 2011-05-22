@@ -45,7 +45,7 @@ class UpdaterCzPsp
 	{
 		$this->parliament_code = $params['parliament'];
 		$this->ac = new ApiDirect('kohovolit', array('parliament' => $this->parliament_code));
-		$this->log = new Log(LOGS_DIRECTORY . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log');
+		$this->log = new Log(LOGS_DIRECTORY . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
 	}
 

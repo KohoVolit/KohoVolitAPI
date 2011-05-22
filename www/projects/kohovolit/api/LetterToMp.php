@@ -15,7 +15,7 @@ class LetterToMp
 	 */
 	public static function init()
 	{
-		self::$entity = new Entity(array('letter_id', 'mp_id', 'parliament_code'));
+		self::$entity = new Entity('letter_to_mp', array('letter_id', 'mp_id', 'parliament_code'));
 	}
 
 	/**
