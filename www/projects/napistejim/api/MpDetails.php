@@ -26,7 +26,7 @@ class MpDetails
 			"left join parliament as p on p.code = mpa.parl\n" .
 			"where false\n"
 		);
-		$mps = explode(',', $params['mp']);
+		$mps = explode('|', $params['mp']);
 		$n = $i = 0;
 		foreach ((array)$mps as $mp)
 		{

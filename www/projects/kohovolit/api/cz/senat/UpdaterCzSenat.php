@@ -69,10 +69,6 @@ class UpdaterCzSenat
 	{
 		$this->log->write('Started with parameters: ' . print_r($params, true));
 
-		//update areas only if param 'area' is set (approx. 2 hours of updating)
-		if (isset($params['area']))
-		  $this->updateAreas();
-
 		//update parliament and term
 		$this->updateParliament();
 		$this->term_id = $this->updateTerm($params);
@@ -80,7 +76,7 @@ class UpdaterCzSenat
 
 		// read list of all MPs in the term of office to update data for
 		$src_mps = $this->ac->read('Scraper', array('remote_resource' => 'mp_list'));
-		$src_mps = $src_mps['mps'];
+		$src_mps = $src_mps['mp_list'];
 
 		//prepare variable to mark (still valid) memberships
 		$marked = array();
@@ -156,6 +152,10 @@ class UpdaterCzSenat
 		}
 		$this->closeMemberships($marked);
 		$this->closeOffice($marked);
+		
+		//update areas only if param 'area' is set (approx. 2 hours of updating)
+		if (isset($params['area']))
+		  $this->updateAreas();
 
 		$this->log->write('Completed.');
 		return array('update' => 'OK');
@@ -194,7 +194,7 @@ class UpdaterCzSenat
 
 	        //set data (kraj,okres,obec)
 	        $data = array(
-	          'country' => 'CZ',
+	          'country' => 'Česká republika',
 	          'administrative_area_level_1' => $kraj['name'],
 	          'administrative_area_level_2' => $okres['name'],
 	          'locality' => $obec['name'],
@@ -242,11 +242,16 @@ class UpdaterCzSenat
 
 	              case 'Praha';
 
-	                $subs = explode('-',$uzemi['name']);
+	                $subs = explode('-',$uzemi['name']); //e.g., Praha 2-Nové Město = sublocality-neighborhood
 
 	                //strip part in (), e.g.Praha 10(bez části k.ú.Vinohrady)
 	                $subs2 = explode('(',$subs[0]);
 	                $data['sublocality'] = $subs2[0];
+	                
+	                //correct  parts with (), e.g.Praha 10(bez části k.ú.Vinohrady) -> (Praha 10, ~Vinohrady)
+	                if (isset($subs2[1])) { //if it is such a case, e.g.Praha 10(bez části k.ú.Vinohrady)
+	                  $data['neighborhood'] = $this->correctPrahaExceptErrors($uzemi['name']);
+	                }
 
 	                if (isset($subs[1])) { //if isset neighborhood
 	                  $subs3 = explode(',',$subs[1]); //Hrdlořezy,Malešice
@@ -278,6 +283,36 @@ class UpdaterCzSenat
 	    }
 	  }
 
+	}
+	
+	/**
+	* correct exception in Praha regions into db format
+	*
+	* example: correctPrahaExceptErrors(Praha6(bez Bubenče,Střeš.,Hrad.,Sedlce)) ->
+	*	 '~Bubeneč,Střešovice,Hradčany,Sedlec'
+	*
+	* @param $name
+	*
+	* @result $neighborhood
+	*/
+	private function correctPrahaExceptErrors($name) {
+	  switch ($name) {
+	    case 'Praha 10(bez části k.ú.Vinohrady)':
+	      return '~Vinohrady';
+	    case 'Praha 2(bez Nového Města a Vyšehradu)':
+	      return '~Nové Město,Vyšehrad';
+	    case 'Praha 4(bez Hodkoviček,Lhotky)':
+	      return '~Hodkovičky,Lhotka';
+	    case 'Praha 5(bez části k.ú.Malá Strana)':
+	      return '~Malá Strana';
+	    case 'Praha 6(bez Bubenče,Střeš.,Hrad.,Sedlce)':
+	      return '~Bubeneč,Střešovice,Hradčany,Sedlec';
+	    case 'Praha 9(bez Hrdlořez,Hloubětína,Malešic)':
+	      return '~Hrdlořezy,Hloubětín,Malešice';
+	    default:
+	      //issue warning
+	      $this->log->write("No correction rule for {$name} in correctPrahaExceptErrors()", Log::WARNING);
+	  }
 	}
 
 	/**
@@ -488,35 +523,32 @@ class UpdaterCzSenat
 		return $role_code[0];
 	}
 
-	/** Update group_kinds and groups. If a group_kind or a group is not in db, insert it
+	/** Update groups. If a group_kind or a group is not in db, insert it
 	*
 	* @param $src_groups array of scraped groups
 	*/
 	private function updateGroups($src_groups) {
 
 	  foreach((array) $src_groups['group_kind'] as $src_group_kind) {
-	    //update or insert group_kinds
-	    $this->log->write("Updating group kind '{$src_group_kind['group_kind_plural_en']}'", Log::DEBUG);
 
 	    $src_group_kind_code = strtolower($src_group_kind['group_kind_plural_en']);
-	    //correction for 'Senate'
-	    if ($src_group_kind_code == 'senate')
-	      $src_group_kind_code = 'parliament';
 
-	    //common data (both update and insert)
+	    //common data (insert)
 	    $data = array(
 	        'name_' => $src_group_kind['group_kind_plural_en'],
-	        'code' => $src_group_kind_code,
+	        'code' => $this->senateGroupKind2DbGroupKind($src_group_kind_code),
 	        'subkind_of' => 'parliament',
 	    );
 
-	    $group_kind_db = $this->ac->read('GroupKind', array('code' => $src_group_kind_code));
+	    $group_kind_db = $this->ac->read('GroupKind', array('code' => $this->senateGroupKind2DbGroupKind($src_group_kind_code)));
 	    if (isset($group_kind_db['group_kind'][0])) {
-	      //update
-	      $this->ac->update('GroupKind', array('code' => $src_group_kind_code),$data);
+	      //update - no updating here, because of standard names!
+	      //$this->ac->update('GroupKind', array('code' => senateGroupKind2DbGroupKind($src_group_kind_code),$data));
 	    } else {
 	      //insert
 	      $this->ac->create('GroupKind',array($data));
+	      //insert group_kinds
+	      $this->log->write("Inserting group kind '{$src_group_kind['group_kind_plural_en']}'", Log::DEBUG);
 	    }
 
 	    foreach ((array) $src_group_kind['group'] as $src_group) {
@@ -544,7 +576,7 @@ class UpdaterCzSenat
 		  $data = array (
 		  	'name_' => $src_group['name'],
 			//'short_name' => $src_group['short_name'],
-			'group_kind_code' => $src_group_kind_code,
+			'group_kind_code' => $this->senateGroupKind2DbGroupKind($src_group_kind_code),
 			'parliament_code' => $this->parliament_code,
 			'term_id' => $this->term_id,
 			'last_updated_on' => $this->update_date,
@@ -566,6 +598,36 @@ class UpdaterCzSenat
 	  }
 	}
 
+	/**
+	* transform group_kind_code as at senat.cz into standard ones for db
+	*
+	* example: senateGroupKind2DbGroupKind('senate commissions') -> 'commission'
+	*
+	* @param $src_group_kind_code
+	*
+	* @return $group_kind
+	*/
+	private function senateGroupKind2DbGroupKind($src_group_kind_code) {
+	  switch ($src_group_kind_code) {
+	    case 'caucuses' :
+	      return 'political group';
+	    case 'senate commissions' :
+	      return "commission";
+	    case 'senate committees' :
+	      return "committee";
+	    case "senate delegations" :
+	      return "delegation";
+	    case "senate verifiers" :
+	      return "verifier";
+	    case "sub-committees" :
+	      return "subcommittee";
+	    case "senate":
+	      return "parliament";
+	    default:
+	      $this->log->write("Inserting new group_kind {$src_group_kind_code}'. Is it ok?", Log::WARNING);
+	      return $src_group_kind_code;
+	  }
+	}
 
 	/**
 	 * Update information about a constituency. If it is not present in database, download info, scrape it and insert it.

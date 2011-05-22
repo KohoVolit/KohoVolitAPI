@@ -21,7 +21,7 @@ class Updater
 	{
 		$parliament = $params['parliament'];
 		$api_class = 'Updater' . str_replace(' ', '', ucwords(strtr($parliament, '/-', '  ')));
-		$ok = @include_once "projects/kohovolit/api/$parliament/$api_class.php";
+		$ok = include_once "projects/kohovolit/api/$parliament/$api_class.php";
 		if (!$ok)
 			throw new Exception("The API resource <em>Updater</em> is not implemented for parliament <em>$parliament</em>.", 400);
 
