@@ -209,7 +209,8 @@ class ScraperCzSenat
 	if (strpos($html,'V daném období nemá senátor/ka platný mandát') > 0) {
 	  throw new Exception('The senator does not have a legitimate mandate during this period',404);
 	} else {
-	  $name = ScraperUtils::tokenizeName(trim(strip_tags(str_replace("\xc2\xa0",' ',str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'<h1 class="h1-back-sen">','</h1>'))))));
+
+	  $name = ScraperUtils::tokenizeName(trim(strip_tags(str_replace("  ", " ",str_replace("\xc2\xa0",' ',str_replace('&nbsp;',' ',ScraperUtils::getFirstString($html,'<h1 class="h1-back-sen">','</h1>')))))));
 	  $result['mp']['source_code'] = $id;
 	  $result['mp']['name'] = $name;
 	  $foto_part = ScraperUtils::getFirstString($html,'<div class="foto">','/>');
