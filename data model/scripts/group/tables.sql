@@ -46,7 +46,7 @@ create table mp_in_group
 (
 	mp_id integer references mp on delete cascade on update cascade,
 	group_id integer references group_ on delete cascade on update cascade,
-	role_code varchar references role_ on delete restrict on update cascade,
+	role_code varchar references role_ on delete restrict on update cascade default 'member' ,
 	party_id integer references party on delete restrict on update cascade,
 	constituency_id integer references constituency on delete restrict on update cascade,
 	since timestamp not null default '-infinity',
@@ -93,7 +93,8 @@ create table party_attribute
 ) inherits (attribute_);
 
 -- indexes (except PRIMARY KEY and UNIQUE constraints, for which the indexes have been created automatically)
-create index mp_in_group_group_id_fkey on mp_in_group(group_id);
+create index mp_in_group_group_id on mp_in_group(group_id);
+create index mp_in_group_constituency_id on mp_in_group(constituency_id);
 
 -- privileges on objects
 grant select
