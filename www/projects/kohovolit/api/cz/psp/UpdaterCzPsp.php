@@ -45,7 +45,7 @@ class UpdaterCzPsp
 	{
 		$this->parliament_code = $params['parliament'];
 		$this->ac = new ApiDirect('kohovolit', array('parliament' => $this->parliament_code));
-		$this->log = new Log(LOGS_DIRECTORY . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
+		$this->log = new Log(LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
 	}
 
@@ -505,7 +505,7 @@ class UpdaterCzPsp
 			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since)));
 
 			// if the directory for MP images does not exist, create it
-			$path = DATA_DIRECTORY . '/' . $this->parliament_code . '/images/mp';
+			$path = DATA_DIR . '/' . $this->parliament_code . '/images/mp';
 			if (!file_exists($path))
 				mkdir($path, 0775, true);
 

@@ -70,9 +70,9 @@ class ApiDirect
 	 */
 	private function includeApiResourceClass($resource)
 	{
-		require_once  API_ROOT . '/config/settings.php';
-		require_once  API_ROOT . '/setup.php';
-		@include_once API_ROOT . "/projects/{$this->project}/config/settings.php";
+		require_once  API_ROOT . '/www/config/settings.php';
+		require_once  API_ROOT . '/www/setup.php';
+		@include_once API_ROOT . "/www/projects/{$this->project}/config/settings.php";
 		$ok = @include_once "projects/{$this->project}/api/$resource.php";
 		if (!$ok)
 			throw new \Exception("There is no API resource <em>$resource</em>.", 404);
