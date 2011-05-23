@@ -1,6 +1,7 @@
 <?php
 
-const DATA_DIRECTORY = '/home/shared/kohovolit.eu/www/data';
-const LOGS_DIRECTORY = '/home/shared/kohovolit.eu/logs';
+const KOHOVOLIT_DIR = '/home/shared/kohovolit.eu';
+define ("DATA_DIR", KOHOVOLIT_DIR . '/www/data');
+define ("LOGS_DIR", KOHOVOLIT_DIR . '/logs');
 
 ?>

@@ -38,8 +38,8 @@ class MpDetails
 		}
 		$rows = $query->execute();
 
-		// include settings of kohovolit project API to get a path to kohovolit data (DATA_DIRECTORY)
-		require_once API_ROOT . '/projects/kohovolit/config/settings.php';
+		// include settings of kohovolit project API to get a path to kohovolit data (DATA_DIR)
+		require_once API_ROOT . '/www/projects/kohovolit/config/settings.php';
 
 		// aggregate each MP's attributes to one row, rows in the same order as MPs in the input list
 		$prev_id = null;
@@ -54,7 +54,7 @@ class MpDetails
 			}
 			$mp_details[$i][$row['attr_name']] = $row['attr_value'];
 			if ($row['attr_name'] == 'image')
-				$mp_details[$i]['image'] = DATA_DIRECTORY . '/' . $row['parliament_code'] . '/images/mp/' . $row['attr_value'];
+				$mp_details[$i]['image'] = $row['parliament_code'] . '/images/mp/' . $row['attr_value'];
 			$prev_id = $row['id'];
 		}
 		if (!empty($mp_details))
