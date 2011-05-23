@@ -152,6 +152,7 @@ class UpdaterCzSenat
 
 			  //mark the membership
 			  $marked[$mp_id][$group_id][$role_code] = true;
+			  $marked[$mp_id][$group_id]['member'] = true;
 
 
 			}
@@ -214,7 +215,6 @@ class UpdaterCzSenat
 	          foreach ((array) $src_regions_3['regions']['region']['uzemi']['region'] as $uzemi) {
 	            $src_regions_4 = $this->ac->read('Scraper', array('remote_resource' => 'region',$kraj['number'], 'okres' => $okres['number'], 'obec' => $obec['number'], 'uzemi' => $uzemi['number']));
 	            $constituency = $src_regions_4['regions']['constituency'];
-
 	            //treat every city differently
 	            switch($obec['name']) {
 
@@ -254,11 +254,6 @@ class UpdaterCzSenat
 	                //strip part in (), e.g.Praha 10(bez části k.ú.Vinohrady)
 	                $subs2 = explode('(',$subs[0]);
 	                $data['sublocality'] = $subs2[0];
-	                
-	                //correct  parts with (), e.g.Praha 10(bez části k.ú.Vinohrady) -> (Praha 10, ~Vinohrady)
-	                if (isset($subs2[1])) { //if it is such a case, e.g.Praha 10(bez části k.ú.Vinohrady)
-	                  $data['neighborhood'] = $this->correctPrahaExceptErrors($uzemi['name']);
-	                }
 
 	                if (isset($subs[1])) { //if isset neighborhood
 	                  $subs3 = explode(',',$subs[1]); //Hrdlořezy,Malešice
@@ -272,6 +267,10 @@ class UpdaterCzSenat
 
 	                } else {
 	                  unset($data['neighborhood']);
+	                  //correct  parts with (), e.g.Praha 10(bez části k.ú.Vinohrady) -> (Praha 10, ~Vinohrady)
+	                  if (isset($subs2[1])) { //if it is such a case, e.g.Praha 10(bez části k.ú.Vinohrady)
+	                    $data['neighborhood'] = $this->correctPrahaExceptErrors($uzemi['name']);
+	                  }
 	                  //correct errors
 	                  if ($corr_const = $this->correctPrahaAreaErrors($data['sublocality']))
 	                      $constituency = $corr_const;
