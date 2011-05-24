@@ -9,11 +9,13 @@ create table letter
 	sender_name varchar not null,
 	sender_address varchar,
 	sender_email varchar not null,
-	sent_on timestamp not null default current_timestamp,
-	is_public boolean not null,
+	is_public varchar not null check (is_public in ('yes', 'no')),
 	state_ varchar not null default 'created' check (state_ in ('created', 'waiting for approval', 'refused', 'sent', 'answered', 'unanswered')),
+	written_on timestamp not null default current_timestamp,
+	sent_on timestamp,
 	reply_code varchar not null unique,
 	approval_code varchar,
+	answered_code varchar,
 	unique (subject, body_, sender_email)
 );
 
@@ -37,7 +39,7 @@ create table answer
 
 create table area
 (
-	constituency_id integer references constituency on delete restrict on update cascade,
+	constituency_id integer references constituency on delete cascade on update cascade,
 	country varchar default '*',
 	administrative_area_level_1 varchar default '*',
 	administrative_area_level_2 varchar default '*',
