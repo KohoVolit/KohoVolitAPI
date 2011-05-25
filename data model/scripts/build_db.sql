@@ -6,7 +6,6 @@ set role to kohovolit;
 
 comment on database kohovolit is 'Project KohoVolit.';
 
-\i types.sql
 \i base/tables.sql
 \i base/triggers.sql
 \i base/inserts.sql

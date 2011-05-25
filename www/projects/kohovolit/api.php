@@ -4,7 +4,7 @@ require '../../config/settings.php';
 require '../../setup.php';
 require '../kohovolit/config/settings.php';	// not working with ./config/ - bug in PHP?
 
-$private_resources = array('Letter');
+$private_resources = array('Message');
 
 try
 {
