@@ -15,7 +15,7 @@ create table message
 	sent_on timestamp,
 	confirmation_code varchar not null unique,
 	approval_code varchar,
-	unique (subject, body_, sender_email)
+--	unique (subject, body_, sender_email)
 );
 
 create table response
