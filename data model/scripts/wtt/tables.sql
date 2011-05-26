@@ -14,7 +14,7 @@ create table message
 	written_on timestamp not null default current_timestamp,
 	sent_on timestamp,
 	confirmation_code varchar not null unique,
-	approval_code varchar,
+	approval_code varchar
 --	unique (subject, body_, sender_email)
 );
 
