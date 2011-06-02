@@ -1,7 +1,7 @@
 -- KohoVolit.eu Generación Cuarta
 -- tables of package WTT
 
-create table letter
+create table message
 (
 	id serial primary key,
 	subject varchar not null,
@@ -10,31 +10,27 @@ create table letter
 	sender_address varchar,
 	sender_email varchar not null,
 	is_public varchar not null check (is_public in ('yes', 'no')),
-	state_ varchar not null default 'created' check (state_ in ('created', 'waiting for approval', 'refused', 'sent', 'answered', 'unanswered')),
+	state_ varchar not null default 'created' check (state_ in ('created', 'waiting for approval', 'refused', 'sent')),
 	written_on timestamp not null default current_timestamp,
 	sent_on timestamp,
-	reply_code varchar not null unique,
-	approval_code varchar,
-	answered_code varchar,
-	unique (subject, body_, sender_email)
+	confirmation_code varchar not null unique,
+	approval_code varchar
+--	unique (subject, body_, sender_email)
 );
 
-create table letter_to_mp
+create table response
 (
-	letter_id integer references letter on delete cascade on update cascade,
+	message_id integer references message on delete cascade on update cascade,
 	mp_id integer references mp on delete cascade on update cascade,
 	parliament_code varchar references parliament on delete set null on update cascade,
-	primary key (letter_id, mp_id)
-);
-
-create table answer
-(
-	letter_id integer references letter on delete restrict on update cascade,
-	mp_id integer references mp on delete cascade on update cascade,
-	subject varchar not null,
-	body_ text not null,
-	received_on timestamp not null default current_timestamp,
-	primary key (letter_id, mp_id)
+	subject varchar,
+	body_ text,
+	full_email_data text,
+	received_on timestamp,
+	received_privately varchar check (received_privately in ('yes', 'no')),
+	reply_code varchar not null unique,
+	survey_code varchar,	
+	primary key (message_id, mp_id, parliament_code)
 );
 
 create table area
@@ -53,15 +49,15 @@ create table area
 );
 
 -- indexes (except PRIMARY KEY and UNIQUE constraints, for which the indexes have been created automatically)
-create index letter_reply_code on letter(reply_code);
+create index response_mp_id on response(mp_id);
 
 -- privileges on objects
 grant select
-	on table letter, letter_to_mp, answer, area
+	on table message, response, area
 	to kv_user, kv_editor, kv_admin;
 grant insert, update, delete, truncate
-	on table letter, letter_to_mp, answer, area
+	on table message, response, area
 	to kv_admin;
 grant usage
-	on sequence letter_id_seq
+	on sequence message_id_seq
 	to kv_admin;
