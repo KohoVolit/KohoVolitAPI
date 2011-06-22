@@ -183,7 +183,14 @@ class ScraperCzPsp
 		}
 
 		// e-mail
-		$out['email'] = trim(ScraperUtils::getFirstString($html, 'mailto:','">'));
+			//mailto:andrysoval@psp.cz">Můžete mi napsat
+		$tmp_pos_last = strpos($html, '">Můžete mi napsat');
+		if ($tmp_pos_last) {
+		  $tmp_pos_first = strrpos(substr($html,0,$tmp_pos_last),'mailto:')+strlen('mailto:');
+		  $out['email'] = substr($html, $tmp_pos_first, $tmp_pos_last - $tmp_pos_first);
+		} else 
+		  $out['email'] = '';
+		//trim(ScraperUtils::getFirstString($html, 'mailto:','">'));	//wrong, because some MPs have their assistant's email on the page
 
 		// www
 		$out['website'] = trim(ScraperUtils::getFirstString($html, 'href="http://','">Další informace (vlastní stránka)'), '/');
