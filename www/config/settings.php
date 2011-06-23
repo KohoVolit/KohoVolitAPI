@@ -1,9 +1,7 @@
 <?php
 
-
-const API_ROOT = '/home/michal/api.kohovolit.eu';
-error_reporting(E_ALL | E_STRICT);
-
+const API_ROOT = '/home/shared/api.kohovolit.eu';
+error_reporting(0);
 date_default_timezone_set('Europe/Prague');
 
 ?>
