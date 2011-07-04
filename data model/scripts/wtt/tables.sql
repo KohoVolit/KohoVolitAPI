@@ -49,6 +49,8 @@ create table area
 );
 
 -- indexes (except PRIMARY KEY and UNIQUE constraints, for which the indexes have been created automatically)
+create index message_sent_on on message(sent_on);
+create index response_message_id on response(message_id);
 create index response_mp_id on response(mp_id);
 
 -- privileges on objects

@@ -30,7 +30,7 @@ class MpDetails
 		$n = $i = 0;
 		foreach ((array)$mps as $mp)
 		{
-			$query->appendQuery('or mp_id = $' . ++$n . 'and parl = $' . ++$n . "\n");
+			$query->appendQuery('or mp_id = $' . ++$n . ' and parl = $' . ++$n . "\n");
 			$p = strrpos($mp, '/');
 			$query->appendParam(substr($mp, $p + 1));
 			$query->appendParam(substr($mp, 0, $p));
