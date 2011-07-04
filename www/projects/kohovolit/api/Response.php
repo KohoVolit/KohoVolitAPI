@@ -15,7 +15,10 @@ class Response
 	 */
 	public static function init()
 	{
-		self::$entity = new Entity('response', array('message_id', 'mp_id', 'parliament_code', 'subject', 'body_', 'full_email_data', 'received_on', 'received_privately', 'reply_code', 'survey_code'));
+		self::$entity = new Entity(
+			'response',
+			array('message_id', 'mp_id', 'parliament_code', 'subject', 'body_', 'full_email_data', 'received_on', 'received_privately', 'reply_code', 'survey_code')
+		);
 	}
 
 	/**

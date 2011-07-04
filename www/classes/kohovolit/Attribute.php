@@ -32,19 +32,11 @@
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
 	 * \return An array of attributes, eg. <code>array('mp_attribute' => array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...))</code> sorted by \e <entity_id> than by \e name_ than by \e lang all ascending and then by \e since descending.
-	 *
-	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid now.
 	 */
 	public function read($params)
 	{
 		$query = new Query();
 		$query->buildSelect($this->tableName, '*', $params, $this->tableColumns);
-		if (!empty($params['datetime']))
-		{
-			$query->appendParam($params['datetime']);
-			$n = $query->getParamsCount();
-			$query->appendQuery(' and since <= $' . $n . ' and until > $' . $n);
-		}
 		$query->appendQuery(' order by ' . reset($this->tableColumns) . ', name_, lang, since desc');
 		$attrs = $query->execute();
 		return array($this->tableName => $attrs);

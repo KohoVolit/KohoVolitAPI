@@ -19,8 +19,7 @@ class MpInGroup
 			'mp_in_group',
 			array('mp_id', 'group_id', 'role_code', 'party_id', 'constituency_id', 'since', 'until'),
 			null,
-			array(),
-			true
+			array()
 		);
 	}
 

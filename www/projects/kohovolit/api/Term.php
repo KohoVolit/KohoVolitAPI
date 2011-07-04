@@ -19,8 +19,7 @@ class Term
 			'term',
 			array('id', 'name_', 'short_name', 'description', 'country_code', 'parliament_kind_code', 'since', 'until'),
 			'id',
-			array('id'),
-			true
+			array('id')
 		);
 	}
 

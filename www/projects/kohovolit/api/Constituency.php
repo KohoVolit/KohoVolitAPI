@@ -19,8 +19,7 @@ class Constituency
 			'constituency',
 			array('id', 'name_', 'short_name', 'description', 'parliament_code', 'since', 'until'),
 			'id',
-			array('id'),
-			true
+			array('id')
 		);
 	}
 

@@ -19,9 +19,6 @@ class Entity
 	/// read-only columns
 	private $readonlyColumns;
 
-	/// contains the table 'since' and 'until' columns?
-	private $temporal;
-
 	/**
 	 * Initializes information about a database table for this entity.
 	 *
@@ -29,15 +26,13 @@ class Entity
 	 * \param $table_columns Array of names of the database table columns.
 	 * \param $return_column Name of a column to return values from for all created/updated/deleted entities (usually a primary key column like 'id'). If not set number of created/updated/deleted rows is returned.
 	 * \param $readonly_columns Array of names of the database table columns that are read-only (ie. that are automatically generated on insert).
-	 * \param $temporal Indicates whether the table contains \e since and \e until columns. In that case \e datetime within the \c read() method parameters can be used (eg. 'datetime' => '2010-06-30 9:30:00') to select only entities valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Value 'datetime' => 'now' can be used to get entities valid now.
 	 */
-	public function __construct($table_name, $table_columns, $return_column = null, $readonly_columns = array(), $temporal = false)
+	public function __construct($table_name, $table_columns, $return_column = null, $readonly_columns = array())
 	{
 		$this->tableName = $table_name;
 		$this->tableColumns = $table_columns;
 		$this->returnColumn = isset($return_column) ? $return_column : '1';
 		$this->readonlyColumns = $readonly_columns;
-		$this->temporal = $temporal;
 	}
 
 	/**
@@ -51,12 +46,6 @@ class Entity
 	{
 		$query = new Query();
 		$query->buildSelect($this->tableName, '*', $params, $this->tableColumns);
-		if ($this->temporal && !empty($params['datetime']))
-		{
-			$query->appendParam($params['datetime']);
-			$n = $query->getParamsCount();
-			$query->appendQuery(' and since <= $' . $n . ' and until > $' . $n);
-		}
 		$entities = $query->execute();
 		return array(rtrim($this->tableName, '_') => $entities);
 	}

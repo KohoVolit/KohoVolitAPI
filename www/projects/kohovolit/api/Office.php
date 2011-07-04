@@ -19,8 +19,7 @@ class Office
 			'office',
 			array('mp_id', 'parliament_code', 'address', 'phone', 'latitude', 'longitude', 'relevance', 'since', 'until'),
 			null,
-			array(),
-			true
+			array()
 		);
 	}
 

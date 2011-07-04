@@ -2,6 +2,7 @@
 
 /**
  * ...
+ * If a table contains \e since and \e until columns then \e datetime can be used within parameters of \c read(), \c update() and \c delete() methods (eg. 'datetime' => '2010-06-30 9:30:00') that restricts the where condition to only entities valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Value 'datetime' => 'now' can be used to get entities valid now.
  */
 class Query
 {
@@ -9,7 +10,7 @@ class Query
 	private $params;
 	private $db_user;
 	private $inside_transaction;
-	
+
 	public function __construct($db_user = 'kv_user')
 	{
 		$this->query = '';
@@ -17,23 +18,23 @@ class Query
 		$this->db_user = $db_user;
 		$this->inside_transaction = false;
 	}
-	
+
 	public function __destruct()
 	{
 		if ($this->inside_transaction)
 			return $this->rollbackTransaction();
 	}
-	
+
 	public function getQuery()
 	{
 		return $this->query;
 	}
-	
+
 	public function setQuery($query)
 	{
 		$this->query = $query;
 	}
-	
+
 	public function appendQuery($query)
 	{
 		$this->query .= $query;
@@ -43,12 +44,12 @@ class Query
 	{
 		$this->query = '';
 	}
-	
+
 	public function getParams()
 	{
 		return $this->params;
 	}
-	
+
 	public function setParams($params)
 	{
 		$this->params = $params;
@@ -63,7 +64,7 @@ class Query
 	{
 		$this->params = array();
 	}
-	
+
 	public function getParamsCount()
 	{
 		return count($this->params);
@@ -81,7 +82,7 @@ class Query
 		$this->inside_transaction = true;
 		return Db::query('begin', null, $this->db_user);
 	}
-	
+
 	public function commitTransaction()
 	{
 		if (!$this->inside_transaction)
@@ -89,7 +90,7 @@ class Query
 		$this->inside_transaction = false;
 		return Db::query('commit', null, $this->db_user);
 	}
-	
+
 	public function rollbackTransaction()
 	{
 		if (!$this->inside_transaction)
@@ -104,19 +105,19 @@ class Query
 		$this->params = array();
 		$this->addWhereCondition($filter, $allowed_columns);
 	}
-	
+
 	public function buildInsert($table, $data, $ret_column, $allowed_columns, $ro_columns = array())
 	{
-		$this->params = array();		
+		$this->params = array();
 		$columns = array();
 		$dollars = '';
-		
+
 		foreach ((array)$data as $column => $value)
 		{
 			if (in_array($column, $ro_columns))
-				throw new Exception("Trying to write to read-only column <em>$column</em> in table <em>" . strtoupper($table) . '</em>.', 400);				
+				throw new Exception("Trying to write to read-only column <em>$column</em> in table <em>" . strtoupper($table) . '</em>.', 400);
 			if (!in_array($column, $allowed_columns)) continue;
-			
+
 			$columns[] = $column;
 			if (is_null($value))
 				$dollars .= 'null, ';
@@ -126,8 +127,8 @@ class Query
 				$dollars .= '$' . count($this->params) . ', ';
 			}
 		}
-		$this->query = "insert into $table (" . implode(', ', $columns) . ') values (' . rtrim($dollars, ', ') . ')';			
-		
+		$this->query = "insert into $table (" . implode(', ', $columns) . ') values (' . rtrim($dollars, ', ') . ')';
+
 		if (!empty($ret_column))
 			$this->query .= " returning $ret_column";
 	}
@@ -136,13 +137,13 @@ class Query
 	{
 		$this->query = "update $table set";
 		$this->params = array();
-		
+
 		foreach ((array)$data as $column => $value)
 		{
 			if (in_array($column, $ro_columns))
-				throw new Exception("Trying to write to read-only column <em>$column</em> in table <em>" . strtoupper($table) . '</em>.', 400);								
+				throw new Exception("Trying to write to read-only column <em>$column</em> in table <em>" . strtoupper($table) . '</em>.', 400);
 			if (!in_array($column, $allowed_columns)) continue;
-			
+
 			if (is_null($value))
 				$this->query .= " $column = null,";
 			else
@@ -154,7 +155,7 @@ class Query
 		$this->query = rtrim($this->query, ',');
 
 		$this->addWhereCondition($filter, $allowed_columns);
-		
+
 		if (!empty($ret_column))
 			$this->query .= " returning $ret_column";
 	}
@@ -167,13 +168,15 @@ class Query
 		if (!empty($ret_column))
 			$this->query .= " returning $ret_column";
 	}
-	
+
 	private function addWhereCondition($filter, $allowed_columns)
 	{
 		$this->query .= ' where true';
-		foreach ((array)$filter as $column => $value)
+		if (!is_array($filter) || !is_array($allowed_columns) return;
+
+		foreach ($filter as $column => $value)
 		{
-			if (!in_array($column, (array)$allowed_columns)) continue;
+			if (!in_array($column, $allowed_columns)) continue;
 
 			if (is_null($value))
 				$this->query .= " and $column is null";
@@ -182,6 +185,13 @@ class Query
 				$this->params[] = $value;
 				$this->query .= " and $column = $" . count($this->params);
 			}
+		}
+		if (isset($filter['datetime']) && !empty($filter['datetime']) &&
+			in_array('since', $allowed_columns) && in_array('until', $allowed_columns))
+		{
+			$this->params[] = $filter['datetime'];
+			$n = count($this->params);
+			$this->query .= ' and since <= $' . $n . ' and until > $' . $n;
 		}
 	}
 }
