@@ -172,7 +172,7 @@ class Query
 	private function addWhereCondition($filter, $allowed_columns)
 	{
 		$this->query .= ' where true';
-		if (!is_array($filter) || !is_array($allowed_columns) return;
+		if (!is_array($filter) || !is_array($allowed_columns)) return;
 
 		foreach ($filter as $column => $value)
 		{
