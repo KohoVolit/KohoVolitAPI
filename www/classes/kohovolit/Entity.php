@@ -53,16 +53,20 @@ class Entity
 	/**
 	 * Create entity(s) with given values.
 	 *
-	 * \param $data An array of entities to create, where each entity is given by array of pairs <em>column => value</em>.
+	 * \param $data An entity to create given by array of pairs <em>column => value</em>. Alternatively, an array of such entities.
 	 *
 	 * \return An array of values from the return column (set on class initialization) of created entities or number of them if the return column has not been set.
 	 */
 	public function create($data)
 	{
+		if (!is_array($data)) return null;
+		if (!is_array(reset($data)))
+			$data = array($data);
+
 		$query = new Query('kv_admin');
 		$ids = array();
 		$query->startTransaction();
-		foreach ((array)$data as $entity)
+		foreach ($data as $entity)
 		{
 			$query->buildInsert($this->tableName, $entity, $this->returnColumn, $this->tableColumns, $this->readonlyColumns);
 			$res = $query->execute();

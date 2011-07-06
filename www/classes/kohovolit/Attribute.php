@@ -45,15 +45,19 @@
 	/**
 	 * Create attributes with given values.
 	 *
-	 * \param $data An array of attributes to create, where each attribute is given by array of pairs <em>column => value</em>. Eg. <code>array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...)</code>.
+	 * \param $data An attribute to create given by array of pairs <em>column => value</em>. Alternatively, an array of such attributes. Eg. <code>array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...)</code>.
 	 *
 	 * \return Number of created attributes.
 	 */
 	public function create($data)
 	{
+		if (!is_array($data)) return null;
+		if (!is_array(reset($data)))
+			$data = array($data);
+
 		$query = new Query('kv_admin');
 		$query->startTransaction();
-		foreach ((array)$data as $attr)
+		foreach ($data as $attr)
 		{
 			$query->buildInsert($this->tableName, $attr, null, $this->tableColumns);
 			$query->execute();

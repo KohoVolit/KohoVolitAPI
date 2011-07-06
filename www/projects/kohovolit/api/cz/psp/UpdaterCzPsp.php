@@ -181,7 +181,7 @@ class UpdaterCzPsp
 		// if parliament does not exist yet, insert it
 		if (!isset($parliament['parliament'][0]))
 		{
-			$this->ac->create('Parliament', array(array(
+			$this->ac->create('Parliament', array(
 				'code' => $this->parliament_code,
 				'name_' => 'Poslanecká sněmovna Parlamentu České republiky',
 				'short_name' => 'PSP ČR',
@@ -189,7 +189,7 @@ class UpdaterCzPsp
 				'parliament_kind_code' => 'national-lower',
 				'country_code' => 'cz',
 				'default_language' => 'cs'
-			)));
+			));
 
 			// english translation
 			$this->ac->create('ParliamentAttribute', array(
@@ -261,7 +261,7 @@ class UpdaterCzPsp
 			$term_id = $term_id[0];
 
 			// insert term's source code as an attribute
-			$this->ac->create('TermAttribute', array(array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code)));
+			$this->ac->create('TermAttribute', array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code));
 		}
 
 		// prepare start and end dates of this term and start date of the following term
@@ -343,7 +343,7 @@ class UpdaterCzPsp
 			$constituency_id = $constituency_id[0];
 
 			// insert source code of the constituency
-			$this->ac->create('ConstituencyAttribute', array(array('constituency_id' => $constituency_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code)));
+			$this->ac->create('ConstituencyAttribute', array('constituency_id' => $constituency_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
 		}
 
 		// in case of current constituency, update its areas
@@ -351,7 +351,7 @@ class UpdaterCzPsp
 		{
 			$area = $this->ac->read('Area', array('constituency_id' => $constituency_id));
 			if (!isset($area['area'][0]))
-				$this->ac->create('Area', array(array('constituency_id' => $constituency_id, 'administrative_area_level_1' => $src_constituency['name'], 'country' => 'Česká republika')));
+				$this->ac->create('Area', array('constituency_id' => $constituency_id, 'administrative_area_level_1' => $src_constituency['name'], 'country' => 'Česká republika'));
 		}
 
 		return $constituency_id;
@@ -443,7 +443,7 @@ class UpdaterCzPsp
 		}
 
 		if ($action & self::MP_INSERT_SOURCE_CODE)
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code)));
+			$this->ac->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
 
 		if ($action & self::MP_UPDATE)
 			$this->ac->update('Mp', array('id' => $mp_id), $data);
@@ -476,7 +476,7 @@ class UpdaterCzPsp
 
 		// and insert a new one
 		if (isset($src_value))
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since)));
+			$this->ac->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since));
 	}
 
 	/**
@@ -502,7 +502,7 @@ class UpdaterCzPsp
 
 			// insert current image
 			$db_image_filename = $src_mp['id'] . '_' . $this->term_src_code . '.jpg';
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since)));
+			$this->ac->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since));
 
 			// if the directory for MP images does not exist, create it
 			$path = KOHOVOLIT_DATA_DIR . '/' . $this->parliament_code . '/images/mp';
@@ -594,7 +594,7 @@ class UpdaterCzPsp
 			$src_group['short_name'] = (isset($grp['group']['short_name'])) ? $grp['group']['short_name'] : null;
 			$src_group['parent_name'] = (isset($grp['group']['parent_name'])) ? $grp['group']['parent_name'] : null;
 
-			if (in_array($src_group['kind'], array('political group', 'committee', 'commission', 'delegation', 'friendship group', 'working group')))
+			if (in_array($src_group['kind'], array('political group', 'committee', 'commission', 'delegation', 'friendship group', 'working group'), true))
 				$src_group['parent_name'] = 'Poslanecká sněmovna';
 		}
 		// presence of the group "whole parliament" in the database is tested differently
@@ -629,7 +629,7 @@ class UpdaterCzPsp
 
 			// insert group's source code
 			if ($src_group['kind'] != 'parliament')
-				$this->ac->create('GroupAttribute', array(array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['id'], 'parl' => $this->parliament_code)));
+				$this->ac->create('GroupAttribute', array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['id'], 'parl' => $this->parliament_code));
 		}
 
 		// if the group has a parent group, add it to the list to resolve parentship

@@ -602,7 +602,7 @@ class UpdaterCzSenat
 			$group_id = $group_id[0];
 
 			// insert group's source code
-			$this->ac->create('GroupAttribute', array(array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['source_code'], 'parl' => $this->parliament_code)));
+			$this->ac->create('GroupAttribute', array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['source_code'], 'parl' => $this->parliament_code));
 	      }
 	    }
 	  }
@@ -723,9 +723,9 @@ class UpdaterCzSenat
 	    //insert the new one
 	    $geo = $this->ac->read('Scraper', array('remote_resource' => 'geocode', 'address' => $src_mp['office']));
 	    if ($geo['coordinates']['ok'])
-	      $this->ac->create('Office', array(array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'],'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since, 'latitude' => $geo['coordinates']['lat'], 'longitude' => $geo['coordinates']['lng'])));
+	      $this->ac->create('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'],'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since, 'latitude' => $geo['coordinates']['lat'], 'longitude' => $geo['coordinates']['lng']));
 	    else
-	      $this->ac->create('Office', array(array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'],'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since)));
+	      $this->ac->create('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'],'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since));
 
 	  } else { //no new office
 	    //check if any office at all, if not, close all
@@ -759,7 +759,7 @@ class UpdaterCzSenat
 
 			// insert current image
 			$db_image_filename = $src_mp['source_code'] . '_' . $this->term_src_code . '.jpg';
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since)));
+			$this->ac->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since));
 
 			// if the directory for MP images does not exist, create it
 			$path = KOHOVOLIT_DATA_DIR . '/' . $this->parliament_code . '/images/mp';
@@ -796,7 +796,7 @@ class UpdaterCzSenat
 
 		// and insert a new one
 		if (isset($src_value))
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since)));
+			$this->ac->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since));
 	}
 
 	/**
@@ -887,7 +887,7 @@ class UpdaterCzSenat
 		}
 
 		if ($action & self::MP_INSERT_SOURCE_CODE)
-			$this->ac->create('MpAttribute', array(array('mp_id' => $mp_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code)));
+			$this->ac->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
 
 		if ($action & self::MP_UPDATE)
 			$this->ac->update('Mp', array('id' => $mp_id), $data);
@@ -948,7 +948,7 @@ class UpdaterCzSenat
 		  $term_id = $term_id[0];
 
 		  	// insert term's source code as an attribute
-			$this->ac->create('TermAttribute', array(array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_to_update['term_code'], 'parl' => $this->parliament_code)));
+			$this->ac->create('TermAttribute', array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_to_update['term_code'], 'parl' => $this->parliament_code));
 		}
 
 		// prepare start date of this term and start date of the following term
@@ -976,7 +976,7 @@ class UpdaterCzSenat
 		// if parliament does not exist yet, insert it
 		if (!isset($parliament['parliament'][0]))
 		{
-			$this->ac->create('Parliament', array(array(
+			$this->ac->create('Parliament', array(
 				'code' => $this->parliament_code,
 				'name_' => 'Senát Parlamentu České republiky',
 				'short_name' => 'Senát ČR',
@@ -984,7 +984,7 @@ class UpdaterCzSenat
 				'parliament_kind_code' => 'national-upper',
 				'country_code' => 'cz',
 				'default_language' => 'cs'
-			)));
+			));
 
 			// english translation
 			$this->ac->create('ParliamentAttribute', array(

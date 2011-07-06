@@ -114,9 +114,9 @@ class Query
 
 		foreach ((array)$data as $column => $value)
 		{
-			if (in_array($column, $ro_columns))
+			if (in_array($column, $ro_columns, true))
 				throw new Exception("Trying to write to read-only column <em>$column</em> in table <em>" . strtoupper($table) . '</em>.', 400);
-			if (!in_array($column, $allowed_columns)) continue;
+			if (!in_array($column, $allowed_columns, true)) continue;
 
 			$columns[] = $column;
 			if (is_null($value))
@@ -140,9 +140,9 @@ class Query
 
 		foreach ((array)$data as $column => $value)
 		{
-			if (in_array($column, $ro_columns))
+			if (in_array($column, $ro_columns, true))
 				throw new Exception("Trying to write to read-only column <em>$column</em> in table <em>" . strtoupper($table) . '</em>.', 400);
-			if (!in_array($column, $allowed_columns)) continue;
+			if (!in_array($column, $allowed_columns, true)) continue;
 
 			if (is_null($value))
 				$this->query .= " $column = null,";
@@ -176,7 +176,7 @@ class Query
 
 		foreach ($filter as $column => $value)
 		{
-			if (!in_array($column, $allowed_columns)) continue;
+			if (!in_array($column, $allowed_columns, true)) continue;
 
 			if (is_null($value))
 				$this->query .= " and $column is null";
@@ -187,7 +187,7 @@ class Query
 			}
 		}
 		if (isset($filter['datetime']) && !empty($filter['datetime']) &&
-			in_array('since', $allowed_columns) && in_array('until', $allowed_columns))
+			in_array('since', $allowed_columns, true) && in_array('until', $allowed_columns, true))
 		{
 			$this->params[] = $filter['datetime'];
 			$n = count($this->params);

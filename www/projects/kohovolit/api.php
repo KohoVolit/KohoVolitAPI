@@ -9,7 +9,7 @@ $private_resources = array('Message');
 try
 {
 	$resource = $_GET['resource'];
-	if (in_array($resource, $private_resources))
+	if (in_array($resource, $private_resources, true))
 		throw new Exception("The API resource <em>$resource</em> is not accessible from remote.", 403);
 
 	$result = ApiServer::processHttpRequest();
