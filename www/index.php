@@ -1,7 +1,7 @@
 <?php
 
-require '../../config/settings.php';
-require '../../setup.php';
+require '../config/settings.php';
+require '../setup.php';
 
 try
 {

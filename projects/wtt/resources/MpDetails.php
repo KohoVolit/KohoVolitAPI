@@ -39,7 +39,7 @@ class MpDetails
 		$rows = $query->execute();
 
 		// include settings of kohovolit project API to get a path to kohovolit data (DATA_DIR)
-		require_once API_ROOT . '/www/projects/kohovolit/config/settings.php';
+		require_once API_ROOT . '/projects/kohovolit/config/settings.php';
 
 		// aggregate each MP's attributes to one row, rows in the same order as MPs in the input list
 		$prev_id = null;

@@ -20,11 +20,21 @@ class ApiServer
 
 		self::logRequest();
 
-		// include the underlying class of the requested API resource
+		$project = $_GET['project'];
 		$resource = $_GET['resource'];
-		$ok = @include "./api/$resource.php";
+
+		// include specific project settings if they are present
+		@include_once API_ROOT . "/projects/$project/config/settings.php";
+		@include_once API_ROOT . "/projects/$project/setup.php";
+
+		// block access to the API resources that are private
+		if (isset($private_resources) && in_array($resource, $private_resources, true))
+			throw new Exception("The API resource <em>$resource</em> is not accessible from remote.", 403);
+
+		// include the underlying class of the requested API resource
+		$ok = @include API_ROOT . "/projects/$project/resources/$resource.php";
 		if (!$ok)
-			throw new Exception("There is no API resource <em>$resource</em>.", 404);
+			throw new Exception("There is no API resource <em>$resource</em> in project <em>$project</em>.", 404);
 
 		// get the search criteria for the record to work with
 		$params = self::decodeNullValues($_GET);
@@ -203,7 +213,7 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 				array($method, $resource, $query, $data, $format, $referrer),
 				'kv_admin');
 	}
-	
+
 	/**
 	 *	...
 	 * decode all null values from \N

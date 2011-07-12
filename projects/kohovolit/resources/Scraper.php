@@ -20,7 +20,7 @@ class Scraper
 	{
 		$parliament = $params['parliament'];
 		$api_class = 'Scraper' . str_replace(' ', '', ucwords(strtr($parliament, '/-', '  ')));
-		$ok = @include_once "projects/kohovolit/api/$parliament/$api_class.php";
+		$ok = @include_once API_ROOT . "/projects/kohovolit/resources/$parliament/$api_class.php";
 		if (!$ok)
 			throw new Exception("The API resource <em>Scraper</em> is not implemented for parliament <em>$parliament</em>.", 400);
 
