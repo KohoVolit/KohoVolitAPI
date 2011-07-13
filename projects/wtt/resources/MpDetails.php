@@ -18,6 +18,9 @@ class MpDetails
 	 */
 	public static function read($params)
 	{
+		if (!isset($params['mp']))
+			return array('mp_details' => array());
+
 		// get the MPs' details from database
 		$query = new Query();
 		$query->setQuery(
@@ -30,8 +33,9 @@ class MpDetails
 		$n = $i = 0;
 		foreach ((array)$mps as $mp)
 		{
-			$query->appendQuery('or mp_id = $' . ++$n . ' and parl = $' . ++$n . "\n");
 			$p = strrpos($mp, '/');
+			if ($p === false) continue;
+			$query->appendQuery('or mp_id = $' . ++$n . ' and parl = $' . ++$n . "\n");
 			$query->appendParam(substr($mp, $p + 1));
 			$query->appendParam(substr($mp, 0, $p));
 			$id_to_order[substr($mp, $p + 1)] = $i++;
