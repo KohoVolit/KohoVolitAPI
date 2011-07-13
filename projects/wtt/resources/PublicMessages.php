@@ -32,10 +32,10 @@ class PublicMessages
 			"from\n" .
 			"	message as m\n" .
 			"	join (\n" .
-			"		select\n".
+			"		select\n" .
 			"			message_id,\n" .
-			"			string_agg(mp.last_name || ' ' || substr(mp.first_name, 1, 1) || '.' || case when length(mp.middle_names) > 0 then substr(mp.middle_names, 1, 1) || '. ' else '' end, ', ') as recipients,\n" .
-			"			string_agg(case when received_on is not null then 'yes' else 'no' end, ', ') as response_exists\n" .
+			"			string_agg(mp.last_name || ' ' || substr(mp.first_name, 1, 1) || '.' || case when length(mp.middle_names) > 0 then substr(mp.middle_names, 1, 1) || '. ' else '' end, ', ' order by mp_id) as recipients,\n" .
+			"			string_agg(case when received_on is not null then 'yes' else 'no' end, ', ' order by mp_id) as response_exists\n" .
 			"		from\n" .
 			"			response as r\n" .
 			"			join mp on mp.id = r.mp_id\n" .

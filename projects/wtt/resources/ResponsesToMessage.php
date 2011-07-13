@@ -25,7 +25,9 @@ class ResponsesToMessage
 			"	response as r\n" .
 			"	join mp on mp.id = r.mp_id\n" .
 			"where\n" .
-			"	r.message_id = $1"
+			"	r.message_id = $1\n" .
+			"order by\n" .
+			"	mp_id"
 		);
 		$query->appendParam($params['message_id']);
 		$responses = $query->execute();
