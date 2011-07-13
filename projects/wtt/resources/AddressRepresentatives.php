@@ -52,7 +52,7 @@ class AddressRepresentatives
 		}
 
 		// reindex the arrays from names to integer numbers to be covertable to XML format
-		foreach ($parliaments as &$parliament)
+		foreach ((array)$parliaments as &$parliament)
 		{
 			$parliament['constituency'] = array_values($parliament['constituency']);
 			foreach ($parliament['constituency'] as &$constituency)
