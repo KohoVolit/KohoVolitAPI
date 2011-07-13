@@ -35,6 +35,7 @@ class AddressRepresentatives
 		$reps = $query->execute();
 
 		// make a hierarchical representation of the list structured by parliament, constituency and political group
+		$parliaments = array();
 		foreach ($reps as $rep)
 		{
 			$parliament_code = $rep['parliament_code'];
@@ -52,7 +53,7 @@ class AddressRepresentatives
 		}
 
 		// reindex the arrays from names to integer numbers to be covertable to XML format
-		foreach ((array)$parliaments as &$parliament)
+		foreach ($parliaments as &$parliament)
 		{
 			$parliament['constituency'] = array_values($parliament['constituency']);
 			foreach ($parliament['constituency'] as &$constituency)
