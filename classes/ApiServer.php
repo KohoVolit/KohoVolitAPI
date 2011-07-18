@@ -43,12 +43,16 @@ class ApiServer
 		{
 			case 'GET':
 				if (method_exists($resource, 'read'))
-					return array($resource => $resource::read($params));
+				{
+					$result = $resource::read($params);
+					if (isset($params['#limit']) && $params['#limit'] == 1 && !empty($result))
+						$result = current($result);
+					return array($resource => $result);
+				}
 				break;
 /*
 The public API access is read-only.
 Data modifying request methods are not allowed from remote, on localhost use ApiDirect class instead.
-*/
 			case 'POST':
 				if (method_exists($resource, 'create'))
 					return array($resource => $resource::create(self::decodeNullValues($_POST)));
@@ -63,7 +67,7 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 				if (method_exists($resource, 'delete'))
 					return array($resource => $resource::delete($params));
 				break;
-/**/
+*/
 		}
 
 		throw new Exception("The API resource <em>$resource</em> does not accept " . $_SERVER['REQUEST_METHOD'] . ' requests.', 405);

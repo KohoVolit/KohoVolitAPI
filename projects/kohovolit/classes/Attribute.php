@@ -35,13 +35,13 @@
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of attributes, eg. <code>array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...)</code> sorted by \e <entity_id> than by \e name_ than by \e lang all ascending and then by \e since descending.
+	 * \return An array of attributes, eg. <code>array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...)</code>.
 	 */
 	public function read($params)
 	{
 		$query = new Query();
 		$query->buildSelect($this->tableName, '*', $params, $this->tableColumns);
-		$query->appendQuery(' order by ' . reset($this->tableColumns) . ', name_, lang, since desc');
+//		$query->appendQuery(' order by ' . reset($this->tableColumns) . ', name_, lang, since desc');
 		return $query->execute();
 	}
 
