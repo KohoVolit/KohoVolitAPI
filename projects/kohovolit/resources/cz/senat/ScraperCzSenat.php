@@ -592,7 +592,8 @@ class ScraperCzSenat
 	//parse
 	$tmp = ScraperUtils::getFirstString($html,'selected="selected" value="'.$c.'">','</option>');
 	$tmp_ar = explode('-',$tmp);
-	$result['constituency']['name'] = trim($tmp_ar[1]);
+	array_shift($tmp_ar);
+	$result['constituency']['name'] = trim(implode('-',$tmp_ar));
 	$result['constituency']['number'] = $c;
 	$result['constituency']['description'] = strip_tags(trim(ScraperUtils::getFirstString($html,'<h3>Popis dle zákona 247/1995 Sb: </h3>','<h4>')));
 	$text_part = ScraperUtils::getFirstString($html,'<h4>Části územního členění příslušné obvodu:</h4>','</ul>');
