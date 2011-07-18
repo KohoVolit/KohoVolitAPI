@@ -18,7 +18,7 @@ class Parliament
 		self::$entity = new Entity(
 			'parliament',
 			array('code', 'name_', 'short_name', 'description', 'parliament_kind_code', 'country_code', 'default_language', 'last_updated_on'),
-			'code'
+			array('code')
 		);
 	}
 
@@ -27,7 +27,7 @@ class Parliament
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the parliaments to select. Only parliaments satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of parliaments with structure <code>array('parliament' => array(array('code' => 'sk/nrsr', 'name_' => 'Národná rada Slovenskej Republiky', 'short_name' => 'NRSR', null, 'national-lower', ...), ...))</code>.
+	 * \return An array of parliaments with structure <code>array(array('code' => 'sk/nrsr', 'name_' => 'Národná rada Slovenskej Republiky', 'short_name' => 'NRSR', null, 'national-lower', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

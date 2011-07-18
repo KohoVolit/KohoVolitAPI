@@ -18,7 +18,7 @@ class GroupKind
 		self::$entity = new Entity(
 			'group_kind',
 			array('code', 'name_', 'short_name', 'description', 'subkind_of'),
-			'code'
+			array('code')
 		);
 	}
 
@@ -27,7 +27,7 @@ class GroupKind
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the group kinds to select. Only group kinds satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of group kinds with structure <code>array('group' => array(array('code' => 'committee', 'name_' => 'Committee', 'short_name' => 'Cmt', ...), ...))</code>.
+	 * \return An array of group kinds with structure <code>array(array('code' => 'committee', 'name_' => 'Committee', 'short_name' => 'Cmt', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

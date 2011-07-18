@@ -15,7 +15,10 @@ class TermAttribute
 	 */
 	public static function init()
 	{
-		self::$attribute = new Attribute('term_attribute', array('term_id', 'parl'));
+		self::$attribute = new Attribute(
+			'term_attribute',
+			array('term_id', 'parl')
+		);
 	}
 
 	/**
@@ -23,9 +26,9 @@ class TermAttribute
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of attributes with structure <code>array('term_attribute' => array(array('term_id' => 6, 'name_' => 'nickname', 'value_' => 'revolutional', ...), ...))</code>.
+	 * \return An array of attributes with structure <code>array(array('term_id' => 6, 'name_' => 'nickname', 'value_' => 'revolutional', ...), ...)</code>.
 	 *
-	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
+	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get attributes valid at this moment.
 	 */
 	public static function read($params)
 	{

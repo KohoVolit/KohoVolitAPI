@@ -37,7 +37,7 @@ create table party
 	name_ varchar not null,
 	short_name varchar,
 	description text,
-	country_code varchar references country on delete restrict on update cascade,
+	country_code varchar not null references country on delete restrict on update cascade,
 	last_updated_on timestamp not null default current_timestamp,
 	unique (name_, country_code)
 );

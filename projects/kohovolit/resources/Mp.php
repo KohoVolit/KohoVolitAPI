@@ -18,7 +18,7 @@ class Mp
 		self::$entity = new Entity(
 			'mp',
 			array('id', 'first_name', 'middle_names', 'last_name', 'disambiguation', 'sex', 'pre_title', 'post_title', 'born_on', 'died_on', 'last_updated_on'),
-			'id',
+			array('id'),
 			array('id')
 		);
 	}
@@ -28,7 +28,7 @@ class Mp
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the MPs to select. Only MPs satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of MPs with structure <code>array('mp' => array(array('id' => 32, 'first_name' => 'Balin', ...), array('id' => 10, 'first_name' => 'Dvalin', ...), ...))</code>.
+	 * \return An array of MPs with structure <code>array(array('id' => 32, 'first_name' => 'Balin', ...), array('id' => 10, 'first_name' => 'Dvalin', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

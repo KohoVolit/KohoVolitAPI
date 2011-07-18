@@ -18,7 +18,7 @@ class Constituency
 		self::$entity = new Entity(
 			'constituency',
 			array('id', 'name_', 'short_name', 'description', 'parliament_code', 'since', 'until'),
-			'id',
+			array('id'),
 			array('id')
 		);
 	}
@@ -28,9 +28,9 @@ class Constituency
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the constituencies to select. Only constituencies satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of constituencies with structure <code>array('constituency' => array(array('id' => 123, 'name_' => 'Praha 9', 'short_name' => '9', 'description' => null, 'cz/praha'), ...))</code>.
+	 * \return An array of constituencies with structure <code>array(array('id' => 123, 'name_' => 'Praha 9', 'short_name' => '9', 'description' => null, 'cz/praha'), ...)</code>.
 	 *
-	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only constituencies valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get constituencies valid at this moment.
+	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only constituencies valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get constituencies valid at this moment.
 	 */
 	public static function read($params)
 	{

@@ -64,7 +64,7 @@ class MpDetails
 		if (!empty($mp_details))
 			ksort($mp_details);
 
-		return array('mp_details' => $mp_details);
+		return $mp_details;
 	}
 }
 

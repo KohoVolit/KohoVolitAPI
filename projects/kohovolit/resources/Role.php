@@ -18,7 +18,7 @@ class Role
 		self::$entity = new Entity(
 			'role_',
 			array('code', 'male_name', 'female_name', 'description'),
-			'code'
+			array('code')
 		);
 	}
 
@@ -27,7 +27,7 @@ class Role
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the roles to select. Only roles satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of roles with structure <code>array('role' => array(array('code' => 'chairman', 'male_name' => 'chairman', 'female_name' => 'chairwoman', 'description' => null), ...))</code>.
+	 * \return An array of roles with structure <code>array(array('code' => 'chairman', 'male_name' => 'chairman', 'female_name' => 'chairwoman', 'description' => null), ...)</code>.
 	 */
 	public static function read($params)
 	{

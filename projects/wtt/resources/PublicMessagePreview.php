@@ -1,20 +1,20 @@
 <?php
 
 /**
- * Class PublicMessages lists all sent public messages.
+ * Class PublicMessagePreview lists all sent public messages.
  *
  * Only the \e read method is present.
  */
-class PublicMessages
+class PublicMessagePreview
 {
 	/**
-	 * Lists all sent public messages in descending order by the datetime they were sent.
+	 * Lists all sent public messages in descending order by the date and time they were sent.
 	 *
 	 * \param $params An array of pairs <em>name => value</em> where allowed names are:
 	 *	\li \c parliament_code - select only messages addressed (also) to a member of this parliament
 	 *	\li \c mp_id - select only messages addressed to this MP
-	 *	\li \c since - select only messages sent since (including) this datetime
-	 *	\li \c until - select only messages sent until (excluding) this datetime.
+	 *	\li \c since - select only messages sent since (including) this date and time
+	 *	\li \c until - select only messages sent until (excluding) this date and time.
 	 * Example: <code>array('parliament_code' => 'cz/senat', 'since' => '2011-06-22 10:00:00')</code>.
 	 *
 	 * \return Basic information on all sent public messages.
@@ -66,7 +66,7 @@ class PublicMessages
 			"	and is_public = 'yes'\n"
 		);
 
-		// filter messages for only the ones sent since or until a particular datetime
+		// filter messages for only the ones sent since or until a particular date and time
 		if (isset($params['since']))
 		{
 			$query->appendQuery('	and sent_on >= $' . ++$n . "\n");
@@ -80,8 +80,7 @@ class PublicMessages
 
 		$query->appendQuery("order by\n	sent_on desc");
 
-		$messages = $query->execute();
-		return array('public_messages' => $messages);
+		return $messages = $query->execute();
 	}
 }
 

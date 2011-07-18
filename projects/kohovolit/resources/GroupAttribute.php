@@ -15,7 +15,10 @@ class GroupAttribute
 	 */
 	public static function init()
 	{
-		self::$attribute = new Attribute('group_attribute', array('group_id', 'parl'));
+		self::$attribute = new Attribute(
+			'group_attribute',
+			array('group_id', 'parl')
+		);
 	}
 
 	/**
@@ -23,9 +26,9 @@ class GroupAttribute
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of attributes with structure <code>array('group_attribute' => array(array('group_id' => 54, 'name_' => 'email', 'value_' => 'praha@kscm.cz', ...), ...))</code>.
+	 * \return An array of attributes with structure <code>array(array('group_id' => 54, 'name_' => 'email', 'value_' => 'praha@kscm.cz', ...), ...)</code>.
 	 *
-	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
+	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get attributes valid at this moment.
 	 */
 	public static function read($params)
 	{

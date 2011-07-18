@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Class SearchMps provides implements search of MPs that are members of all given groups.
+ * Class FindMp provides implements search of MPs that are members of all given groups.
  *
  * Only the \e read method is present.
  */
-class SearchMps
+class FindMp
 {
 	/**
-	 * Search for all MPs that are elected for a given constituency and/or that are members of all given groups at this moment.
+	 * Find all MPs that are elected for a given constituency and/or that are members of all given groups at this moment.
 	 *
 	 * \param $params An array of pairs \c 'constituency' => \e constituency_id and/or \c 'groups' => \e group_id_list specifying the MPs to select.
 	 * The \e group_id_list is a comma-separated list of groups' ids.
@@ -52,8 +52,7 @@ class SearchMps
 		}
 
 		// execute the query
-		$mps = $query->execute();
-		return array('search_mps' => $mps);
+		return $query->execute();
 	}
 }
 

@@ -18,7 +18,7 @@ class Party
 		self::$entity = new Entity(
 			'party',
 			array('id', 'name_', 'short_name', 'description', 'country_code', 'last_updated_on'),
-			'id',
+			array('id'),
 			array('id')
 		);
 	}
@@ -28,7 +28,7 @@ class Party
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the parties to select. Only parties satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of parties with structure <code>array('party' => array(array('id' => 8, 'name_' => 'The Labour Party', 'short_name' => 'Lab', ...), ...))</code>.
+	 * \return An array of parties with structure <code>array(array('id' => 8, 'name_' => 'The Labour Party', 'short_name' => 'Lab', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

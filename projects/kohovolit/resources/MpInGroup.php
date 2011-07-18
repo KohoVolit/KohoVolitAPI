@@ -18,8 +18,7 @@ class MpInGroup
 		self::$entity = new Entity(
 			'mp_in_group',
 			array('mp_id', 'group_id', 'role_code', 'party_id', 'constituency_id', 'since', 'until'),
-			null,
-			array()
+			array('mp_id', 'group_id', 'role_code', 'since')
 		);
 	}
 
@@ -28,9 +27,9 @@ class MpInGroup
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the memberships to select. Only memberships satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of memberships with structure <code>array('mp_in_group' => array(array('mp_id' => 32, 'group_id' => 4, 'role_code' => 'treasurer', 'party_id' => null, ...), ...))</code>.
+	 * \return An array of memberships with structure <code>array(array('mp_id' => 32, 'group_id' => 4, 'role_code' => 'treasurer', 'party_id' => null, ...), ...)</code>.
 	 *
-	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only memberships valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get memberships valid at this moment.
+	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only memberships valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get memberships valid at this moment.
 	 */
 	public static function read($params)
 	{

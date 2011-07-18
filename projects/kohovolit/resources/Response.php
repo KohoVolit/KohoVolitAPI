@@ -17,7 +17,8 @@ class Response
 	{
 		self::$entity = new Entity(
 			'response',
-			array('message_id', 'mp_id', 'parliament_code', 'subject', 'body_', 'full_email_data', 'received_on', 'received_privately', 'reply_code', 'survey_code')
+			array('message_id', 'mp_id', 'parliament_code', 'subject', 'body_', 'full_email_data', 'received_on', 'received_privately', 'reply_code', 'survey_code'),
+			array('message_id', 'mp_id', 'parliament_code')
 		);
 	}
 
@@ -26,7 +27,7 @@ class Response
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the responses to select. Only responses satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of responses with structure <code>array('response' => array(array('message_id' => 44, 'mp_id' => 515, 'parliament_code' => 'cz/senat', 'subject' => 'Re: My law proposal', ...), ...))</code>.
+	 * \return An array of responses with structure <code>array(array('message_id' => 44, 'mp_id' => 515, 'parliament_code' => 'cz/senat', 'subject' => 'Re: My law proposal', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

@@ -15,7 +15,10 @@ class ParliamentKindAttribute
 	 */
 	public static function init()
 	{
-		self::$attribute = new Attribute('parliament_kind_attribute', array('parliament_kind_code'));
+		self::$attribute = new Attribute(
+			'parliament_kind_attribute',
+			array('parliament_kind_code')
+		);
 	}
 
 	/**
@@ -23,9 +26,9 @@ class ParliamentKindAttribute
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of attributes with structure <code>array('parliament_kind_attribute' => array(array('parliament_kind_code' => 'local', 'name_' => 'short_name', 'value_' => 'Místní', 'lang' => 'cs', ...), ...))</code>.
+	 * \return An array of attributes with structure <code>array(array('parliament_kind_code' => 'local', 'name_' => 'short_name', 'value_' => 'Místní', 'lang' => 'cs', ...), ...)</code>.
 	 *
-	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
+	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get attributes valid at this moment.
 	 */
 	public static function read($params)
 	{

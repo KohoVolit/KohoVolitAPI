@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Class AddressRepresentatives implements search of MPs that are representatives to a given address.
+ * Class AddressRepresentative implements search of MPs that are representatives to a given address.
  *
  * Only the \e read method is present.
  */
-class AddressRepresentatives
+class AddressRepresentative
 {
 	/**
 	 * Search for all MPs that are representatives to the address given in Google Maps API structure.
@@ -20,7 +20,7 @@ class AddressRepresentatives
 	{
 		// get the list of representatives from database
 		$query = new Query();
-		$query->setQuery('select * from address_representatives($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)');
+		$query->setQuery('select * from address_representative($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)');
 		$query->appendParam(isset($params['latitude']) ? $params['latitude'] : null);
 		$query->appendParam(isset($params['longitude']) ? $params['longitude'] : null);
 		$query->appendParam(isset($params['country']) ? $params['country'] : null);

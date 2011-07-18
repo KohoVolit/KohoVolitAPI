@@ -6,7 +6,7 @@
 class UpdaterCzPsp
 {
 	/// API client reference used for all API calls
-	private $ac;
+	private $api;
 
 	/// id and source code (ie. id on the official website) of the term of office to update the data for
 	private $term_id;
@@ -44,7 +44,7 @@ class UpdaterCzPsp
 	public function __construct($params)
 	{
 		$this->parliament_code = $params['parliament'];
-		$this->ac = new ApiDirect('kohovolit', array('parliament' => $this->parliament_code));
+		$this->api = new ApiDirect('kohovolit', array('parliament' => $this->parliament_code));
 		$this->log = new Log(KOHOVOLIT_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
 	}
@@ -82,14 +82,14 @@ class UpdaterCzPsp
 		$this->groups_with_parent = array();
 
 		// read list of all MPs in the term of office to update data for
-		$src_mps = $this->ac->read('Scraper', array('remote_resource' => 'group', 'term' => $this->term_src_code, 'list_members' => 'true'));
+		$src_mps = $this->api->read('Scraper', array('remote_resource' => 'group', 'term' => $this->term_src_code, 'list_members' => 'true'));
 		$src_mps = $src_mps['group']['mp'];
 
 		// update (or insert) all MPs in the list
 		foreach($src_mps as $src_mp)
 		{
 			// scrape details of the MP
-			$src_mp = $this->ac->read('Scraper', array('remote_resource' => 'mp', 'term' => $this->term_src_code, 'id' => $src_mp['id'], 'list_memberships' => 'true'));
+			$src_mp = $this->api->read('Scraper', array('remote_resource' => 'mp', 'term' => $this->term_src_code, 'id' => $src_mp['id'], 'list_memberships' => 'true'));
 			$src_mp = $src_mp['mp'];
 
 			// update the MP personal details
@@ -176,12 +176,11 @@ class UpdaterCzPsp
 	{
 		$this->log->write("Updating parliament '{$this->parliament_code}'.", Log::DEBUG);
 
-		$parliament = $this->ac->read('Parliament', array('code' => $this->parliament_code));
-
 		// if parliament does not exist yet, insert it
-		if (!isset($parliament['parliament'][0]))
+		$parliament = $this->api->readOne('Parliament', array('code' => $this->parliament_code));
+		if (!$parliament)
 		{
-			$this->ac->create('Parliament', array(
+			$this->api->create('Parliament', array(
 				'code' => $this->parliament_code,
 				'name_' => 'Poslanecká sněmovna Parlamentu České republiky',
 				'short_name' => 'PSP ČR',
@@ -192,7 +191,7 @@ class UpdaterCzPsp
 			));
 
 			// english translation
-			$this->ac->create('ParliamentAttribute', array(
+			$this->api->create('ParliamentAttribute', array(
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name_' => 'name_', 'value_' => 'Chamber of Deputies of Parliament of the Czech republic'),
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name_' => 'short_name', 'value_' => 'CDP CR'),
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name_' => 'description', 'value_' => 'Lower house of the Czech republic parliament.')
@@ -200,7 +199,7 @@ class UpdaterCzPsp
 		}
 
 		// update the timestamp the parliament has been last updated on
-		$this->ac->update('Parliament', array('code' => $this->parliament_code), array('last_updated_on' => 'now'));
+		$this->api->update('Parliament', array('code' => $this->parliament_code), array('last_updated_on' => 'now'));
 
 		return $this->parliament_code;
 	}
@@ -221,13 +220,13 @@ class UpdaterCzPsp
 			$term_src_code = $params['term'];
 		else
 		{
-			$current_term = $this->ac->read('Scraper', array('remote_resource' => 'current_term'));
+			$current_term = $this->api->read('Scraper', array('remote_resource' => 'current_term'));
 			$term_src_code = $current_term['term']['id'];
 		}
 		$this->term_src_code = $term_src_code;
 
 		// get details of the term
-		$term_list = $this->ac->read('Scraper', array('remote_resource' => 'term_list'));
+		$term_list = $this->api->read('Scraper', array('remote_resource' => 'term_list'));
 		$term_list = $term_list['term'];
 		foreach($term_list as $term)
 			if ($term['id'] == $term_src_code)
@@ -238,16 +237,16 @@ class UpdaterCzPsp
 			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check http://api.kohovolit.eu/kohovolit/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
 
 		// if the term is present in the database, update it and get its id
-		$src_code_in_db = $this->ac->read('TermAttribute', array('name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code));
-		if (isset($src_code_in_db['term_attribute'][0]))
+		$src_code_in_db = $this->api->readOne('TermAttribute', array('name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code));
+		if ($src_code_in_db)
 		{
-			$term_id = $src_code_in_db['term_attribute'][0]['term_id'];
+			$term_id = $src_code_in_db['term_id'];
 			$data = array('name_' => $term_to_update['name'], 'since' => $term_to_update['since']);
 			if (isset($term_to_update['short_name']))
 				$data['short_name'] = $term_to_update['short_name'];
 			if (isset($term_to_update['until']))
 				$data['until'] = $term_to_update['until'];
-			$this->ac->update('Term', array('id' => $term_id), $data);
+			$this->api->update('Term', array('id' => $term_id), $data);
 		}
 		else
 		{
@@ -257,11 +256,11 @@ class UpdaterCzPsp
 				$data['short_name'] = $term_to_update['short_name'];
 			if (isset($term_to_update['until']))
 				$data['until'] = $term_to_update['until'];
-			$term_id = $this->ac->create('Term', array($data));
-			$term_id = $term_id[0];
+			$term_id = $this->api->create('Term', $data);
+			$term_id = $term_id[0]['id'];
 
 			// insert term's source code as an attribute
-			$this->ac->create('TermAttribute', array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code));
+			$this->api->create('TermAttribute', array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code));
 		}
 
 		// prepare start and end dates of this term and start date of the following term
@@ -286,17 +285,16 @@ class UpdaterCzPsp
 		$this->log->write("Updating constituencies.", Log::DEBUG);
 
 		// update constituencies of this term
-		$src_constituencies = $this->ac->read('Scraper', array('remote_resource' => 'constituency_list', 'term' => $this->term_src_code));
+		$src_constituencies = $this->api->read('Scraper', array('remote_resource' => 'constituency_list', 'term' => $this->term_src_code));
 		$res = array();
 		foreach ($src_constituencies['constituency'] as $src_constituency)
 			$res[$src_constituency['name']] = $this->updateConstituency($src_constituency);
 
 		// close all older constituencies
-		$open_constituencies = $this->ac->read('Constituency', array('parliament_code' => $this->parliament_code, 'datetime' => $this->update_date));
-		if (isset($open_constituencies['constituency'][0]))
-			foreach ($open_constituencies['constituency'] as $open_constituency)
-				if (!array_key_exists($open_constituency['name_'], $res))
-					$this->ac->update('Constituency', array('id' => $open_constituency['id']), array('until' => $this->term_since));
+		$open_constituencies = $this->api->read('Constituency', array('parliament_code' => $this->parliament_code, '#datetime' => $this->update_date));
+		foreach ($open_constituencies as $open_constituency)
+			if (!array_key_exists($open_constituency['name_'], $res))
+				$this->api->update('Constituency', array('id' => $open_constituency['id']), array('until' => $this->term_since));
 
 		return $res;
 	}
@@ -314,24 +312,24 @@ class UpdaterCzPsp
 
 		// if constituency is already in the database, update its data
 		$src_code = $src_constituency['id'];
-		$src_code_in_db = $this->ac->read('ConstituencyAttribute', array('name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
-		if (isset($src_code_in_db['constituency_attribute'][0]))
+		$src_code_in_db = $this->api->readOne('ConstituencyAttribute', array('name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
+		if ($src_code_in_db)
 		{
-			$constituency_id = $src_code_in_db['constituency_attribute'][0]['constituency_id'];
+			$constituency_id = $src_code_in_db['constituency_id'];
 			$data = array('name_' => $src_constituency['name']);
 			if (isset($src_constituency['short_name']))
 				$data['short_name'] = $src_constituency['short_name'];
 			if (isset($src_constituency['description']))
 				$data['description'] = $src_constituency['description'];
-			$this->ac->update('Constituency', array('id' => $constituency_id), $data);
+			$this->api->update('Constituency', array('id' => $constituency_id), $data);
 		}
 		// if constituency is not in the database, insert it and its source code
 		else
 		{
 			// in case that another constituency with the same name for this parliament exists in database, close its validity
-			$other_constituency = $this->ac->read('Constituency', array('name_' => $src_constituency['name'], 'parliament_code' => $this->parliament_code, 'datetime' => $this->update_date));
-			if (isset($other_constituency['constituency'][0]))
-				$this->ac->update('Constituency', array('id' => $other_constituency['constituency'][0]['id']), array('until' => $this->term_since));
+			$other_constituency = $this->api->readOne('Constituency', array('name_' => $src_constituency['name'], 'parliament_code' => $this->parliament_code, '#datetime' => $this->update_date));
+			if ($other_constituency)
+				$this->api->update('Constituency', array('id' => $other_constituency['id']), array('until' => $this->term_since));
 
 			// insert the constituency
 			$data = array('name_' => $src_constituency['name'], 'parliament_code' => $this->parliament_code, 'since' => $this->term_since);
@@ -339,19 +337,19 @@ class UpdaterCzPsp
 				$data['short_name'] = $src_constituency['short_name'];
 			if (isset($src_constituency['description']))
 				$data['description'] = $src_constituency['description'];
-			$constituency_id = $this->ac->create('Constituency', array($data));
-			$constituency_id = $constituency_id[0];
+			$constituency_id = $this->api->create('Constituency', $data);
+			$constituency_id = $constituency_id[0]['id'];
 
 			// insert source code of the constituency
-			$this->ac->create('ConstituencyAttribute', array('constituency_id' => $constituency_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
+			$this->api->create('ConstituencyAttribute', array('constituency_id' => $constituency_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
 		}
 
 		// in case of current constituency, update its areas
 		if ($this->update_date == 'now')
 		{
-			$area = $this->ac->read('Area', array('constituency_id' => $constituency_id));
-			if (!isset($area['area'][0]))
-				$this->ac->create('Area', array('constituency_id' => $constituency_id, 'administrative_area_level_1' => $src_constituency['name'], 'country' => 'Česká republika'));
+			$area = $this->api->read('Area', array('constituency_id' => $constituency_id));
+			if (count($area) == 0)
+				$this->api->create('Area', array('constituency_id' => $constituency_id, 'administrative_area_level_1' => $src_constituency['name'], 'country' => 'Česká republika'));
 		}
 
 		return $constituency_id;
@@ -370,18 +368,18 @@ class UpdaterCzPsp
 		$this->log->write("Updating MP '{$src_mp['first_name']} {$src_mp['last_name']}' (source id $src_code).", Log::DEBUG);
 
 		// if MP is already in the database, update his data
-		$src_code_in_db = $this->ac->read('MpAttribute', array('name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
-		if (isset($src_code_in_db['mp_attribute'][0]))
+		$src_code_in_db = $this->api->readOne('MpAttribute', array('name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
+		if ($src_code_in_db)
 		{
-			$mp_id = $src_code_in_db['mp_attribute'][0]['mp_id'];
+			$mp_id = $src_code_in_db['mp_id'];
 			$action = self::MP_UPDATE;
 		}
 		// if MP is not in the database, insert him and his source code for this parliament
 		else
 		{
 			// check for an MP in database with the same name
-			$other_mp = $this->ac->read('Mp', array('first_name' => $src_mp['first_name'], 'last_name' => $src_mp['last_name']));
-			if (!isset($other_mp['mp'][0]))
+			$other_mp = $this->api->read('Mp', array('first_name' => $src_mp['first_name'], 'last_name' => $src_mp['last_name']));
+			if (count($other_mp) == 0)
 				$action = self::MP_INSERT | self::MP_INSERT_SOURCE_CODE;
 			else
 			{
@@ -400,9 +398,9 @@ class UpdaterCzPsp
 						$p = strrpos($pmp_code, '/');
 						$parliament_code = substr($pmp_code, 0, $p);
 						$mp_src_code = substr($pmp_code, $p + 1);
-						$mp_id = $this->ac->read('MpAttribute', array('name_' => 'source_code', 'value_' => $mp_src_code, 'parl' => $parliament_code));
-						if (isset($mp_id['mp_attribute'][0]))
-							$mp_id = $mp_id['mp_attribute'][0]['mp_id'];
+						$mp_id_attr = $this->api->readOne('MpAttribute', array('name_' => 'source_code', 'value_' => $mp_src_code, 'parl' => $parliament_code));
+						if ($mp_id_attr))
+							$mp_id = $mp_id_attr['mp_id'];
 						else
 						{
 							$this->log->write("Wrong parliament code and source code '$pmp_code' of an MP existing in the database specified in the \$conflict_mps parameter. MP {$src_mp['first_name']} {$src_mp['last_name']} (source id = {$src_mp['id']}) skipped.", Log::ERROR);
@@ -436,17 +434,17 @@ class UpdaterCzPsp
 		{
 			if ($action & self::MP_DISAMBIGUATE)
 				$data['disambiguation'] = $this->parliament_code . '/' . $src_code;
-			$mp_id = $this->ac->create('Mp', array($data));
-			$mp_id = $mp_id[0];
+			$mp_id = $this->api->create('Mp', $data);
+			$mp_id = $mp_id[0]['id'];
 			if ($action & self::MP_DISAMBIGUATE)
 				$this->log->write("MP {$src_mp['first_name']} {$src_mp['last_name']} (id = $mp_id) inserted with automatic disambiguation. Refine his disambiguation by hand.", Log::WARNING);
 		}
 
 		if ($action & self::MP_INSERT_SOURCE_CODE)
-			$this->ac->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
 
 		if ($action & self::MP_UPDATE)
-			$this->ac->update('Mp', array('id' => $mp_id), $data);
+			$this->api->update('Mp', array('id' => $mp_id), $data);
 
 		return $mp_id;
 	}
@@ -464,19 +462,19 @@ class UpdaterCzPsp
 		$this->log->write("Updating MP's attribute '$attr_name'.", Log::DEBUG);
 
 		$src_value = !empty($src_mp[$attr_name]) ? (is_null($implode_separator) ? $src_mp[$attr_name] : implode($implode_separator, $src_mp[$attr_name])) : null;
-		$value_in_db = $this->ac->read('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $this->parliament_code, 'datetime' => $this->update_date));
-		if (isset($value_in_db['mp_attribute'][0]))
-			$db_value = $value_in_db['mp_attribute'][0]['value_'];
+		$attr_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $this->parliament_code, '#datetime' => $this->update_date));
+		if ($attr_in_db))
+			$db_value = $attr_in_db['value_'];
 
 		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && $src_value == $db_value) return;
 
 		// close the current record
 		if (isset($db_value))
-			$this->ac->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $this->parliament_code, 'since' =>  $value_in_db['mp_attribute'][0]['since']), array('until' => $this->update_date));
+			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $this->parliament_code, 'since' =>  $attr_in_db['since']), array('until' => $this->update_date));
 
 		// and insert a new one
 		if (isset($src_value))
-			$this->ac->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since));
 	}
 
 	/**
@@ -494,15 +492,15 @@ class UpdaterCzPsp
 		$this->log->write("Updating MP's image.", Log::DEBUG);
 
 		// check for existing image in the database and if it is not present, insert its filename and download the image file
-		$image_in_db = $this->ac->read('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'since' => $this->term_since));
-		if (!isset($image_in_db['mp_attribute'][0]))
+		$image_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'since' => $this->term_since));
+		if (!$image_in_db)
 		{
 			// close record for image from previous term-of-office
-			$this->ac->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'until' => 'infinity'), array('until' => $this->term_since));
+			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'until' => 'infinity'), array('until' => $this->term_since));
 
 			// insert current image
 			$db_image_filename = $src_mp['id'] . '_' . $this->term_src_code . '.jpg';
-			$this->ac->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since));
 
 			// if the directory for MP images does not exist, create it
 			$path = KOHOVOLIT_DATA_DIR . '/' . $this->parliament_code . '/images/mp';
@@ -525,8 +523,7 @@ class UpdaterCzPsp
 		$this->log->write("Updating MP's offices.", Log::DEBUG);
 
 		$src_offices = isset($src_mp['office']) ? $src_mp['office'] : array();
-		$db_offices = $this->ac->read('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'datetime' => $this->update_date));
-		$db_offices = isset($db_offices['office']) ? $db_offices['office'] : array();
+		$db_offices = $this->api->read('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, '#datetime' => $this->update_date));
 
 		// insert all scraped offices that are not present in the database yet
 		foreach ($src_offices as $src_office)
@@ -539,7 +536,7 @@ class UpdaterCzPsp
 				{
 					// update phone number of the office
 					$phone = isset($src_office['phone']) ? $src_office['phone'] : '';
-					$this->ac->update('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'since' => $db_office['since']), array('phone' => $phone));
+					$this->api->update('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'since' => $db_office['since']), array('phone' => $phone));
 
 					$db_office['#valid'] = true;
 					$found = true;
@@ -554,21 +551,21 @@ class UpdaterCzPsp
 				$data = array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_parsed_address, 'phone' => $phone, 'relevance' => $relevance, 'since' => $this->update_date, 'until' => $this->next_term_since);
 
 				//geocode
-				$geo = $this->ac->read('Scraper', array('remote_resource' => 'geocode', 'address' => $src_office['address']));
+				$geo = $this->api->read('Scraper', array('remote_resource' => 'geocode', 'address' => $src_office['address']));
 				if ($geo['coordinates']['ok'])
 				{
 					$data['latitude'] = $geo['coordinates']['lat'];
 					$data['longitude'] = $geo['coordinates']['lng'];
 				}
 
-				$this->ac->create('Office', array($data));
+				$this->api->create('Office', $data);
 			}
 		}
 
 		// close offices in the database that are no more valid
 		foreach ($db_offices as $db_office)
 			if (!isset($db_office['#valid']))
-				$this->ac->update('Office', array('mp_id' => $db_office['mp_id'], 'parliament_code' => $this->parliament_code, 'address' => $db_office['address'],  'since' => $db_office['since']), array('until' => $this->update_date));
+				$this->api->update('Office', array('mp_id' => $db_office['mp_id'], 'parliament_code' => $this->parliament_code, 'address' => $db_office['address'],  'since' => $db_office['since']), array('until' => $this->update_date));
 	}
 
 	/**
@@ -585,12 +582,12 @@ class UpdaterCzPsp
 		// for all groups except the whole parliament check presence in the database by group's source code as an attribute
 		if ($src_group['kind'] != 'parliament')
 		{
-			$src_code_in_db = $this->ac->read('GroupAttribute', array('name_' => 'source_code', 'value_' => $src_group['id'], 'parl' => $this->parliament_code));
-			if (isset($src_code_in_db['group_attribute'][0]))
-				$group_id = $src_code_in_db['group_attribute'][0]['group_id'];
+			$src_code_in_db = $this->api->readOne('GroupAttribute', array('name_' => 'source_code', 'value_' => $src_group['id'], 'parl' => $this->parliament_code));
+			if ($src_code_in_db)
+				$group_id = $src_code_in_db['group_id'];
 
 			// and scrape further details about the group
-			$grp = $this->ac->read('Scraper', array('remote_resource' => 'group', 'term' => $this->term_src_code, 'id' => $src_group['id']));
+			$grp = $this->api->read('Scraper', array('remote_resource' => 'group', 'term' => $this->term_src_code, 'id' => $src_group['id']));
 			$src_group['short_name'] = (isset($grp['group']['short_name'])) ? $grp['group']['short_name'] : null;
 			$src_group['parent_name'] = (isset($grp['group']['parent_name'])) ? $grp['group']['parent_name'] : null;
 
@@ -600,9 +597,9 @@ class UpdaterCzPsp
 		// presence of the group "whole parliament" in the database is tested differently
 		else
 		{
-			$parl_in_db = $this->ac->read('Group', array('group_kind_code' => 'parliament', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
-			if (isset($parl_in_db['group'][0]))
-				$group_id = $parl_in_db['group'][0]['id'];
+			$parl_in_db = $this->api->readOne('Group', array('group_kind_code' => 'parliament', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
+			if ($parl_in_db)
+				$group_id = $parl_in_db['id'];
 
 			// add further details about the group
 			$src_group['short_name'] = 'Sněmovna';
@@ -620,16 +617,16 @@ class UpdaterCzPsp
 
 		if (isset($group_id))
 			// update
-			$this->ac->update('Group', array('id' => $group_id), $data);
+			$this->api->update('Group', array('id' => $group_id), $data);
 		else
 		{
 			// insert
-			$group_id = $this->ac->create('Group', array($data));
-			$group_id = $group_id[0];
+			$group_id = $this->api->create('Group', $data);
+			$group_id = $group_id[0]['id'];
 
 			// insert group's source code
 			if ($src_group['kind'] != 'parliament')
-				$this->ac->create('GroupAttribute', array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['id'], 'parl' => $this->parliament_code));
+				$this->api->create('GroupAttribute', array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['id'], 'parl' => $this->parliament_code));
 		}
 
 		// if the group has a parent group, add it to the list to resolve parentship
@@ -651,20 +648,20 @@ class UpdaterCzPsp
 		$this->log->write("Updating role '{$src_role['male_name']}'.", Log::DEBUG);
 
 		// search czech translations of common roles for the given male name (this is the case of generic roles like 'chairman')
-		$role = $this->ac->read('RoleAttribute', array('name_' => 'male_name', 'value_' => $src_role['male_name'], 'lang' => 'cs'));
-		if (isset($role['role_attribute'][0]))
-			return $role['role_attribute'][0]['role_code'];
+		$role = $this->api->readOne('RoleAttribute', array('name_' => 'male_name', 'value_' => $src_role['male_name'], 'lang' => 'cs'));
+		if ($role)
+			return $role['role_code'];
 
 		// search roles for the given male name (this is the case of parliament-specific roles like government members)
-		$role = $this->ac->read('Role', array('male_name' => $src_role['male_name']));
-		if (isset($role['role'][0]))
-			return $role['role'][0]['code'];
+		$role = $this->api->readOne('Role', array('male_name' => $src_role['male_name']));
+		if ($role)
+			return $role['code'];
 
 		// if role has not been found, insert it
 		$role_code = preg_replace('/[\'^"]/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $src_role['male_name'])));		// code = lowercase male name without accents
 		$data = array('code' => $role_code, 'male_name' => $src_role['male_name'], 'female_name' => $src_role['female_name'], 'description' => "Appears in parliament {$this->parliament_code}.");
-		$role_code = $this->ac->create('Role', array($data));
-		return $role_code[0];
+		$role_code = $this->api->create('Role', $data);
+		return $role_code[0]['code'];
 	}
 
 	/**
@@ -682,13 +679,13 @@ class UpdaterCzPsp
 		$this->log->write("Updating membership (mp_id=$mp_id, group_id=$group_id, role_code='$role_code', since={$src_group['since']}).", Log::DEBUG);
 
 		// if membership is already present in database, update its details
-		$memb = $this->ac->read('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'since' => $src_group['since']));
-		if (isset($memb['mp_in_group'][0]))
+		$memb = $this->api->readOne('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'since' => $src_group['since']));
+		if ($memb)
 		{
 			$data = array('constituency_id' => $constituency_id);
 			if (isset($src_group['until']))
 				$data['until'] = $src_group['until'];
-			$this->ac->update('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'since' => $src_group['since']), $data);
+			$this->api->update('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'since' => $src_group['since']), $data);
 		}
 		// if it is not present, insert it
 		else
@@ -696,7 +693,7 @@ class UpdaterCzPsp
 			$data = array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'constituency_id' => $constituency_id, 'since' => $src_group['since']);
 			if (isset($src_group['until']))
 				$data['until'] = $src_group['until'];
-			$this->ac->create('MpInGroup', array($data));
+			$this->api->create('MpInGroup', $data);
 		}
 	}
 
@@ -709,9 +706,9 @@ class UpdaterCzPsp
 
 		foreach ($this->groups_with_parent as $id => $parent_group_name)
 		{
-			$parent = $this->ac->read('Group', array('name_' => $parent_group_name, 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
-			if (isset($parent['group'][0]))
-				$this->ac->update('Group', array('id' => $id), array('subgroup_of' => $parent['group'][0]['id'], 'last_updated_on' => $this->update_date));
+			$parent = $this->api->readOne('Group', array('name_' => $parent_group_name, 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
+			if ($parent)
+				$this->api->update('Group', array('id' => $id), array('subgroup_of' => $parent['id'], 'last_updated_on' => $this->update_date));
 			else
 				$this->log->write("Parent '$parent_group_name' of group with id = $id has not been found in the database.", Log::WARNING);
 		}

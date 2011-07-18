@@ -14,16 +14,20 @@
 	/// columns of the database table
 	private $tableColumns;
 
+	/// primary key columns
+	private $pkeyColumns;
+
 	/**
 	 * Initializes information about a database table for this attributtes of an entity.
 	 *
 	 * \param $table_name Name of database table with attributes, eg. 'mp_attribute'.
-	 * \param $table_columns Array of names of the database table columns specific for this attribute table. Common columns of all *_ATTRIBUTE tables are added automatically.
+	 * \param $table_columns Array of table column names specific for this attribute table. Common columns of all *_ATTRIBUTE tables are added automatically.
 	 */
 	public function __construct($table_name, $table_columns)
 	{
 		$this->tableName = $table_name;
 		$this->tableColumns = array_merge($table_columns, array('name_', 'value_', 'lang', 'since', 'until'));
+		$this->pkeyColumns = array_merge($table_columns, array('name_', 'lang', 'since'));
 	}
 
 	/**
@@ -31,15 +35,14 @@
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of attributes, eg. <code>array('mp_attribute' => array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...))</code> sorted by \e <entity_id> than by \e name_ than by \e lang all ascending and then by \e since descending.
+	 * \return An array of attributes, eg. <code>array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...)</code> sorted by \e <entity_id> than by \e name_ than by \e lang all ascending and then by \e since descending.
 	 */
 	public function read($params)
 	{
 		$query = new Query();
 		$query->buildSelect($this->tableName, '*', $params, $this->tableColumns);
 		$query->appendQuery(' order by ' . reset($this->tableColumns) . ', name_, lang, since desc');
-		$attrs = $query->execute();
-		return array($this->tableName => $attrs);
+		return $query->execute();
 	}
 
 	/**
@@ -47,7 +50,7 @@
 	 *
 	 * \param $data An attribute to create given by array of pairs <em>column => value</em>. Alternatively, an array of such attributes. Eg. <code>array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...)</code>.
 	 *
-	 * \return Number of created attributes.
+	 * \return An array of primary key values of all created attributes.
 	 */
 	public function create($data)
 	{
@@ -57,14 +60,16 @@
 
 		$query = new Query('kv_admin');
 		$query->startTransaction();
+		$pkeys = array();
 		foreach ($data as $attr)
 		{
-			$query->buildInsert($this->tableName, $attr, null, $this->tableColumns);
-			$query->execute();
+			$query->buildInsert($this->tableName, $attr, $this->tableColumns, $this->pkeyColumns);
+			$lines = $query->execute();
+			$pkeys[] = $lines[0];
 			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
 		}
 		$query->commitTransaction();
-		return count($data);
+		return $pkeys;
 	}
 
 	/**
@@ -73,14 +78,13 @@
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to update. Only attributes satisfying all prescribed column values are updated.
 	 * \param $data An array of pairs <em>column => value</em> to set for each selected attribute.
 	 *
-	 * \return Number of updated attributes.
+	 * \return An array of primary key values of all updated attributes.
 	 */
  	public function update($params, $data)
 	{
 		$query = new Query('kv_admin');
-		$query->buildUpdate($this->tableName, $params, $data, '1', $this->tableColumns);
-		$res = $query->execute();
-		return count($res);
+		$query->buildUpdate($this->tableName, $params, $data, $this->tableColumns, $this->pkeyColumns);
+		return $query->execute();
 	}
 
 	/**
@@ -88,14 +92,13 @@
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to delete. Only attributes satisfying all prescribed column values are deleted.
 	 *
-	 * \return Number of deleted attributes.
+	 * \return An array of primary key values of all deleted attributes.
 	 */
 	public function delete($params)
 	{
 		$query = new Query('kv_admin');
-		$query->buildDelete($this->tableName, $params, '1', $this->tableColumns);
-		$res = $query->execute();
-		return count($res);
+		$query->buildDelete($this->tableName, $params, $this->tableColumns, $this->pkeyColumns);
+		return $query->execute();
 	}
 }
 

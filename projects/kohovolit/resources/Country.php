@@ -18,7 +18,7 @@ class Country
 		self::$entity = new Entity(
 			'country',
 			array('code', 'name_', 'short_name', 'description'),
-			'code'
+			array('code')
 		);
 	}
 
@@ -27,7 +27,7 @@ class Country
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the countries to select. Only countries satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of countries with structure <code>array('country' => array(array('code' => 'sk', 'name_' => 'Slovak republic', 'short_name' => 'Slovakia', ...), array('code' => 'eu', 'name_' => 'European Union', 'short_name' => 'EU', ...), ...))</code>.
+	 * \return An array of countries with structure <code>array(array('code' => 'sk', 'name_' => 'Slovak republic', 'short_name' => 'Slovakia', ...), array('code' => 'eu', 'name_' => 'European Union', 'short_name' => 'EU', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

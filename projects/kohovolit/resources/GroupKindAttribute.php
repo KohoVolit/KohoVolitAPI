@@ -15,7 +15,10 @@ class GroupKindAttribute
 	 */
 	public static function init()
 	{
-		self::$attribute = new Attribute('group_kind_attribute', array('group_kind_code', 'parl'));
+		self::$attribute = new Attribute(
+			'group_kind_attribute',
+			array('group_kind_code', 'parl')
+		);
 	}
 
 	/**
@@ -23,9 +26,9 @@ class GroupKindAttribute
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of attributes with structure <code>array('group_kind_attribute' => array(array('group_kind_code' => 'commission', 'name_' => 'color', 'value_' => 'rgb(255, 10, 50)', ...), ...))</code>.
+	 * \return An array of attributes with structure <code>array(array('group_kind_code' => 'commission', 'name_' => 'icon', 'value_' => 'environment.gif', ...), ...)</code>.
 	 *
-	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
+	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get attributes valid at this moment.
 	 */
 	public static function read($params)
 	{
@@ -35,7 +38,7 @@ class GroupKindAttribute
 	/**
 	 * Create MP group kind(s)' attributes with given values.
 	 *
-	 * \param $data An array of attributes to create, where each attribute is given by array of pairs <em>column => value</em>. Eg. <code>array(array('group_kind_code' => 'commission', 'name_' => 'color', 'value_' => 'rgb(255, 10, 50)', ...), ...)</code>.
+	 * \param $data An array of attributes to create, where each attribute is given by array of pairs <em>column => value</em>. Eg. <code>array(array('group_kind_code' => 'commission', 'name_' => 'icon', 'value_' => 'environment.gif', ...), ...)</code>.
 	 *
 	 * \return Number of created attributes.
 	 */

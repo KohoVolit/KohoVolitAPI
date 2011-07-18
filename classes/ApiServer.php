@@ -20,14 +20,13 @@ class ApiServer
 
 		self::logRequest();
 
-		$project = $_GET['project'];
-		$resource = $_GET['resource'];
-
 		// include specific project settings if they are present
+		$project = $_GET['project'];
 		@include_once API_ROOT . "/projects/$project/config/settings.php";
 		@include_once API_ROOT . "/projects/$project/setup.php";
 
 		// block access to the API resources that are private
+		$resource = $_GET['resource'];
 		if (isset($private_resources) && in_array($resource, $private_resources, true))
 			throw new Exception("The API resource <em>$resource</em> is not accessible from remote.", 403);
 
@@ -44,30 +43,30 @@ class ApiServer
 		{
 			case 'GET':
 				if (method_exists($resource, 'read'))
-					return $resource::read($params);
+					return array($resource => $resource::read($params));
 				break;
 /*
 The public API access is read-only.
 Data modifying request methods are not allowed from remote, on localhost use ApiDirect class instead.
-
+*/
 			case 'POST':
 				if (method_exists($resource, 'create'))
-					return $resource::create(self::decodeNullValues($_POST));
+					return array($resource => $resource::create(self::decodeNullValues($_POST)));
 				break;
 
 			case 'PUT':
 				if (method_exists($resource, 'update'))
-					return $resource::update($params, self::decodeNullValues(self::$put_request_data));
+					return array($resource => $resource::update($params, self::decodeNullValues(self::$put_request_data)));
 				break;
 
 			case 'DELETE':
 				if (method_exists($resource, 'delete'))
-					return $resource::delete($params);
+					return array($resource => $resource::delete($params));
 				break;
-*/
+/**/
 		}
 
-		throw new Exception("The API resource <em>$resource</em> does not accept " . $_SERVER['REQUEST_METHOD'] . " requests.", 405);
+		throw new Exception("The API resource <em>$resource</em> does not accept " . $_SERVER['REQUEST_METHOD'] . ' requests.', 405);
 	}
 
 
@@ -89,12 +88,12 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 			{
 				case 'text/plain':
 					$header = 'Content-Type: text/plain; charset=UTF-8';
-					$body = serialize($data);
+					$body = serialize(current($data));
 					break;
 
 				case 'application/json':
 					$header = 'Content-Type: application/json';
-					$body = json_encode($data, JSON_FORCE_OBJECT);
+					$body = json_encode(current($data), JSON_FORCE_OBJECT);
 					break;
 
 				case 'text/csv':

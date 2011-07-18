@@ -40,7 +40,7 @@ class Utils
 				return self::arrayToCsv($array);
 
 			case 'xml':
-				return self::arrayToXml($data);
+				return self::arrayToXml($array);
 
 			default:
 				throw new \InvalidArgumentException("Formatting an array into an uknown format <em>$format</em>.");

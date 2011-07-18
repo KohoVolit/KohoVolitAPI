@@ -18,7 +18,7 @@ class ParliamentKind
 		self::$entity = new Entity(
 			'parliament_kind',
 			array('code', 'name_', 'short_name', 'description'),
-			'code'
+			array('code')
 		);
 	}
 
@@ -27,7 +27,7 @@ class ParliamentKind
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the parliament kinds to select. Only parliament kinds satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of parliament kinds with structure <code>array('parliament_kind' => array(array('code' => 'regional', 'name_' => 'Regional parliament', 'short_name' => 'Regional', ...), ...))</code>.
+	 * \return An array of parliament kinds with structure <code>array(array('code' => 'regional', 'name_' => 'Regional parliament', 'short_name' => 'Regional', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

@@ -13,7 +13,7 @@ class ApiClient
 
 	/// MIME type respective to the data format
 	private $mime_type;
-	
+
 	/// list of allowed formats and their mapping to the MIME types
 	private static $allowed_formats = array(
 		'php' => 'text/plain',
@@ -21,7 +21,7 @@ class ApiClient
 		'csv' => 'text/csv',
 		'xml' => 'text/xml'
 	);
-	
+
 	/// default search params - parameters to include to the query part of the URL for each request
 	private $default_params;
 
@@ -53,7 +53,16 @@ class ApiClient
 		$curl_options = array(CURLOPT_URL => $url);
 		return $this->executeHttpRequest($curl_options);
 	}
-	
+
+	/**
+	 * ...
+	 */
+	public function readOne($resource, $params = null)
+	{
+		$result = $this->read($resource, $params + array('#limit' => 1));
+		return count($result) > 0 ? $result[0] : null;
+	}
+
 	/**
 	 * ...
 	 */
@@ -105,7 +114,7 @@ class ApiClient
 		$request_body = http_build_query(self::encodeNullValues($full_data));
 		return $request_body;
 	}
-	
+
 	/**
 	 *	...
 	 * encode all null values as \N
@@ -130,15 +139,12 @@ class ApiClient
 		$response = curl_exec($ch);
 		$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
-		
+
 		if ($status_code != 200)
 		{
 			preg_match('/<p>(.*)<\/p>/us', $response, $matches);
 			throw new \RuntimeException($matches[1]);
 		}
-
-		if ($this->format == 'php')
-			$response = unserialize($response);
 
 		return $response;
 	}

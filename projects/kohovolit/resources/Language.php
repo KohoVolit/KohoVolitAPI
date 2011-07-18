@@ -18,7 +18,7 @@ class Language
 		self::$entity = new Entity(
 			'language_',
 			array('code', 'name_', 'short_name', 'description', 'locale'),
-			'code'
+			array('code')
 		);
 	}
 
@@ -27,7 +27,7 @@ class Language
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the languages to select. Only languages satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of languages with structure <code>array('language' => array(array('code' => 'en', 'name_' => 'in English', 'short_name' => 'English', ...), ...))</code>.
+	 * \return An array of languages with structure <code>array(array('code' => 'en', 'name_' => 'in English', 'short_name' => 'English', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

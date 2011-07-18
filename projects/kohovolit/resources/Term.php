@@ -18,7 +18,7 @@ class Term
 		self::$entity = new Entity(
 			'term',
 			array('id', 'name_', 'short_name', 'description', 'country_code', 'parliament_kind_code', 'since', 'until'),
-			'id',
+			array('id'),
 			array('id')
 		);
 	}
@@ -28,7 +28,7 @@ class Term
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the terms to select. Only terms satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of terms with structure <code>array('term' => array(array('id' => 3, 'name_' => '2006-2010', 'short_name' => '6', ...), ...))</code>.
+	 * \return An array of terms with structure <code>array(array('id' => 3, 'name_' => '2006-2010', 'short_name' => '6', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

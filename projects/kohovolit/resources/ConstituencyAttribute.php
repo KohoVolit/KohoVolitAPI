@@ -15,7 +15,10 @@ class ConstituencyAttribute
 	 */
 	public static function init()
 	{
-		self::$attribute = new Attribute('constituency_attribute', array('constituency_id', 'parl'));
+		self::$attribute = new Attribute(
+			'constituency_attribute',
+			array('constituency_id', 'parl')
+		);
 	}
 
 	/**
@@ -25,7 +28,7 @@ class ConstituencyAttribute
 	 *
 	 * \return An array of attributes with structure <code>array('constituency_attribute' => array(array('constituency_id' => 16, 'name_' => 'map', 'value_' => 'maps/cz/psp/zc.png', ...), ...))</code>.
 	 *
-	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get attributes valid at this moment.
+	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get attributes valid at this moment.
 	 */
 	public static function read($params)
 	{

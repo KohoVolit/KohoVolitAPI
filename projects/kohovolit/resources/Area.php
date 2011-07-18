@@ -17,6 +17,7 @@ class Area
 	{
 		self::$entity = new Entity(
 			'area',
+			array('constituency_id', 'country', 'administrative_area_level_1', 'administrative_area_level_2', 'administrative_area_level_3', 'locality', 'sublocality', 'neighborhood', 'route', 'street_number'),
 			array('constituency_id', 'country', 'administrative_area_level_1', 'administrative_area_level_2', 'administrative_area_level_3', 'locality', 'sublocality', 'neighborhood', 'route', 'street_number')
 		);
 	}
@@ -26,7 +27,7 @@ class Area
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the areas to select. Only areas satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of areas with structure <code>array('area' => array(array('constituency_id' => 25, 'country' => 'Middle-earth', 'administrative_area_level_1' => 'Shire', 'administrative_area_level_2' => '*', ...), ...))</code>.
+	 * \return An array of areas with structure <code>array(array('constituency_id' => 25, 'country' => 'Middle-earth', 'administrative_area_level_1' => 'Shire', 'administrative_area_level_2' => '*', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

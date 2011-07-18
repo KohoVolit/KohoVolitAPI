@@ -28,7 +28,7 @@ $$ language sql stable;
 
 -- returns all MPs that are representatives for the given address
 -- MPs are sorted by parliament_code, political group and distance of their office to the given address
-create or replace function address_representatives(
+create or replace function address_representative(
 	latitude double precision = null,
 	longitude double precision = null,
 	country varchar = null,

@@ -18,7 +18,7 @@ class Group
 		self::$entity = new Entity(
 			'group_',
 			array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'parliament_code', 'subgroup_of', 'last_updated_on'),
-			'id',
+			array('id'),
 			array('id')
 		);
 	}
@@ -28,7 +28,7 @@ class Group
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the groups to select. Only groups satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of groups with structure <code>array('group' => array(array('id' => 6, 'name_' => 'Committee on Environment', 'short_name' => 'ENV', 'group_kind_code' => 'committee', ...), ...))</code>.
+	 * \return An array of groups with structure <code>array(array('id' => 6, 'name_' => 'Committee on Environment', 'short_name' => 'ENV', 'group_kind_code' => 'committee', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

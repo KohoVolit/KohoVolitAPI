@@ -19,7 +19,7 @@ class Message
 		self::$entity = new Entity(
 			'message',
 			array('id', 'subject', 'body_', 'sender_name', 'sender_address', 'sender_email', 'is_public', 'state_', 'written_on', 'sent_on', 'confirmation_code', 'approval_code'),
-			'id',
+			array('id'),
 			array('id')
 		);
 	}
@@ -29,7 +29,7 @@ class Message
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the messages to select. Only messages satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of messages with structure <code>array('message' => array(array('id' => 12, 'subject' => 'My law proposal', 'body_' => 'Dear Mr. ...', ...), ...))</code>.
+	 * \return An array of messages with structure <code>array(array('id' => 12, 'subject' => 'My law proposal', 'body_' => 'Dear Mr. ...', ...), ...)</code>.
 	 */
 	public static function read($params)
 	{

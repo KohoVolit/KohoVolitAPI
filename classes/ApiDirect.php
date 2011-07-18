@@ -39,6 +39,15 @@ class ApiDirect
 	/**
 	 * ...
 	 */
+	public function readOne($resource, $params = null)
+	{
+		$result = $this->read($resource, $params + array('#limit' => 1));
+		return count($result) > 0 ? $result[0] : null;
+	}
+
+	/**
+	 * ...
+	 */
 	public function create($resource, $data = null)
 	{
 		$this->includeApiResourceClass($resource);

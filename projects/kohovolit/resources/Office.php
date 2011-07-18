@@ -18,8 +18,7 @@ class Office
 		self::$entity = new Entity(
 			'office',
 			array('mp_id', 'parliament_code', 'address', 'phone', 'latitude', 'longitude', 'relevance', 'since', 'until'),
-			null,
-			array()
+			array('mp_id', 'parliament_code', 'address', 'since')
 		);
 	}
 
@@ -28,9 +27,9 @@ class Office
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the offices to select. Only offices satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of offices with structure <code>array('office' => array(array('mp_id' => 32, 'parliament_code' => 'me/shc', 'address' => '|Bag end|12|Hobbiton|SH-12345|Middle-earth', 'phone' => '+421 123 456 789', ...), ...))</code>.
+	 * \return An array of offices with structure <code>array(array('mp_id' => 32, 'parliament_code' => 'me/shc', 'address' => '|Bag end|12|Hobbiton|SH-12345|Middle-earth', 'phone' => '+421 123 456 789', ...), ...)</code>.
 	 *
-	 * You can use <em>datetime</em> within the <em>$params</em> (eg. 'datetime' => '2010-06-30 9:30:00') to select only offices valid at the given moment (the ones where <em>since</em> <= datetime < <em>until</em>). Use 'datetime' => 'now' to get offices valid at this moment.
+	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only offices valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get offices valid at this moment.
 	 */
 	public static function read($params)
 	{
