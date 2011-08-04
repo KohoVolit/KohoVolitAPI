@@ -11,15 +11,15 @@ class MpDetails
 	 * Returns details about given MPs and their attributes useful to show them as addressees.
 	 *
 	 * \param $params An array with one pair \c 'mp' => \e mp_list specifying the MPs to select.
-	 * The \e mp_list is a comma-separated list of MPs' ids with prepended parliament code to select the attributes (e.g. email, image) for.
-	 * Example: <code>array('mp' => 'cz/psp/64,cz/senat/123,cz/psp/17')</code>.
+	 * The \e mp_list is a vertical-bar-separated list of MPs' ids with prepended parliament code to select the attributes (e.g. email, image) for.
+	 * Example: <code>array('mp' => 'cz/psp/64|cz/senat/123|cz/psp/17')</code>.
 	 *
 	 * \return Details about the given MPs in an array ordered the same way as the input list.
 	 */
 	public static function read($params)
 	{
 		if (!isset($params['mp']))
-			return array('mp_details' => array());
+			return array();
 
 		// get the MPs' details from database
 		$query = new Query();

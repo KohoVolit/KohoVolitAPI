@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class FindMp provides implements search of MPs that are members of all given groups.
+ * Class FindMp implements search of MPs that are members of all given groups.
  *
  * Only the \e read method is present.
  */

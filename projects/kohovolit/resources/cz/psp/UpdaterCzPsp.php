@@ -399,7 +399,7 @@ class UpdaterCzPsp
 						$parliament_code = substr($pmp_code, 0, $p);
 						$mp_src_code = substr($pmp_code, $p + 1);
 						$mp_id_attr = $this->api->readOne('MpAttribute', array('name_' => 'source_code', 'value_' => $mp_src_code, 'parl' => $parliament_code));
-						if ($mp_id_attr))
+						if ($mp_id_attr)
 							$mp_id = $mp_id_attr['mp_id'];
 						else
 						{
@@ -463,7 +463,7 @@ class UpdaterCzPsp
 
 		$src_value = !empty($src_mp[$attr_name]) ? (is_null($implode_separator) ? $src_mp[$attr_name] : implode($implode_separator, $src_mp[$attr_name])) : null;
 		$attr_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $this->parliament_code, '#datetime' => $this->update_date));
-		if ($attr_in_db))
+		if ($attr_in_db)
 			$db_value = $attr_in_db['value_'];
 
 		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && $src_value == $db_value) return;
