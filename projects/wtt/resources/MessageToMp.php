@@ -20,7 +20,7 @@ class MessageToMp
 		$query = new Query();
 		$query->setQuery(
 			"select\n" .
-			"	m.id, m.subject, m.body_, is_public, mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation\n" .
+			"	m.id, m.subject, m.body_, m.is_public, m.sender_name, sender_address, mp.id as mp_id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation\n" .
 			"from\n" .
 			"	message as m\n" .
 			"	join response as r on r.message_id = m.id\n" .
