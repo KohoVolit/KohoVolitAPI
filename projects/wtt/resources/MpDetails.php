@@ -42,9 +42,6 @@ class MpDetails
 		}
 		$rows = $query->execute();
 
-		// include settings of common database API to get a path to the data (DATA_DIR)
-		require_once API_ROOT . '/projects/data/config/settings.php';
-
 		// aggregate each MP's attributes to one row, rows in the same order as MPs in the input list
 		$prev_id = null;
 		$mp_details = null;
