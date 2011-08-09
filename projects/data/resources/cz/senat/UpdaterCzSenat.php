@@ -36,7 +36,7 @@ class UpdaterCzSenat
 	{
 		$this->parliament_code = $params['parliament'];
 		$this->ac = new ApiDirect('data', array('parliament' => $this->parliament_code));
-		$this->log = new Log(KOHOVOLIT_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
+		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
 
 		//convert $param['date'] into DateTime object, default = today
@@ -761,7 +761,7 @@ class UpdaterCzSenat
 			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since));
 
 			// if the directory for MP images does not exist, create it
-			$path = KOHOVOLIT_DATA_DIR . '/' . $this->parliament_code . '/images/mp';
+			$path = API_FILES_DIR . '/' . $this->parliament_code . '/images/mp';
 			if (!file_exists($path))
 				mkdir($path, 0775, true);
 
