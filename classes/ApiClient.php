@@ -31,7 +31,7 @@ class ApiClient
 	/**
 	 * ...
 	 */
-	public function __construct($project = 'kohovolit', $format = 'php', $default_params = null, $default_data = null)
+	public function __construct($project = 'data', $format = 'php', $default_params = null, $default_data = null)
 	{
 		$this->project = $project;
 		$this->format = $format;
@@ -100,7 +100,7 @@ class ApiClient
 	private function makeUrl($resource, $params = null)
 	{
 		$full_params = (array)$params + (array)$this->default_params;
-		$url = "http://api.kohovolit.eu/{$this->project}/$resource?" . http_build_query(self::encodeNullValues($full_params), '', '&');
+		$url = API_DOMAIN . "/{$this->project}/$resource?" . http_build_query(self::encodeNullValues($full_params), '', '&');
 		return $url;
 	}
 

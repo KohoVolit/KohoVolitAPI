@@ -44,7 +44,7 @@ class UpdaterCzPsp
 	public function __construct($params)
 	{
 		$this->parliament_code = $params['parliament'];
-		$this->api = new ApiDirect('kohovolit', array('parliament' => $this->parliament_code));
+		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(KOHOVOLIT_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
 	}
@@ -234,7 +234,7 @@ class UpdaterCzPsp
 
 		// if there is no such term in the term list, terminate with error (class Log writing a message with level FATAL_ERROR throws an exception)
 		if (!isset($term_to_update))
-			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check http://api.kohovolit.eu/kohovolit/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
+			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check " . API_DOMAIN . "/data/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
 
 		// if the term is present in the database, update it and get its id
 		$src_code_in_db = $this->api->readOne('TermAttribute', array('name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code));

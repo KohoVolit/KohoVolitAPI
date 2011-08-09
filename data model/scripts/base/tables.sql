@@ -21,6 +21,7 @@ create table country
 create table api_log
 (
 	method varchar not null,
+	application varchar not null,
 	resource varchar not null,
 	query varchar,
 	data_ text,

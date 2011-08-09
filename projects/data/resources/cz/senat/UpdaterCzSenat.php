@@ -35,7 +35,7 @@ class UpdaterCzSenat
 	public function __construct($params)
 	{
 		$this->parliament_code = $params['parliament'];
-		$this->ac = new ApiDirect('kohovolit', array('parliament' => $this->parliament_code));
+		$this->ac = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(KOHOVOLIT_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
 
@@ -925,7 +925,7 @@ class UpdaterCzSenat
 		}
 		// if there is no such term in the term list, terminate with error (class Log writing a message with level FATAL_ERROR throws an exception)
 		if (!isset($term_to_update))
-		  $this->log->write("The date {$this->date->format('Y-m-d')} for updating parliament {$this->parliament_code}  does not belong to any term, check http://api.kohovolit.eu/kohovolit/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
+		  $this->log->write("The date {$this->date->format('Y-m-d')} for updating parliament {$this->parliament_code} does not belong to any term, check " . API_DOMAIN . "/data/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
 
 		//set "global" variables
 		$this->term_src_code = $term_to_update['term_code'];
