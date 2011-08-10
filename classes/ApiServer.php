@@ -79,41 +79,35 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 	 */
 	public static function sendHttpResponse($status_code, $data)
 	{
-		// in case of successfull API request, format the result according to requested content type
+		// in case of successfull API request, format the result according to requested format
 		if ($status_code == 200)
 		{
-			$http_accept = explode(',', $_SERVER['HTTP_ACCEPT'], 2);
-			$first_accept = explode(';', $http_accept[0]);
-			$content_type = $first_accept[0];
-			if (empty($content_type))
-				$content_type = 'text/xml';
-
-			switch ($content_type)
+			$format = (!empty($_GET['format'])) ? $_GET['format'] : 'xml';
+			switch ($format)
 			{
-				case 'text/plain':
+				case 'php':
 					$header = 'Content-Type: text/plain; charset=UTF-8';
 					$body = serialize(current($data));
 					break;
 
-				case 'application/json':
+				case 'json':
 					$header = 'Content-Type: application/json';
 					$body = json_encode(current($data), JSON_FORCE_OBJECT);
 					break;
 
-				case 'text/csv':
+				case 'csv':
 					$header = 'Content-Type: text/csv; charset=UTF-8';
 					$body = Utils::arrayToCsv(current($data));
 					break;
 
-				case 'text/xml':
-				case 'text/html':
+				case 'xml':
 					$header = 'Content-Type: text/xml; charset=UTF-8';
 					$body = Utils::arrayToXml($data);
 					break;
 
 				default:
 					$status_code = 406;
-					$data = "Result of the API call is not available in the requested format <em>$content_type</em>.";
+					$data = "Result of the API call is not available in the requested format <em>$format</em>.";
 			}
 		}
 

@@ -59,13 +59,12 @@ class Entity
 	public function create($data)
 	{
 		if (!is_array($data)) return null;
-		if (!is_array(reset($data)))
-			$data = array($data);
+		$entities = is_array(reset($data)) ? $data : array($data);
 
 		$query = new Query('kv_admin');
 		$query->startTransaction();
 		$pkeys = array();
-		foreach ($data as $entity)
+		foreach ($entities as $entity)
 		{
 			$query->buildInsert($this->tableName, $entity, $this->tableColumns, $this->pkeyColumns, $this->readonlyColumns);
 			$lines = $query->execute();
@@ -73,7 +72,11 @@ class Entity
 			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
 		}
 		$query->commitTransaction();
-		return $pkeys;
+
+		if (is_array(reset($data)))
+			return $pkeys;
+		else
+			return reset($pkeys);
 	}
 
 	/**

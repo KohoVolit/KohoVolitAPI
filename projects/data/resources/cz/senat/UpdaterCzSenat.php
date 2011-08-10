@@ -525,8 +525,8 @@ class UpdaterCzSenat
 
 		// if role has not been found, insert it
 		$data = array('code' => $src_role_code, 'male_name' => $src_role['male_name'], 'female_name' => $src_role['female_name'], 'description' => "Appears in parliament {$this->parliament_code}.");
-		$role_code = $this->api->create('Role', $data);
-		return $role_code[0]['code'];
+		$role_pkey = $this->api->create('Role', $data);
+		return $role_pkey['code'];
 	}
 
 	/** Update groups. If a group_kind or a group is not in db, insert it
@@ -598,8 +598,8 @@ class UpdaterCzSenat
 	        $this->api->update('Group', array('id' => $group_id), $data);
 	      else {
 	        //insert
-	        $group_id = $this->api->create('Group', $data);
-			$group_id = $group_id[0]['id'];
+	        $group_pkey = $this->api->create('Group', $data);
+			$group_id = $group_pkey['id'];
 
 			// insert group's source code
 			$this->api->create('GroupAttribute', array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['source_code'], 'parl' => $this->parliament_code));
@@ -698,8 +698,8 @@ class UpdaterCzSenat
 		$data['short_name'] = $region_code;
 		if (isset($src_constituency['description']))
 			$data['description'] = $src_constituency['description'];
-		$constituency_id = $this->api->create('Constituency', $data);
-		return $constituency_id[0]['id'];
+		$constituency_pkey = $this->api->create('Constituency', $data);
+		return $constituency_pkey['id'];
 	}
 
 	/**
@@ -879,8 +879,8 @@ class UpdaterCzSenat
 		{
 			if ($action & self::MP_DISAMBIGUATE)
 				$data['disambiguation'] = $this->parliament_code . '/' . $src_code;
-			$mp_id = $this->api->create('Mp', $data);
-			$mp_id = $mp_id[0]['id'];
+			$mp_pkey = $this->api->create('Mp', $data);
+			$mp_id = $mp_pkey['id'];
 			if ($action & self::MP_DISAMBIGUATE)
 				$this->log->write("MP {$data['first_name']} {$data['last_name']} (id = $mp_id) inserted with automatic disambiguation. Refine his disambiguation by hand.", Log::WARNING);
 		}
@@ -943,8 +943,8 @@ class UpdaterCzSenat
 		  $data = array('name_' => $term_to_update['name'], 'country_code' => 'cz', 'parliament_kind_code' => 'national-upper', 'since' => $term_to_update['since'], 'short_name' => $term_to_update['term_code']);
 		  if ((isset($term_to_update['until'])) and ($term_to_update['until'] != ''))
 			$data['until'] = $term_to_update['until'];
-		  $term_id = $this->api->create('Term', $data);
-		  $term_id = $term_id[0]['id'];
+		  $term_pkey = $this->api->create('Term', $data);
+		  $term_id = $term_pkey['id'];
 
 		  	// insert term's source code as an attribute
 			$this->api->create('TermAttribute', array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_to_update['term_code'], 'parl' => $this->parliament_code));

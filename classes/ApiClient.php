@@ -11,16 +11,8 @@ class ApiClient
 	/// data format to receive data in
 	private $format;
 
-	/// MIME type respective to the data format
-	private $mime_type;
-
-	/// list of allowed formats and their mapping to the MIME types
-	private static $allowed_formats = array(
-		'php' => 'text/plain',
-		'json' => 'application/json',
-		'csv' => 'text/csv',
-		'xml' => 'text/xml'
-	);
+	/// list of allowed formats
+	private static $allowed_formats = array('xml', 'json', 'php', 'csv');
 
 	/// default search params - parameters to include to the query part of the URL for each request
 	private $default_params;
@@ -35,11 +27,8 @@ class ApiClient
 	{
 		$this->project = $project;
 		$this->format = $format;
-		if (array_key_exists($format, self::$allowed_formats))
-			$this->mime_type = self::$allowed_formats[$format];
-		else
+		if (!in_array($format, self::$allowed_formats, true))
 			throw new \InvalidArgumentException("Result of the API call is not available in the requested format <em>$format</em>.");
-
 		$this->default_params = $default_params;
 		$this->default_data = $default_data;
 	}
@@ -100,7 +89,7 @@ class ApiClient
 	private function makeUrl($resource, $params = null)
 	{
 		$full_params = (array)$params + (array)$this->default_params;
-		$url = API_DOMAIN . "/{$this->project}/$resource?" . http_build_query(self::encodeNullValues($full_params), '', '&');
+		$url = API_DOMAIN . '/' . $this->project . '/' . $resource . '.' . $this->format . '?' . http_build_query(self::encodeNullValues($full_params), '', '&');
 		return $url;
 	}
 
@@ -133,7 +122,6 @@ class ApiClient
 	{
 		$ch = curl_init();
 		curl_setopt_array($ch, $curl_options);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: ' . $this->mime_type));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$response = curl_exec($ch);
 		$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);

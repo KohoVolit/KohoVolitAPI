@@ -256,8 +256,8 @@ class UpdaterCzPsp
 				$data['short_name'] = $term_to_update['short_name'];
 			if (isset($term_to_update['until']))
 				$data['until'] = $term_to_update['until'];
-			$term_id = $this->api->create('Term', $data);
-			$term_id = $term_id[0]['id'];
+			$term_pkey = $this->api->create('Term', $data);
+			$term_id = $term_pkey['id'];
 
 			// insert term's source code as an attribute
 			$this->api->create('TermAttribute', array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_src_code, 'parl' => $this->parliament_code));
@@ -337,8 +337,8 @@ class UpdaterCzPsp
 				$data['short_name'] = $src_constituency['short_name'];
 			if (isset($src_constituency['description']))
 				$data['description'] = $src_constituency['description'];
-			$constituency_id = $this->api->create('Constituency', $data);
-			$constituency_id = $constituency_id[0]['id'];
+			$constituency_pkey = $this->api->create('Constituency', $data);
+			$constituency_id = $constituency_pkey['id'];
 
 			// insert source code of the constituency
 			$this->api->create('ConstituencyAttribute', array('constituency_id' => $constituency_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
@@ -434,8 +434,8 @@ class UpdaterCzPsp
 		{
 			if ($action & self::MP_DISAMBIGUATE)
 				$data['disambiguation'] = $this->parliament_code . '/' . $src_code;
-			$mp_id = $this->api->create('Mp', $data);
-			$mp_id = $mp_id[0]['id'];
+			$mp_pkey = $this->api->create('Mp', $data);
+			$mp_id = $mp_pkey['id'];
 			if ($action & self::MP_DISAMBIGUATE)
 				$this->log->write("MP {$src_mp['first_name']} {$src_mp['last_name']} (id = $mp_id) inserted with automatic disambiguation. Refine his disambiguation by hand.", Log::WARNING);
 		}
@@ -621,8 +621,8 @@ class UpdaterCzPsp
 		else
 		{
 			// insert
-			$group_id = $this->api->create('Group', $data);
-			$group_id = $group_id[0]['id'];
+			$group_pkey = $this->api->create('Group', $data);
+			$group_id = $group_pkey['id'];
 
 			// insert group's source code
 			if ($src_group['kind'] != 'parliament')
@@ -660,8 +660,8 @@ class UpdaterCzPsp
 		// if role has not been found, insert it
 		$role_code = preg_replace('/[\'^"]/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $src_role['male_name'])));		// code = lowercase male name without accents
 		$data = array('code' => $role_code, 'male_name' => $src_role['male_name'], 'female_name' => $src_role['female_name'], 'description' => "Appears in parliament {$this->parliament_code}.");
-		$role_code = $this->api->create('Role', $data);
-		return $role_code[0]['code'];
+		$role_pkey = $this->api->create('Role', $data);
+		return $role_pkey['code'];
 	}
 
 	/**

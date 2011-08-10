@@ -32,6 +32,8 @@ class ApiDirect
 	public function read($resource, $params = null)
 	{
 		$this->includeApiResourceClass($resource);
+		if (!method_exists($resource, 'read'))
+			throw new Exception("The API resource <em>$resource</em> does not accept read requests.", 405);
 		$full_params = (array)$params + (array)$this->default_params;
 		return $resource::read($full_params);
 	}
@@ -51,6 +53,8 @@ class ApiDirect
 	public function create($resource, $data = null)
 	{
 		$this->includeApiResourceClass($resource);
+		if (!method_exists($resource, 'create'))
+			throw new Exception("The API resource <em>$resource</em> does not accept create requests.", 405);
 		$full_data = (array)$data + (array)$this->default_data;
 		return $resource::create($full_data);
 	}
@@ -61,6 +65,8 @@ class ApiDirect
 	public function update($resource, $params = null, $data = null)
 	{
 		$this->includeApiResourceClass($resource);
+		if (!method_exists($resource, 'update'))
+			throw new Exception("The API resource <em>$resource</em> does not accept update requests.", 405);
 		$full_params = (array)$params + (array)$this->default_params;
 		$full_data = (array)$data + (array)$this->default_data;
 		return $resource::update($full_params, $full_data);
@@ -72,6 +78,8 @@ class ApiDirect
 	public function delete($resource, $params = null)
 	{
 		$this->includeApiResourceClass($resource);
+		if (!method_exists($resource, 'delete'))
+			throw new Exception("The API resource <em>$resource</em> does not accept delete requests.", 405);
 		$full_params = (array)$params + (array)$this->default_params;
 		return $resource::delete($full_params);
 	}
