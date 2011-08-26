@@ -93,7 +93,7 @@ class ApiDirect
 		require_once  API_DIR . '/setup.php';
 		@include_once API_DIR . "/projects/{$this->project}/config/settings.php";
 		@include_once API_DIR . "/projects/{$this->project}/setup.php";
-		$ok = @include_once API_DIR . "/projects/{$this->project}/resources/$resource.php";
+		$ok = include_once API_DIR . "/projects/{$this->project}/resources/$resource.php";
 		if (!$ok)
 			throw new \Exception("There is no API resource <em>$resource</em> in <em>{$this->project}</em> project.", 404);
 	}
