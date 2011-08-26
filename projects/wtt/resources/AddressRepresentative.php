@@ -12,15 +12,18 @@ class AddressRepresentative
 	 *
 	 * \param $params An array of pairs <em>address_field => value</em> specifying the address. Available address fields are:
 	 * <em>latitude, longitude, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3,
-	 * locality, sublocality, neighborhood, route, street_number</em>. Any fields can be ommitted.
+	 * locality, sublocality, neighborhood, route, street_number</em>. Any field can be ommitted. Another available parameter is
+	 * <code>'parliament' => </code><em>parliament_codes_list</em> restricting the search to given parliaments. Parliament codes
+	 * in the list are seprated by | character.
 	 *
-	 * \return An array of MPs structured by parliament name and political group.
+	 * \return An array of MPs structured by parliament name, constituency and political group.
 	 */
 	public static function read($params)
 	{
 		// get the list of representatives from database
 		$query = new Query();
-		$query->setQuery('select * from address_representative($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)');
+		$query->setQuery('select * from address_representative($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)');
+		$query->appendParam(isset($params['parliament']) ? $params['parliament'] : null);
 		$query->appendParam(isset($params['latitude']) ? $params['latitude'] : null);
 		$query->appendParam(isset($params['longitude']) ? $params['longitude'] : null);
 		$query->appendParam(isset($params['country']) ? $params['country'] : null);

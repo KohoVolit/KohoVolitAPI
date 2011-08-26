@@ -26,9 +26,10 @@ as $$
 		and ($9 is null or street_number in ('*', $9))
 $$ language sql stable;
 
--- returns all MPs that are representatives for the given address
+-- returns all MPs that are representatives for the given address and parliament(s)
 -- MPs are sorted by parliament_code, political group and distance of their office to the given address
 create or replace function address_representative(
+	parliament varchar = null,
 	latitude double precision = null,
 	longitude double precision = null,
 	country varchar = null,
@@ -50,17 +51,17 @@ as $$
 		mp.id, mp.first_name, mp.last_name, mp.disambiguation,
 		club.short_name,
 		split_part(o.address, '|', 4),
-		acos(sin(radians(o.latitude)) * sin(radians($1)) + cos(radians(o.latitude)) * cos(radians($1)) * cos(radians($2 - o.longitude))) * 6371 as distance
+		acos(sin(radians(o.latitude)) * sin(radians($2)) + cos(radians(o.latitude)) * cos(radians($2)) * cos(radians($3 - o.longitude))) * 6371 as distance
 	from
-		(select distinct constituency_id from area_match($3, $4, $5, $6, $7, $8, $9, $10, $11)) as a
-		join constituency as c on c.id = a.constituency_id
+		(select distinct constituency_id from area_match($4, $5, $6, $7, $8, $9, $10, $11, $12)) as a
+		join constituency as c on c.id = a.constituency_id and ($1 is null or c.parliament_code = any (string_to_array($1, '|')))
 		join parliament as p on p.code = c.parliament_code
 		join mp_in_group as mig_parl on mig_parl.constituency_id = c.id and mig_parl.role_code = 'member' and mig_parl.since <= 'now' and mig_parl.until > 'now'
 		join group_ as g on g.id = mig_parl.group_id and g.group_kind_code = 'parliament'
 		join term as t on t.id = g.term_id and t.since <= 'now' and t.until > 'now'
 		join mp on mp.id = mig_parl.mp_id
-		join mp_in_group as mig_club on mig_club.mp_id = mp.id and mig_club.role_code = 'member' and mig_club.since <= 'now' and mig_club.until > 'now'
-		join group_ as club on club.id = mig_club.group_id and club.group_kind_code = 'political group' and club.term_id = t.id
+		left join mp_in_group as mig_club on mig_club.mp_id = mp.id and mig_club.role_code = 'member' and mig_club.since <= 'now' and mig_club.until > 'now' and mig_club.group_id in (select id from group_ where group_kind_code = 'political group')
+		left join group_ as club on club.id = mig_club.group_id
 		left join (select distinct on (mp_id, parliament_code) mp_id, parliament_code, address, latitude, longitude from office
 			where since <= 'now' and until > 'now' order by mp_id, parliament_code, relevance desc) as o
 			on o.mp_id = mp.id and o.parliament_code = c.parliament_code
