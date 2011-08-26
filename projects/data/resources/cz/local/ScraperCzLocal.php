@@ -19,6 +19,7 @@ class ScraperCzLocal
 		switch ($remote_resource)
 		{
 			case 'mp': return self::scrapeMp($params);
+			case 'parliament_list': return self::scrapeParliamentList($params);
 			default:
 				throw new Exception("Scraping of the remote resource <em>$remote_resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
@@ -33,13 +34,26 @@ class ScraperCzLocal
 	  $array = self::parse_csv($csv);
 	  return array('mp' => $array);
 	}
-	
+	/**
+	*
+	*/
 	private static function download($url)
 	{
-		$page = file_get_contents($url);
+		$page = self::grabber($url);
 		if (strlen($page) < 1000)
-			throw new Exception('The file from psp.cz was not downloaded well. Is not around 3 in the morning CET? The psp.cz is being mainteined at that time... (file too short)', 503);
+			throw new Exception('The file from scraperwiki.com was not downloaded well (file too short)', 503);
 		return $page;
+	}
+	
+	/**
+	* get list of parliaments (cities) from google docs
+	* @return array of parliaments
+	*/
+	private static function scrapeParliamentList($params)
+	{
+	  $csv = self::download("https://docs.google.com/a/g.kohovolit.eu/spreadsheet/pub?hl=en_US&hl=en_US&key=0ApmBqWaAzMn_dHJlNjN2WWpaLVVXc005N2E0bTdVeXc&single=true&gid=0&output=csv");
+	  $array = self::parse_csv($csv,array('header_replace' => true));
+	  return array('parliament' => $array);
 	}
 	
 /**
@@ -67,6 +81,7 @@ public static function parse_csv($file, $options = null) {
         //$fields = explode($delimiter, $line);
         $_res = $to_object ? new stdClass : array();
         foreach ($field_names as $key => $f) {
+        	if (isset($options['header_replace']) and $options['header_replace']) $f = str_replace(' ','_',$f);
             if ($to_object) {
                 $_res->{$f} = $fields[$key];
             } else {
@@ -76,6 +91,31 @@ public static function parse_csv($file, $options = null) {
         $res[] = $_res;
     }
     return $res;
+}
+
+/**
+* curl downloader, with possible options
+* @return html
+* example:
+* grabber('http://example.com',array(CURLOPT_TIMEOUT,180));
+*/
+public static function grabber($url,$options = array())
+{
+    $ch = curl_init ();
+    curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt ($ch, CURLOPT_URL, $url);
+    curl_setopt ($ch, CURLOPT_TIMEOUT, 120);
+    if (count($options) > 0) {
+      foreach($options as $option) {
+        curl_setopt ($ch, $option[0], $option[1]);
+      }
+    }
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($ch, CURLOPT_HEADER, 0); //this option is important here!!
+    $out = curl_exec($ch);
+    curl_close ($ch);
+    return $out;
 }
 
 }
