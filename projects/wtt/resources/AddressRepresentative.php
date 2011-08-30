@@ -14,7 +14,7 @@ class AddressRepresentative
 	 * <em>latitude, longitude, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3,
 	 * locality, sublocality, neighborhood, route, street_number</em>. Any field can be ommitted. Another available parameter is
 	 * <code>'parliament' => </code><em>parliament_codes_list</em> restricting the search to given parliaments. Parliament codes
-	 * in the list are seprated by | character.
+	 * in the list are separated by | character.
 	 *
 	 * \return An array of MPs structured by parliament name, constituency and political group.
 	 */

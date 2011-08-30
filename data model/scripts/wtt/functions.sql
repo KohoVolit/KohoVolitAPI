@@ -41,14 +41,16 @@ create or replace function address_representative(
 	neighborhood varchar = null,
 	route varchar = null,
 	street_number varchar = null)
-returns table(parliament_name varchar, parliament_code varchar, constituency_name varchar, id integer, first_name varchar, last_name varchar, disambiguation varchar,
-	political_group varchar, office_town varchar, office_distance double precision)
+returns table(parliament_name varchar, parliament_code varchar, constituency_name varchar,
+	id integer, first_name varchar, middle_names varchar, last_name varchar, disambiguation varchar,
+	email varchar, political_group varchar, office_town varchar, office_distance double precision)
 as $$
 	select
 		p.name_,
 		p.code,
 		c.name_,
-		mp.id, mp.first_name, mp.last_name, mp.disambiguation,
+		mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation,
+		ma.value_,
 		club.short_name,
 		split_part(o.address, '|', 4),
 		acos(sin(radians(o.latitude)) * sin(radians($2)) + cos(radians(o.latitude)) * cos(radians($2)) * cos(radians($3 - o.longitude))) * 6371 as distance
@@ -60,6 +62,7 @@ as $$
 		join group_ as g on g.id = mig_parl.group_id and g.group_kind_code = 'parliament'
 		join term as t on t.id = g.term_id and t.since <= 'now' and t.until > 'now'
 		join mp on mp.id = mig_parl.mp_id
+		left join mp_attribute as ma on ma.mp_id = mp.id and ma.name_ = 'email' and ma.parl = p.code and ma.since <= 'now' and ma.until > 'now'
 		left join mp_in_group as mig_club on mig_club.mp_id = mp.id and mig_club.role_code = 'member' and mig_club.since <= 'now' and mig_club.until > 'now' and mig_club.group_id in (select id from group_ where group_kind_code = 'political group')
 		left join group_ as club on club.id = mig_club.group_id
 		left join (select distinct on (mp_id, parliament_code) mp_id, parliament_code, address, latitude, longitude from office
