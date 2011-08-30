@@ -80,7 +80,7 @@ class PublicMessagePreview
 
 		$query->appendQuery("order by\n	sent_on desc");
 
-		return $messages = $query->execute();
+		return $query->execute();
 	}
 }
 

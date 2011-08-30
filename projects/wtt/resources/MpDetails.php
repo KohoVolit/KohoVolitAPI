@@ -40,6 +40,7 @@ class MpDetails
 			$query->appendParam(substr($mp, 0, $p));
 			$id_to_order[substr($mp, $p + 1)] = $i++;
 		}
+		$query->appendQuery('order by id');
 		$rows = $query->execute();
 
 		// aggregate each MP's attributes to one row, rows in the same order as MPs in the input list
