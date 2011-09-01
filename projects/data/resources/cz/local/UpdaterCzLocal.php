@@ -36,6 +36,12 @@ class UpdaterCzLocal
 		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
+		
+		//convert $param['date'] into DateTime object, default = today
+		if (isset($params['date']))
+	  		$this->date = new DateTime($params['date']);
+		else
+	  		$this->date = new DateTime();
 	}
 	
 	/**
@@ -71,8 +77,147 @@ class UpdaterCzLocal
 		  	
 		  // update other MP attributes and offices, mps
 		  $this->updateMpAttribute($src_mp, $mp_id, 'email', null);
-		}
+		  
+		  //update constituencies //for cz/starostove (for each mp) 
+		  if ($src_mp['parliament_code'] == 'cz/starostove') {
+			$constituency_id = $this->updateConstituency($src_mp['parliament_code'],$src_mp['town']);
+		  } else {
+		    $constituency_id = $this->updateConstituency($src_mp['parliament_code'],$src_mp['parliament_name']);
+		  }
+		  
+		  //update areas, given by locality, administrative_area_level_1, administrative_area_level_2 (sublocality) here
+		  if ($src_mp['parliament_code'] == 'cz/starostove') {
+		    $area = array (
+		       'administrative_area_level_1' => $src_mp['kraj'],
+		       'administrative_area_level_2' => $src_mp['okres'],
+		       'locality' => $src_mp['town'],
+		    );
+		    //correct Praha
+		    if (strpos($src_mp['town'],'Praha') === false) {
+		    } else {
+		      $area['sublocality'] = $area['locality'];
+		      $area['locality'] = 'Praha';
+		    }   
+		    $this->updateArea($area,$constituency_id);
+		  } else { //others
+		    $area = $parliaments[$src_mp['parliament_code']]['src_parliament'];		    
+		    $this->updateArea($area,$constituency_id);
+		  }
+		  
+		  //update memberships in groups(=parliament)
+		  	  //****** ROZDELANO !!
+		  $data = array(
+		    'mp_id' => $mp_id,
+		    'group_id' => $parliaments[$src_mp['parliament_code']]['group_id'],
+		    'role_code' => 'member',
+		    'constituency_id' => $constituency_id,
+		  );
+		  if ( isset($src_mp['since']) and ($src_mp['since'] != '') )
+		      $data['since'] = $src_mp['since'];
+		  else
+		  	  $data['since'] = '';
+		  if ( isset($src_mp['until']) and ($src_mp['until'] != '') )
+		      $data['until'] = $src_mp['until'];
+		  else
+		  	  $data['until'] = '';
+		  //$this->updateMembership($data);
+		}	
+	}
+	
+	/**
+	* updates membership in group=parliament (member)
+	*
+	* if not set "until", set it till "until" of the term
+	*
+	* @param data array of membership values
+	*/
+	private function updateMembership($data) {
+	  //correct dates in US format into ISO
+	  $data['until'] = correctDate($data['until']);
+	  $data['since'] = correctDate($data['since']);
+	  
+	  //if no dates given, get those from 
+	  
+	  //if the source membership is still valid
+
+	  //****** ROZDELANO !!
+	  
+	  $membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => 'member', 'constituency_id' => $data['constituency_id'], '#datetime' => $this->date->format('Y-m-d')));
+	  
+	  
+	}
+	
+	/**
+	* corrects erroneous dates, from US format into ISO
+	*
+	* @param date
+	*
+	* @return date in ISO format
+	*/
+	private function correctDate($in) {
+	  if (strpos($in,'/') > 0) { //is US
+	    $ar = explode('/',$in);
+	    return $in[2].'-'.$in[0].'-'.$in[1];
+	  } else {
+	    return $in;
+	  }
+	}
+	/**
+	* update areas (of constituencies)
+	*
+	* kraj, okres, obec ~ administrative_area_1,administrative_area_2,locality
+	*
+	* @param area array of area
+	*
+	* @param constituency_id
+	*/
+	private function updateArea($area,$constituency_id) {
+	  $data = array(
+	 	'constituency_id' => $constituency_id,
+	    'country' => 'Česká republika',
+	    'administrative_area_level_1' => $area['administrative_area_level_1'],
+	    'administrative_area_level_2' => $area['administrative_area_level_2'],
+	    'administrative_area_level_3' => '*',
+	    'locality' => $area['locality'],
+	    'sublocality' => '*',
+	    'neighborhood' => '*',
+	    'route' => '*',
+	    'street_number' => '*',
+	  );
+	  if (isset($area['sublocality']) and (trim($area['sublocality']) != ''))
+    	    $data['sublocality'] = $area['sublocality'];
+     //get area from db
+     $area_db = $this->api->read('Area', $data);
+	 //insert area if not in db
+	 if (count($area_db) == 0) {
+	    $this->api->create('Area', $data);
+	    $this->log->write("Inserted new area: {$data['administrative_area_level_1']}, {$data['administrative_area_level_2']}, {$data['locality']}, {$data['sublocality']}", Log::DEBUG);
+	  }
+	}
 		
+	/**
+	 * Update information about a constituency. If it is not present in database, insert it.
+	 *
+	 * \param parliament_code
+	 * @param name
+	 *
+	 * \returns id of the updated or inserted constituency.
+	 */
+	private function updateConstituency($parliament_code, $constit_name) {
+		$this->log->write("Updating constituency '{$constit_name}' ({$parliament_code}).", Log::DEBUG);
+		
+		$constituency = $this->api->readOne('Constituency', array('parliament_code' => $parliament_code, 'name_' => $constit_name));
+		//if exists, return id
+		if ($constituency) {
+		  return $constituency['id'];
+		}
+		//if does not exist, insert it
+		$data = array (
+		  'name_' => $constit_name,
+		  'parliament_code' => $parliament_code,
+		);
+		$constituency_pkey = $this->api->create('Constituency', $data);
+		return $constituency_pkey['id'];
 	}
 	
 	/**
@@ -285,7 +430,12 @@ class UpdaterCzLocal
 		$group = $this->api->readOne('Group', array('name_' => $src_parliament['parliament_name'], 'parliament_code' => $src_parliament['parliament_code'],'group_kind_code' => 'parliament','term_id' => $term['id']));		
 
 		//save parliament and term and group=parliament into array
-		$out[$src_parliament['parliament_code']] = array('parliament_code' => $src_parliament['parliament_code'],'term_id' => $term['id'], 'group_id' => $group['id']);
+		$out[$src_parliament['parliament_code']] = array(
+		  'parliament_code' => $src_parliament['parliament_code'],
+		  'term_id' => $term['id'],
+		  'group_id' => $group['id'],
+		  'src_parliament' => $src_parliament,
+		  );
 	  }
 	  return $out;
 	}
