@@ -104,8 +104,11 @@ class UpdaterCzLocal
 		    $this->updateArea($area,$constituency_id);
 		  }
 		  
-		  //update memberships in groups(=parliament)
-		  	  //****** ROZDELANO !!
+		  //update groups (political groups = kluby/strany)
+		  $term_id = $parliaments[$src_mp['parliament_code']]['term_id'];
+		  $group_id = $this->updateGroup($src_mp,$term_id);
+		  
+		  //update memberships in groups(=parliament) and 'political groups'
 		  $data = array(
 		    'mp_id' => $mp_id,
 		    'group_id' => $parliaments[$src_mp['parliament_code']]['group_id'],
@@ -120,31 +123,94 @@ class UpdaterCzLocal
 		      $data['until'] = $src_mp['until'];
 		  else
 		  	  $data['until'] = '';
-		  //$this->updateMembership($data);
+		  $this->updateMembership($data,$term_id);
+		  $data['group_id'] = $group_id;
+		  $this->updateMembership($data,$term_id);
 		}	
 	}
 	
 	/**
-	* updates membership in group=parliament (member)
+	* updates membership in group=parliament (member) and 'political group'
 	*
-	* if not set "until", set it till "until" of the term
+	* if not set "until"/"since", set it as "until"/"since" of the term
 	*
 	* @param data array of membership values
+	*
+	* @param term_id
 	*/
-	private function updateMembership($data) {
+	private function updateMembership($data,$term_id) {
 	  //correct dates in US format into ISO
-	  $data['until'] = correctDate($data['until']);
-	  $data['since'] = correctDate($data['since']);
+	  $data['until'] = $this->correctDate($data['until']);
+	  $data['since'] = $this->correctDate($data['since']);
 	  
 	  //if no dates given, get those from 
+	  if ($data['until'] == '') {
+	    $term = $this->api->readOne('Term',array('id' => $term_id));
+	    $data['until'] = $term['until'];
+	  } 
+	  if ($data['since'] == '') {
+	    $term = $this->api->readOne('Term',array('id' => $term_id));
+	    $data['since'] = $term['since'];
+	  } 
 	  
-	  //if the source membership is still valid
-
-	  //****** ROZDELANO !!
+	  // if the membership exists today, update it
+	  // if not -> if the membership exists with equal 'since', update it, otherwise insert it
+	  // (should catch some changes in 'since')
+	  $membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], '#datetime' => $this->date->format('Y-m-d')));
+	  if ($membership) {
+	    //update
+	    $this->api->update('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], '#datetime' => $this->date->format('Y-m-d') ), $data);
+	  } else {
+	    $membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], 'since' => $data['since']));
+	    if ($membership) { 
+	      //update
+	      $this->api->update('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], 'since' =>$data['since'] ), $data);
+	    } else {
+	      //insert
+	      $this->api->create('MpInGroup', $data);
+	      $this->log->write("Inserting new membership (mp_id='{$data['mp_id']}',group_id='{$data['group_id']}')", Log::DEBUG);
+	    }
+	  } 
 	  
-	  $membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => 'member', 'constituency_id' => $data['constituency_id'], '#datetime' => $this->date->format('Y-m-d')));
+	}
+	
+	/**
+	* update group (political club)
+	*
+	* @param mp array of info about mp
+	*
+	* @param term_id
+	* 
+	* @return group_id
+	*/
+	private function updateGroup($mp,$term_id,$group_kind_code = 'political group') {
+	  //if group exists
+	  $group_name = trim($mp['political_group:long_name']);
+	    //correct for 'full name' (error in cz/starostove)
+	    if (trim($mp['political_group:full_name']) != '')
+	       $group_name = trim($mp['political_group:full_name']);
 	  
-	  
+	  if (isset($group_name) and ($group_name != '')) {
+	    $group_db = $this->api->readOne('Group', array('name_' => $group_name, 'parliament_code' => $mp['parliament_code'], 'group_kind_code' => $group_kind_code, 'term_id' => $term_id));
+	    if ($group_db)
+			$group_id = $group_db['id'];
+	    else {  //insert new group
+	      $this->log->write("Inserting new group '{$group_name}' ({$mp['parliament_code']})", Log::DEBUG);
+		  $data = array(
+		    'name_' => $group_name,
+		    'parliament_code' => $mp['parliament_code'],
+		    'group_kind_code' => $group_kind_code,
+		    'term_id' => $term_id,
+		  );
+		  $group_short_name = $mp['political_group:short_name'];
+		  if (isset($group_short_name) and ($group_short_name != ''))
+		    $data['short_name'] = $group_short_name;
+		  $group_pkey = $this->api->create('Group', $data);
+			$group_id = $group_pkey['id'];
+	    }
+	    return $group_id;
+	  } else 
+	  	return null;
 	}
 	
 	/**
@@ -156,10 +222,10 @@ class UpdaterCzLocal
 	*/
 	private function correctDate($in) {
 	  if (strpos($in,'/') > 0) { //is US
-	    $ar = explode('/',$in);
-	    return $in[2].'-'.$in[0].'-'.$in[1];
+	    $ar = explode('/',trim($in));
+	    return $ar[2].'-'.$ar[0].'-'.$ar[1];
 	  } else {
-	    return $in;
+	    return trim($in);
 	  }
 	}
 	/**
