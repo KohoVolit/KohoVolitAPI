@@ -21,7 +21,7 @@ class LanguageAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'language_attribute',
 			'columns' => array('language_code')
 		));

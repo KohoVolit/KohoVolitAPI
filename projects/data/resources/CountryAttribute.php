@@ -21,7 +21,7 @@ class CountryAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'country_attribute',
 			'columns' => array('country_code')
 		));

@@ -21,7 +21,7 @@ class TermAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'term_attribute',
 			'columns' => array('term_id', 'parl')
 		));

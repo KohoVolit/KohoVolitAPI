@@ -21,7 +21,7 @@ class PartyAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'party_attribute',
 			'columns' => array('party_id', 'parl')
 		));

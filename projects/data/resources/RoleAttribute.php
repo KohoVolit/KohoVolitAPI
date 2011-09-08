@@ -21,7 +21,7 @@ class RoleAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'role_attribute',
 			'columns' => array('role_code', 'parl')
 		));

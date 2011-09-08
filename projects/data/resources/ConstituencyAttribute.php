@@ -21,7 +21,7 @@ class ConstituencyAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'constituency_attribute',
 			'columns' => array('constituency_id', 'parl')
 		));

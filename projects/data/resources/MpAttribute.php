@@ -21,7 +21,7 @@ class MpAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'mp_attribute',
 			'columns' => array('mp_id', 'parl')
 		));

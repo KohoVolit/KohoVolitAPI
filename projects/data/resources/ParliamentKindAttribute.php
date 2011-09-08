@@ -21,7 +21,7 @@ class ParliamentKindAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'parliament_kind_attribute',
 			'columns' => array('parliament_kind_code')
 		));

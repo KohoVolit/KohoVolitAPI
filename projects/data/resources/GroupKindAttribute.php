@@ -21,7 +21,7 @@ class GroupKindAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'group_kind_attribute',
 			'columns' => array('group_kind_code', 'parl')
 		));

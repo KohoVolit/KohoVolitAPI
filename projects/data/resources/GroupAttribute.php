@@ -21,7 +21,7 @@ class GroupAttribute
 	 */
 	public function __construct()
 	{
-		$this->entity = new Attribute(array(
+		$this->attribute = new Attribute(array(
 			'name' => 'group_attribute',
 			'columns' => array('group_id', 'parl')
 		));
