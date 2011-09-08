@@ -1,80 +1,118 @@
 <?php
 
 /**
- * Class Constituency provides information about constituencies of a parliament through API and implements CRUD operations on database table CONSTITUENCY.
+ * \ingroup data
  *
- * Columns of table CONSTITUENCY are: <em>id, name_, short_name, description, parliament_code, since, until</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Provides an interface to database table CONSTITUENCY that holds constituencies a parliament is elected for.
+ *
+ * Columns of table CONSTITUENCY are: <code>id, name_, short_name, description, parliament_code, since, until</code>.
+ *
+ * Column <code>id</code> is a read-only column automaticaly generated on create.
+ *
+ * Primary key is column <code>id</code>.
  */
 class Constituency
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'constituency',
-			array('id', 'name_', 'short_name', 'description', 'parliament_code', 'since', 'until'),
-			array('id'),
-			array('id')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'constituency',
+			'columns' => array('id', 'name_', 'short_name', 'description', 'parliament_code', 'since', 'until'),
+			'pkey_columns' => array('id'),
+			'readonly_columns' => array('id')
+		));
 	}
 
 	/**
-	 * Read constituency(s) according to given parameters.
+	 * Read the constituency(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the constituencies to select. Only constituencies satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the constituencies to select.
+	 * A special parameter \c \#datetime can be used (eg. '\#datetime' => '2010-06-30 9:30:00') to select only the constituencies
+	 * valid at the given moment (the ones where \c since <= \c \#datetime < \c until).
+	 * Use <code>'\#datetime' => 'now'</code> to get constituencies valid now.
 	 *
-	 * \return An array of constituencies with structure <code>array(array('id' => 123, 'name_' => 'Praha 9', 'short_name' => '9', 'description' => null, 'cz/praha'), ...)</code>.
+	 * \return An array of constituencies that satisfy all prescribed column values.
 	 *
-	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only constituencies valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get constituencies valid at this moment.
+	 * \ex
+	 * \code
+	 * read(array('short_name' => '5', 'parliament_code' => 'cz/senat', '#datetime' => 'now'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [id] => 27
+	 *             [name_] => Chomutov (5)
+	 *             [short_name] => 5
+	 *             [description] => celý okres Chomutov
+	 *             [parliament_code] => cz/senat
+	 *             [since] => -infinity
+	 *             [until] => infinity
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params);
+		return $this->entity->read($params);
 	}
 
 	/**
-	 * Create constituency(s) with given values.
+	 * Create a constituency(s) from given values.
 	 *
-	 * \param $data An array of constituencies to create, where each constituency is given by array of pairs <em>column => value</em>. Eg. <code>array(array('name_' => 'Praha 9', 'short_name' => '9', 'description' => null, 'cz/praha'), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the constituency to create. Alternatively, an array of such constituency specifications.
+	 * If \c since and \c until columns are ommitted, they are set to \c -infinity, \c infinity, respectively.
 	 *
-	 * \return An array of \e id-s of created constituencies.
+	 * \return An array of primary key values of the created constituency(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array('name_' => 'Chomutov (5)', 'short_name' => '5', 'description' => 'celý okres Chomutov', 'parliament_code' => 'cz/senat'))
+	 * \endcode creates a new constituency and returns something like
+	 * \code
+	 * Array
+	 * (
+	 *     [id] => 27
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data);
+		return $this->entity->create($data);
 	}
 
 	/**
-	 * Update constituency(s) satisfying parameters to the given values.
+	 * Update the given values of the constituencies that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the constituencies to update. Only constituencies satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected constituency.
+	 * \param $params An array of pairs <em>column => value</em> specifying the constituencies to update. Only the constituencies that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated constituency.
 	 *
-	 * \return An array of \e id-s of updated constituencies.
+	 * \return An array of primary key values of the updated constituencies.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data);
+		return $this->entity->update($params, $data);
 	}
 
 	/**
-	 * Delete constituency(s) according to given parameters.
+	 * Delete the constituency(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the constituencies to delete. Only constituencies satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the constituencies to delete. Only the constituencies that satisfy all prescribed column values are deleted.
 	 *
-	 * \return An array of \e id-s of deleted constituencies.
+	 * \return An array of primary key values of the deleted constituencies.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params);
+		return $this->entity->delete($params);
 	}
 }
-
-Constituency::init();
 
 ?>

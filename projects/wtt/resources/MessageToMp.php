@@ -1,21 +1,47 @@
 <?php
 
 /**
- * Class MessageToMp lists all messages sent to a given MP.
+ * \ingroup wtt
  *
- * Only the \e read method is present.
+ * Lists all messages sent to a given MP.
  */
 class MessageToMp
 {
 	/**
 	 * Returns all messages sent to a given MP.
 	 *
-	 * \param $params An array with two pairs specifying addressee of the sent messages: \c 'mp_id' => \e mp_id ndash; id of the MP and \c 'parliament_code' => \e parliament_code.
-	 * Example: <code>array('mp_id' => 150, 'parliament_code' => 'cz/senat')</code>.
+	 * \param $params An array of pairs <em>parameter => value</em> specifying an addressee. Available parameters are:
+	 * - \c mp_id specifying id of an MP
+	 * - \c parliament_code specifying a parliament_code the MP acts for as an addressee
 	 *
 	 * \return Details of the sent messages.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('parliament_code' => 'cz/senat', 'since' => '2011-09-01 10:00:00'))
+	 * \endcode returns something like
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [id] => 1030
+	 *             [subject] => My law proposal
+	 *             [body_] => Dear Mr. ...
+	 *             [is_public] => yes
+	 *             [sender_name] => Bilbo Baggins
+	 *             [sender_address] => Bag End, Hobbiton 
+	 *             [mp_id] => 809
+	 *             [first_name] => Jan
+	 *             [middle_names] => 
+	 *             [last_name] => Hajda
+	 *             [disambiguation] => 
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
 		$query = new Query();
 		$query->setQuery(

@@ -5,12 +5,13 @@ require '../setup.php';
 
 try
 {
-	$result = ApiServer::processHttpRequest();
-	ApiServer::sendHttpResponse(200, $result);
+	$server = new ApiServer;
+	$result = $server->processHttpRequest();
+	$server->sendHttpResponse(200, $result);
 }
 catch (Exception $e)
 {
-	ApiServer::sendHttpResponse($e->GetCode(), $e->getMessage());
+	$server->sendHttpResponse($e->GetCode(), $e->getMessage());
 }
 
 ?>

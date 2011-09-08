@@ -1,22 +1,63 @@
 <?php
 
 /**
- * Class MpDetails provides detailed information about the given MPs to be used as addressees.
+ * \ingroup wtt
  *
- * Only the \e read method is present.
+ * Provides detailed information about given MPs to be used as addressees.
  */
 class MpDetails
 {
 	/**
 	 * Returns details about given MPs and their attributes useful to show them as addressees.
 	 *
-	 * \param $params An array with one pair \c 'mp' => \e mp_list specifying the MPs to select.
-	 * The \e mp_list is a vertical-bar-separated list of MPs' ids with prepended parliament code to select the attributes (e.g. email, image) for.
-	 * Example: <code>array('mp' => 'cz/psp/64|cz/senat/123|cz/psp/17')</code>.
+	 * \param $params An array of pairs <em>parameter => value</em> specifying an MP(s). Available parameters are:
+	 * - \c mp specifying a vertical bar-separated list of MPs' ids with prepended parliament codes for attributes selection (e.g. email, image).
 	 *
 	 * \return Details about the given MPs in an array ordered the same way as the input list.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('mp' => 'cz/psp/717|cz/senat/823'))
+	 * \endcode returns something like
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [id] => 717
+	 *             [first_name] => Jan
+	 *             [middle_names] => 
+	 *             [last_name] => Pajer
+	 *             [disambiguation] => 
+	 *             [parliament_code] => cz/psp
+	 *             [parliament_name] => Poslanecká sněmovna Parlamentu České republiky
+	 *             [source_code] => 5953
+	 *             [email] => pajerj@psp.cz
+	 *             [assistant] => Mgr. Karin Holečková, Jiří Horník, Mgr. Libor Mojžíš
+	 *             [image] => cz/psp/images/mp/5953_6.jpg
+	 *         )
+	 *
+	 *     [1] => Array
+	 *         (
+	 *             [id] => 823
+	 *             [first_name] => Petr
+	 *             [middle_names] => 
+	 *             [last_name] => Vícha
+	 *             [disambiguation] => 
+	 *             [parliament_code] => cz/senat
+	 *             [parliament_name] => Senát Parlamentu České republiky
+	 *             [source_code] => 206
+	 *             [email] => vzatkova.vera.senat@mubo.cz, balcarova.lucie.senat@mubo.cz, vichap@senat.cz
+	 *             [website] => www.petr-vicha.cz
+	 *             [phone] => +420 777 029 121, +420 605 517 545, +420 596 092 292, +420 596 092 101 fax
+	 *             [assistant] => Ing. Věra Vzatková, Mgr. Lucie Balcarová, Libuše Michalíková, Dagmar Procházková, Jarmila Světlíková, Vladimír Talaga
+	 *             [image] => cz/senat/images/mp/206_8.jpg
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
 		if (!isset($params['mp']))
 			return array();

@@ -1,78 +1,119 @@
 <?php
 
 /**
- * Class Term provides information about parliament terms of office through API and implements CRUD operations on database table TERM.
+ * \ingroup data
  *
- * Columns of table TERM are: <em>id, name_, short_name, description, country_code, parliament_kind_code, since, until</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Provides an interface to database table TERM that holds terms of office a parliament is elected in.
+ *
+ * Columns of table TERM are: <code>id, name_, short_name, description, country_code, parliament_kind_code, since, until</code>.
+ *
+ * Column <code>id</code> is a read-only column automaticaly generated on create.
+ *
+ * Primary key is column <code>id</code>.
  */
 class Term
 {
 		/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'term',
-			array('id', 'name_', 'short_name', 'description', 'country_code', 'parliament_kind_code', 'since', 'until'),
-			array('id'),
-			array('id')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'term',
+			'columns' => array('id', 'name_', 'short_name', 'description', 'country_code', 'parliament_kind_code', 'since', 'until'),
+			'pkey_columns' => array('id'),
+			'readonly_columns' => array('id')
+		));
 	}
 
 	/**
-	 * Read term(s) according to given parameters.
+	 * Read the term(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the terms to select. Only terms satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the terms to select.
+	 * A special parameter \c \#datetime can be used (eg. '\#datetime' => '2010-06-30 9:30:00') to select only the terms
+	 * open at the given moment (the ones where \c since <= \c \#datetime < \c until).
+	 * Use <code>'\#datetime' => 'now'</code> to get terms open now.
 	 *
-	 * \return An array of terms with structure <code>array(array('id' => 3, 'name_' => '2006-2010', 'short_name' => '6', ...), ...)</code>.
+	 * \return An array of terms that satisfy all prescribed column values.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('country_code' => 'cz', 'parliament_kind_code' => 'national-lower', '#datetime' => 'now'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [id] => 6
+	 *             [name_] => od 2010
+	 *             [short_name] => 
+	 *             [description] => 
+	 *             [country_code] => cz
+	 *             [parliament_kind_code] => national-lower
+	 *             [since] => 2010-05-29 00:00:00
+	 *             [until] => infinity
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params);
+		return $this->entity->read($params);
 	}
 
 	/**
-	 * Create term(s) with given values.
+	 * Create a term(s) from given values.
 	 *
-	 * \param $data An array of terms to create, where each term is given by array of pairs <em>column => value</em>. Eg. <code>array(array('term' => array(array(name_' => '2006-2010', 'short_name' => '6', parliament_kind_code = 'cz/psp', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the term to create. Alternatively, an array of such term specifications.
+	 * If \c since and \c until columns are ommitted, they are set to \c -infinity, \c infinity, respectively.
 	 *
-	 * \return An array of \e id-s of created terms.
+	 * \return An array of primary key values of the created term(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array('name_' => '2006 - 2010', 'country_code' => 'sk', 'parliament_kind_code' => 'local', 'since' => '2006-12-03', 'until' => '2010-11-28'))
+	 * \endcode creates a new term and returns something like
+	 * \code
+	 * Array
+	 * (
+	 *     [id] => 14
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data);
+		return $this->entity->create($data);
 	}
 
 	/**
-	 * Update term(s) satisfying parameters to the given values.
+	 * Update the given values of the terms that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the terms to update. Only terms satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected term.
+	 * \param $params An array of pairs <em>column => value</em> specifying the terms to update. Only the terms that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated term.
 	 *
-	 * \return An array of \e id-s of updated terms.
+	 * \return An array of primary key values of the updated terms.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data);
+		return $this->entity->update($params, $data);
 	}
 
 	/**
-	 * Delete term(s) according to given parameters.
+	 * Delete the term(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the terms to delete. Only terms satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the terms to delete. Only the terms that satisfy all prescribed column values are deleted.
 	 *
-	 * \return An array of \e id-s of deleted terms.
+	 * \return An array of primary key values of the deleted terms.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params);
+		return $this->entity->delete($params);
 	}
 }
-
-Term::init();
 
 ?>

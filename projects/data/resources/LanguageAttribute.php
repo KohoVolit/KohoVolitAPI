@@ -1,78 +1,118 @@
 <?php
 
 /**
- * Class LanguageAttribute provides information about languages' additional attributes through API and implements CRUD operations on database table LANGUAGE_ATTRIBUTE.
+ * \ingroup data
  *
- * Columns of table LANGUAGE_ATTRIBUTE are: <em>language_code</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
+ * Provides an interface to database table LANGUAGE_ATTRIBUTE that holds languages' additional attributes.
+ *
+ * Columns of table LANGUAGE_ATTRIBUTE are: <code>language_code, name_, value_, lang, since, until</code>.
+ *
+ * All columns are allowed to write to.
+ *
+ * Primary key consists of columns <code>language_code, name_, lang, since</code>.
  */
 class LanguageAttribute
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $attribute;
+	private $attribute;
 
 	/**
-	 * Initialize information about the attribute table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$attribute = new Attribute(
-			'language_attribute',
-			array('language_code')
-		);
+		$this->entity = new Attribute(array(
+			'name' => 'language_attribute',
+			'columns' => array('language_code')
+		));
 	}
 
 	/**
-	 * Read language(s)' attributes according to given parameters.
+	 * Read the language attribute(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select.
+	 * A special parameter \c \#datetime can be used (eg. '\#datetime' => '2010-06-30 9:30:00') to select only the attributes
+	 * valid at the given moment (the ones where \c since <= \c \#datetime < \c until).
+	 * Use <code>'\#datetime' => 'now'</code> to get attributes valid now.
 	 *
-	 * \return An array of attributes with structure <code>array(array('language_code' => 'cz', 'name_' => 'flag', 'value_' => 'czech.gif', '-', ...), ...)</code>.
+	 * \return An array of attributes that satisfy all prescribed column values.
 	 *
-	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get attributes valid at this moment.
+	 * \ex
+	 * \code
+	 * read(array('language_code' => 'sk', 'name_' => 'flag'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [name_] => flag
+	 *             [value_] => sk.gif
+	 *             [lang] => -
+	 *             [since] => -infinity
+	 *             [until] => infinity
+	 *             [language_code] => sk
+	 *         ) 
+	 * 
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$attribute->read($params);
+		return $this->attribute->read($params);
 	}
 
 	/**
-	 * Create language(s)' attributes with given values.
+	 * Create a language attribute(s) from given values.
 	 *
-	 * \param $data An array of attributes to create, where each attribute is given by array of pairs <em>column => value</em>. Eg. <code>array(array('language_code' => 'cz', 'name_' => 'flag', 'value_' => 'czech.gif', '-', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the attribute to create. Alternatively, an array of such attribute specifications.
+	 * If \c since, \c until or \c lang columns are ommitted, they are set to \c -infinity, \c infinity, \c -, respectively.
 	 *
-	 * \return Number of created attributes.
+	 * \return An array of primary key values of the created attribute(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array('language_code' => 'sk', 'name_' => 'flag', 'value_' => 'sk.gif'))
+	 * \endcode creates a new language attribute and returns
+	 * \code
+	 * Array
+	 * (
+	 *     [language_code] => sk
+	 *     [name_] => flag
+	 *     [lang] => -
+	 *     [since] => -infinity
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$attribute->create($data);
+		return $this->attribute->create($data);
 	}
 
 	/**
-	 * Update language(s)' attributes satisfying parameters to the given values.
+	 * Update the given values of the language attributes that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to update. Only attributes satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected attribute.
+	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to update. Only the attributes that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated attribute.
 	 *
-	 * \return Number of updated attributes.
+	 * \return An array of primary key values of the updated attributes.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$attribute->update($params, $data);
+		return $this->attribute->update($params, $data);
 	}
 
 	/**
-	 * Delete language(s)' attributes according to given parameters.
+	 * Delete the language attribute(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to delete. Only attributes satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to delete. Only the attributes that satisfy all prescribed column values are deleted.
 	 *
-	 * \return Number of deleted attributes.
+	 * \return An array of primary key values of the deleted attributes.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$attribute->delete($params);
+		return $this->attribute->delete($params);
 	}
 }
-
-LanguageAttribute::init();
 
 ?>

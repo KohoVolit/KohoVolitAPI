@@ -1,79 +1,122 @@
 <?php
 
 /**
- * Class Office provides information about MPs' offices through API and implements CRUD operations on database table OFFICE.
+ * \ingroup data
  *
- * Columns of table OFFICE are: <em>mp_id, parliament_code, address, phone, latitude, longitude, relevance, since, until</em>. All columns are allowed to write to.
+ * Provides an interface to database table OFFICE that holds MPs' offices.
+ *
+ * Columns of table OFFICE are: <code>mp_id, parliament_code, address, phone, latitude, longitude, relevance, since, until</code>.
+ *
+ * All columns are allowed to write to.
+ *
+ * Primary key consists of columns <code>mp_id, parliament_code, address, since</code>.
  */
 class Office
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'office',
-			array('mp_id', 'parliament_code', 'address', 'phone', 'latitude', 'longitude', 'relevance', 'since', 'until'),
-			array('mp_id', 'parliament_code', 'address', 'since')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'office',
+			'columns' => array('mp_id', 'parliament_code', 'address', 'phone', 'latitude', 'longitude', 'relevance', 'since', 'until'),
+			'pkey_columns' => array('mp_id', 'parliament_code', 'address', 'since')
+		));
 	}
 
 	/**
-	 * Read MP office(s) according to given parameters.
+	 * Read the MP office(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the offices to select. Only offices satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the offices to select.
+	 * A special parameter \c \#datetime can be used (eg. '\#datetime' => '2010-06-30 9:30:00') to select only the offices
+	 * valid at the given moment (the ones where \c since <= \c \#datetime < \c until).
+	 * Use <code>'\#datetime' => 'now'</code> to get offices valid now.
 	 *
-	 * \return An array of offices with structure <code>array(array('mp_id' => 32, 'parliament_code' => 'me/shc', 'address' => '|Bag end|12|Hobbiton|SH-12345|Middle-earth', 'phone' => '+421 123 456 789', ...), ...)</code>.
+	 * \return An array of MP offices that satisfy all prescribed column values.
 	 *
-	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only offices valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get offices valid at this moment.
+	 * \ex
+	 * \code
+	 * read(array('mp_id' => 829, 'parliament_code' => 'cz/senat', '#datetime' => 'now'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [mp_id] => 829
+	 *             [parliament_code] => cz/senat
+	 *             [address] => Mariánské nám. 127, Uherské Hradiště 686 01
+	 *             [phone] => 
+	 *             [latitude] => 49.0701727
+	 *             [longitude] => 17.4594702
+	 *             [relevance] => 
+	 *             [since] => 2011-05-26 00:00:00
+	 *             [until] => infinity
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params);
+		return $this->entity->read($params);
 	}
 
 	/**
-	 * Create MP office(s) with given values.
+	 * Create an MP office(s) from given values.
 	 *
-	 * \param $data An array of offices to create, where each office is given by array of pairs <em>column => value</em>. Eg. <code>array(array('mp_id' => 32, 'parliament_code' => 'me/shc', 'address' => '|Bag end|12|Hobbiton|SH-12345|Middle-earth', 'phone' => '+421 123 456 789', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the office to create. Alternatively, an array of such office specifications.
+	 * If \c since and \c until columns are ommitted, they are set to \c -infinity, \c infinity, respectively.
 	 *
-	 * \return Number of created offices.
+	 * \return An array of primary key values of the created office(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array('mp_id' => 684, 'parliament_code' => 'cz/psp', 'address' => '|Sněmovní|4|Praha 1|118 26|Česká republika', 'phone' => '25717 2079', 'relevance' => 0.5))
+	 * \endcode creates a new office and returns
+	 * \code
+	 * Array
+	 * (
+	 *     [mp_id] => 684
+	 *     [parliament_code] => cz/psp
+	 *     [address] => |Sněmovní|4|Praha 1|118 26|Česká republika
+	 *     [since] => -infinity
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data);
+		return $this->entity->create($data);
 	}
 
 	/**
-	 * Update MP office(s) satisfying parameters to the given values.
+	 * Update the given values of the MP offices that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the offices to update. Only offices satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected office.
+	 * \param $params An array of pairs <em>column => value</em> specifying the offices to update. Only the offices that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated office.
 	 *
-	 * \return Number of updated offices.
+	 * \return An array of primary key values of the updated offices.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data);
+		return $this->entity->update($params, $data);
 	}
 
 	/**
-	 * Delete MP office(s) according to given parameters.
+	 * Delete the MP office(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the offices to delete. Only offices satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the offices to delete. Only the offices that satisfy all prescribed column values are deleted.
 	 *
-	 * \return Number of deleted offices.
+	 * \return An array of primary key values of the deleted offices.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params);
+		return $this->entity->delete($params);
 	}
 }
-
-Office::init();
 
 ?>

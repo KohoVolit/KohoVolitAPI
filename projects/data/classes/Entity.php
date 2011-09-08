@@ -7,32 +7,25 @@
  */
 class Entity
 {
-	/// name of the database table
-	private $tableName;
-
-	/// columns of the database table
-	private $tableColumns;
-
-	/// primary key columns
-	private $pkeyColumns;
-
-	/// columns not allowed to write to
-	private $readonlyColumns;
+	/// properties of the database table
+	private $tableProperties;
 
 	/**
 	 * Initializes information about a database table for this entity.
 	 *
-	 * \param $table_name Name of database table with entities, eg. 'mp'.
-	 * \param $table_columns Array of table column names.
-	 * \param $pkey_columns Array of column names that primary key of the table consists of. Values of those columns are returned for created/updated/deleted entities.
-	 * \param $readonly_columns Array of table column names not allowed to write to (e.g. that are automatically generated on insert).
+	 * \param $table_properties Array of pairs <em>property</em> => <em>value</em> where needed properties are:
+	 * \li \c name name of the database table,
+	 * \li \c columns array of table column names,
+	 * \li \c pkey_columns (optional) array of column names that primary key of the table consists of. Values of those columns are returned for created/updated/deleted entities,
+	 * \li \c readonly_columns (optional) array of table column names not allowed to write to (e.g. that are automatically generated on insert).
 	 */
-	public function __construct($table_name, $table_columns, $pkey_columns = array(), $readonly_columns = array())
+	public function __construct($table_properties)
 	{
-		$this->tableName = $table_name;
-		$this->tableColumns = $table_columns;
-		$this->pkeyColumns = $pkey_columns;
-		$this->readonlyColumns = $readonly_columns;
+		$this->tableProperties = $table_properties;
+		if (!isset($this->tableProperties['pkey_columns']))
+			$this->tableProperties['pkey_columns'] = array();
+		if (!isset($this->tableProperties['readonly_columns']))
+			$this->tableProperties['readonly_columns'] = array();
 	}
 
 	/**
@@ -45,7 +38,7 @@ class Entity
 	public function read($params)
 	{
 		$query = new Query();
-		$query->buildSelect($this->tableName, '*', $params, $this->tableColumns);
+		$query->buildSelect($this->tableProperties['name'], '*', $params, $this->tableProperties['columns']);
 		return $query->execute();
 	}
 
@@ -66,7 +59,7 @@ class Entity
 		$pkeys = array();
 		foreach ($entities as $entity)
 		{
-			$query->buildInsert($this->tableName, $entity, $this->tableColumns, $this->pkeyColumns, $this->readonlyColumns);
+			$query->buildInsert($this->tableProperties['name'], $entity, $this->tableProperties['columns'], $this->tableProperties['pkey_columns'], $this->tableProperties['readonly_columns']);
 			$lines = $query->execute();
 			$pkeys[] = $lines[0];
 			// in case of an exception thrown by Query::execute, the transaction is rolled back in destructor of $query variable; thus no data are inserted into database by this call of create()
@@ -90,7 +83,7 @@ class Entity
 	public function update($params, $data)
 	{
 		$query = new Query('kv_admin');
-		$query->buildUpdate($this->tableName, $params, $data, $this->tableColumns, $this->pkeyColumns, $this->readonlyColumns);
+		$query->buildUpdate($this->tableProperties['name'], $params, $data, $this->tableProperties['columns'], $this->tableProperties['pkey_columns'], $this->tableProperties['readonly_columns']);
 		return $query->execute();
 	}
 
@@ -104,7 +97,7 @@ class Entity
 	public function delete($params)
 	{
 		$query = new Query('kv_admin');
-		$query->buildDelete($this->tableName, $params, $this->tableColumns, $this->pkeyColumns);
+		$query->buildDelete($this->tableProperties['name'], $params, $this->tableProperties['columns'], $this->tableProperties['pkey_columns']);
 		return $query->execute();
 	}
 }

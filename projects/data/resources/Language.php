@@ -1,77 +1,110 @@
 <?php
 
 /**
- * Class Language provides information about languages through API and implements CRUD operations on database table LANGUAGE.
+ * \ingroup data
  *
- * Columns of table LANGUAGE are: <em>code, name_, short_name, description, locale</em>. All columns are allowed to write to.
+ * Provides an interface to database table LANGUAGE that holds languages for content translations.
+ *
+ * Columns of table LANGUAGE are: <code>code, name_, short_name, description, locale</code>.
+ *
+ * All columns are allowed to write to.
+ *
+ * Primary key is column <code>code</code>.
  */
 class Language
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'language_',
-			array('code', 'name_', 'short_name', 'description', 'locale'),
-			array('code')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'language_',
+			'columns' => array('code', 'name_', 'short_name', 'description', 'locale'),
+			'pkey_columns' => array('code')
+		));
 	}
 
 	/**
-	 * Read language(s) according to given parameters.
+	 * Read the language(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the languages to select. Only languages satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the languages to select.
 	 *
-	 * \return An array of languages with structure <code>array(array('code' => 'en', 'name_' => 'in English', 'short_name' => 'English', ...), ...)</code>.
+	 * \return An array of languages that satisfy all prescribed column values.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('code' => 'cs'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [code] => cs
+	 *             [name_] => česky
+	 *             [short_name] => čeština
+	 *             [description] => 
+	 *             [locale] => cs_CZ.UTF-8
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params);
+		return $this->entity->read($params);
 	}
 
 	/**
-	 * Create language(s) with given values.
+	 * Create a language(s) from given values.
 	 *
-	 * \param $data An array of languages to create, where each language is given by array of pairs <em>column => value</em>. Eg. <code>array(array('code' => 'en', 'name_' => 'in English', 'short_name' => 'English', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the language to create. Alternatively, an array of such language specifications.
+	 * \return An array of primary key values of the created language(s).
 	 *
-	 * \return An array of \e code-s of created languages.
+	 * \ex
+	 * \code
+	 * create(array('code' => 'sk', 'name_' => 'po slovensky', 'short_name' => 'slovenčina', 'locale' => 'sk_SK.UTF-8'))
+	 * \endcode creates a new language and returns
+	 * \code
+	 * Array
+	 * (
+	 *     [code] => sk
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data);
+		return $this->entity->create($data);
 	}
 
 	/**
-	 * Update language(s) satisfying parameters to the given values.
+	 * Update the given values of the languages that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the languages to update. Only languages satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected language.
+	 * \param $params An array of pairs <em>column => value</em> specifying the languages to update. Only the languages that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated language.
 	 *
-	 * \return An array of \e code-s of updated languages.
+	 * \return An array of primary key values of the updated languages.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data);
+		return $this->entity->update($params, $data);
 	}
 
 	/**
-	 * Delete language(s) according to given parameters.
+	 * Delete the language(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the languages to delete. Only languages satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the languages to delete. Only the languages that satisfy all prescribed column values are deleted.
 	 *
-	 * \return An array of \e code-s of deleted languages.
+	 * \return An array of primary key values of the deleted languages.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params);
+		return $this->entity->delete($params);
 	}
 }
-
-Language::init();
 
 ?>

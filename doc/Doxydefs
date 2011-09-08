@@ -1,0 +1,38 @@
+/**
+ * \mainpage
+ *
+ * This is a reference part of KohoVolit.eu API documentation.
+ * You can find here a list of all API resources that a particular project provides as well as parameters available to the resource.
+ *
+ * The KohoVolit.eu projects that provide an API are listed in the \e Projects tab.
+ *
+ * General information and usage of KohoVolit.eu API are described in <a href="http://community.kohovolit.eu/doku.php/api">KohoVolit.eu API manual</a>.
+ */
+
+
+/**
+ * \defgroup data KohoVolit.eu data
+ *
+ * Provides access to the database where all KohoVolit.eu data are stored.
+ *
+ * Resources of this project API corresponds mainly to individual database tables used in the data model.
+ * Other KohoVolit.eu applications manipulate the data (read, create, update, delete) through this API.
+ *
+ * Identifier of this project used for API requests is \c data.
+ *
+ * Database inspired special parameters \c \#limit and \c \#offset can be used among the parameters for all resources.
+ * Their restrict the result to return at most \c \#limit records skipping the first \c \#offset records.
+ * Note, that due to unsorted nature of the result, particular returned records are random when those parameters are used.
+ */
+
+ 
+ /**
+ * \defgroup wtt WriteToThem application
+ *
+ * Represents API of the WriteToThem application.
+ *
+ * Resources of this project API provides database searches and views to the data. As such their provide only read access to the data.
+ *
+ * Identifier of this project used for API requests is \c wtt.
+ */
+ 

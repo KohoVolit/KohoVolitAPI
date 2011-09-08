@@ -1,77 +1,117 @@
 <?php
 
 /**
- * Class Response provides information about responses of MPs to received messages through API and implements CRUD operations on database table RESPONSE.
+ * \ingroup data
  *
- * Columns of table RESPONSE are: <em>message_id, mp_id, parliament_code, subject, body_, full_email_data, received_on, received_privately, reply_code, survey_code</em>. All columns are allowed to write to.
+ * Provides an interface to database table RESPONSE that holds responses of MPs to received messages.
+ *
+ * Columns of table RESPONSE are: <code>message_id, mp_id, parliament_code, subject, body_, full_email_data, received_on, received_privately, reply_code, survey_code</code>.
+ *
+ * All columns are allowed to write to.
+ *
+ * Primary key consists of columns <code>message_id, mp_id, parliament_code</code>.
  */
 class Response
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'response',
-			array('message_id', 'mp_id', 'parliament_code', 'subject', 'body_', 'full_email_data', 'received_on', 'received_privately', 'reply_code', 'survey_code'),
-			array('message_id', 'mp_id', 'parliament_code')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'response',
+			'columns' => array('message_id', 'mp_id', 'parliament_code', 'subject', 'body_', 'full_email_data', 'received_on', 'received_privately', 'reply_code', 'survey_code'),
+			'pkey_columns' => array('message_id', 'mp_id', 'parliament_code')
+		));
 	}
 
 	/**
-	 * Read MP(s)' response(s) according to given parameters.
+	 * Read the MP(s)' response(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the responses to select. Only responses satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the responses to select.
 	 *
-	 * \return An array of responses with structure <code>array(array('message_id' => 44, 'mp_id' => 515, 'parliament_code' => 'cz/senat', 'subject' => 'Re: My law proposal', ...), ...)</code>.
+	 * \return An array of responses that satisfy all prescribed column values.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('message_id' => 33, 'mp_id' => 712))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [message_id] => 33
+	 *             [mp_id] => 712
+	 *             [parliament_code] => me/shire
+	 *             [subject] => Re: My law proposal
+	 *             [body_] => Dear Mr. Baggins ...
+	 *             [full_email_data] => From ...
+	 *             [received_on] => 2011-05-29 16:08:32
+	 *             [received_privately] => 
+	 *             [reply_code] => qwertyuiop
+	 *             [survey_code] => 
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params, 'response');
+		return $this->entity->read($params, 'response');
 	}
 
 	/**
-	 * Create MP(s)' response(s) with given values.
+	 * Create a MP(s)' response(s) from given values.
 	 *
-	 * \param $data An array of responses to create, where each response is given by array of pairs <em>column => value</em>. Eg. <code>array(array('message_id' => 44, 'mp_id' => 515, 'parliament_code' => 'cz/senat', 'subject' => 'Re: My law proposal', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the responses to create. Alternatively, an array of such response specifications.
+	 * \return An array of primary key values of the created response(s).
 	 *
-	 * \return Number of created responses.
+	 * \ex
+	 * \code
+	 * create(array('message_id' => 33, 'mp_id' => 712, 'parliament_code' => 'me/shire', 'reply_code_code' => 'qwertyuiop'))
+	 * \endcode creates a new response and returns
+	 * \code
+	 * Array
+	 * (
+	 *     [message_id] => 33
+	 *     [mp_id] => 712
+	 *     [parliament_code] => me/shire
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data, 'response');
+		return $this->entity->create($data, 'response');
 	}
 
 	/**
-	 * Update MP(s)' response(s) satisfying parameters to the given values.
+	 * Update the given values of the MPs' responses that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the responses to update. Only responses satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected response.
+	 * \param $params An array of pairs <em>column => value</em> specifying the responses to update. Only the responses that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated response.
 	 *
-	 * \return Number of updated responses.
+	 * \return An array of primary key values of the updated responses.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data, 'response');
+		return $this->entity->update($params, $data, 'response');
 	}
 
 	/**
-	 * Delete MP(s)' response(s) according to given parameters.
+	 * Delete the MP(s)' response(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the responses to delete. Only responses satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the responses to delete. Only the responses that satisfy all prescribed column values are deleted.
 	 *
-	 * \return Number of deleted responses.
+	 * \return An array of primary key values of the deleted responses.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params, 'response');
+		return $this->entity->delete($params, 'response');
 	}
 }
-
-Response::init();
 
 ?>

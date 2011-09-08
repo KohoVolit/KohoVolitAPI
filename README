@@ -1,1 +1,15 @@
 KohoVolit.eu API
+
+== Documentation ==
+
+General information and usage of KohoVolit.eu API are described in
+KohoVolit.eu API manual at http://community.kohovolit.eu/doku.php/api.
+
+A reference part of the documentation with detailed information about
+individual API resources is generated from the source codes by Doxygen tool.
+To generate it install Doxygen (http://www.stack.nl/~dimitri/doxygen) and
+use:
+
+doxygen ./doc/user.dxg
+
+To view the reference part then open ./doc/html/index.html.

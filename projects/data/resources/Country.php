@@ -1,77 +1,109 @@
 <?php
 
 /**
- * Class Country provides information about countries through API and implements CRUD operations on database table COUNTRY.
+ * \ingroup data
  *
- * Columns of table COUNTRY are: <em>code, name_, short_name, description</em>. All columns are allowed to write to.
+ * Provides an interface to database table COUNTRY that holds countries.
+ *
+ * Columns of table COUNTRY are: <code>code, name_, short_name, description</code>.
+ *
+ * All columns are allowed to write to.
+ *
+ * Primary key is column <code>code</code>.
  */
 class Country
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'country',
-			array('code', 'name_', 'short_name', 'description'),
-			array('code')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'country',
+			'columns' => array('code', 'name_', 'short_name', 'description'),
+			'pkey_columns' => array('code')
+		));
 	}
 
 	/**
-	 * Read country(s) according to given parameters.
+	 * Read the country(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the countries to select. Only countries satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the countries to select.
 	 *
-	 * \return An array of countries with structure <code>array(array('code' => 'sk', 'name_' => 'Slovak republic', 'short_name' => 'Slovakia', ...), array('code' => 'eu', 'name_' => 'European Union', 'short_name' => 'EU', ...), ...)</code>.
+	 * \return An array of countries that satisfy all prescribed column values.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('code' => 'cz'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [code] => cz
+	 *             [name_] => Czech republic
+	 *             [short_name] => Czechia
+	 *             [description] => 
+	 *         ) 
+	 * 
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params);
+		return $this->entity->read($params);
 	}
 
 	/**
-	 * Create country(s) with given values.
+	 * Create a country(s) from given values.
 	 *
-	 * \param $data An array of countries to create, where each country is given by array of pairs <em>column => value</em>. Eg. <code>array(array('code' => 'sk', 'name_' => 'Slovak republic', 'short_name' => 'Slovakia', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the country to create. Alternatively, an array of such country specifications.
+	 * \return An array of primary key values of the created country(s).
 	 *
-	 * \return An array of \e code-s of created countries.
+	 * \ex
+	 * \code
+	 * create(array('code' => 'sk', 'name_' => 'Slovak republic', 'short_name' => 'Slovakia'))
+	 * \endcode creates a new country and returns
+	 * \code
+	 * Array
+	 * (
+	 *     [code] => sk
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data);
+		return $this->entity->create($data);
 	}
 
 	/**
-	 * Update country(s) satisfying parameters to the given values.
+	 * Update the given values of the countries that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the countries to update. Only countries satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected country.
+	 * \param $params An array of pairs <em>column => value</em> specifying the countries to update. Only the countries that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated country.
 	 *
-	 * \return An array of \e code-s of updated countries.
+	 * \return An array of primary key values of the updated countries.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data);
+		return $this->entity->update($params, $data);
 	}
 
 	/**
-	 * Delete country(s) according to given parameters.
+	 * Delete the country(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the countries to delete. Only countries satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the countries to delete. Only the countries that satisfy all prescribed column values are deleted.
 	 *
-	 * \return An array of \e code-s of deleted countries.
+	 * \return An array of primary key values of the deleted countries.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params);
+		return $this->entity->delete($params);
 	}
 }
-
-Country::init();
 
 ?>

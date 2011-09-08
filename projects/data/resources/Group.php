@@ -1,78 +1,129 @@
 <?php
 
 /**
- * Class Group provides information about groups of MPs (eg. committees, commissions, etc.) through API and implements CRUD operations on database table GROUP.
+ * \ingroup data
  *
- * Columns of table GROUP are: <em>id, name_, short_name, group_kind_code, term_id, parliament_code, subgroup_of, last_updated_on</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Provides an interface to database table GROUP that holds groups of MPs (eg.\ committees, commissions, etc.).
+ *
+ * Columns of table GROUP are: <code>id, name_, short_name, group_kind_code, term_id, parliament_code, subgroup_of, last_updated_on</code>.
+ *
+ * Column <code>id</code> is a read-only column automaticaly generated on create.
+ *
+ * Primary key is column <code>id</code>.
  */
 class Group
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'group_',
-			array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'parliament_code', 'subgroup_of', 'last_updated_on'),
-			array('id'),
-			array('id')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'group_',
+			'columns' => array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'parliament_code', 'subgroup_of', 'last_updated_on'),
+			'pkey_columns' => array('id'),
+			'readonly_columns' => array('id')
+		));
 	}
 
 	/**
-	 * Read group(s) according to given parameters.
+	 * Read the group(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the groups to select. Only groups satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the groups to select.
 	 *
-	 * \return An array of groups with structure <code>array(array('id' => 6, 'name_' => 'Committee on Environment', 'short_name' => 'ENV', 'group_kind_code' => 'committee', ...), ...)</code>.
+	 * \return An array of groups that satisfy all prescribed column values.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('short_name' => 'TOP09-S', 'group_kind_code' => 'political group'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [id] => 576
+	 *             [name_] => Poslanecký klub TOP 09 a Starostové
+	 *             [short_name] => TOP09-S
+	 *             [group_kind_code] => political group
+	 *             [term_id] => 6
+	 *             [parliament_code] => cz/psp
+	 *             [subgroup_of] => 514
+	 *             [last_updated_on] => 2011-06-24 00:39:00.795609
+	 *         )
+	 *
+	 *     [1] => Array
+	 *         (
+	 *             [id] => 655
+	 *             [name_] => Klub TOP 09 a Starostové
+	 *             [short_name] => TOP09-S
+	 *             [group_kind_code] => political group
+	 *             [term_id] => 7
+	 *             [parliament_code] => cz/senat
+	 *             [subgroup_of] => 628
+	 *             [last_updated_on] => 2011-06-24 00:39:12.991019
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params);
+		return $this->entity->read($params);
 	}
 
 	/**
-	 * Create group(s) with given values.
+	 * Create a group(s) from given values.
 	 *
-	 * \param $data An array of groups to create, where each group is given by array of pairs <em>column => value</em>. Eg. <code>array(array('name_' => 'Committee on Environment', 'short_name' => 'ENV', 'group_kind_code' => 'committee', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the group to create. Alternatively, an array of such group specifications.
+	 * If \c last_updated_on column is ommitted, it is set to the current timestamp.
 	 *
-	 * \return An array of \e id-s of created groups.
+	 * \return An array of primary key values of the created group(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array('name_' => 'Rozpočtový výbor', 'short_name' => 'RV', 'group_kind_code' => 'committee', 'parliament_code' => 'cz/psp', 'term_id' => 6, 'subgroup_of' => 514))
+	 * \endcode creates a new group and returns something like
+	 * \code
+	 * Array
+	 * (
+	 *     [id] => 537
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data);
+		return $this->entity->create($data);
 	}
 
 	/**
-	 * Update group(s) satisfying parameters to the given values.
+	 * Update the given values of the groups that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the groups to update. Only groups satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected group.
+	 * \param $params An array of pairs <em>column => value</em> specifying the groups to update. Only the groups that satisfy all prescribed column values are updated.
+	 * If the parameter contains \c last_updated_on column then only the groups with older value in their \c last_updated_on column are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated group.
 	 *
-	 * \return An array of \e id-s of updated groups.
+	 * \return An array of primary key values of the updated groups.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data);
+		return $this->entity->update($params, $data);
 	}
 
 	/**
-	 * Delete group(s) according to given parameters.
+	 * Delete the group(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the groups to delete. Only groups satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the groups to delete. Only the groups that satisfy all prescribed column values are deleted.
 	 *
-	 * \return An array of \e id-s of deleted groups.
+	 * \return An array of primary key values of the deleted groups.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params);
+		return $this->entity->delete($params);
 	}
 }
-
-Group::init();
 
 ?>

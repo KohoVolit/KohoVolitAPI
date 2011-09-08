@@ -1,78 +1,115 @@
 <?php
 
 /**
- * Class Party provides information about parties through API and implements CRUD operations on database table PARTY.
+ * \ingroup data
  *
- * Columns of table PARTY are: <em>id, name_, short_name, description, country_code, last_updated_on</em>. All columns are allowed to write to except the <em>id</em> which is automaticaly generated on create and it is read-only.
+ * Provides an interface to database table PARTY that holds political parties.
+ *
+ * Columns of table PARTY are: <code>id, name_, short_name, description, country_code, last_updated_on</code>.
+ *
+ * Column <code>id</code> is a read-only column automaticaly generated on create.
+ *
+ * Primary key is column <code>id</code>.
  */
 class Party
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'party',
-			array('id', 'name_', 'short_name', 'description', 'country_code', 'last_updated_on'),
-			array('id'),
-			array('id')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'party',
+			'columns' => array('id', 'name_', 'short_name', 'description', 'country_code', 'last_updated_on'),
+			'pkey_columns' => array('id'),
+			'readonly_columns' => array('id')
+		));
 	}
 
 	/**
-	 * Read party(s) according to given parameters.
+	 * Read the party(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the parties to select. Only parties satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the parties to select.
 	 *
-	 * \return An array of parties with structure <code>array(array('id' => 8, 'name_' => 'The Labour Party', 'short_name' => 'Lab', ...), ...)</code>.
+	 * \return An array of constituencies that satisfy all prescribed column values.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('short_name' => 'KDH', 'country_code' => 'sk'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [id] => 234
+	 *             [name_] => Kresťanskodemokratické hnutie
+	 *             [short_name] => KDH
+	 *             [description] =>
+	 *             [country_code] => sk
+	 *             [last_updated_on] => 2011-06-24 00:50:44
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params);
+		return $this->entity->read($params);
 	}
 
 	/**
-	 * Create party(s) with given values.
+	 * Create a party(s) from given values.
 	 *
-	 * \param $data An array of parties to create, where each party is given by array of pairs <em>column => value</em>. Eg. <code>array(array('name_' => 'The Labour Party', 'short_name' => 'Lab', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the party to create. Alternatively, an array of such party specifications.
+	 * If \c last_updated_on column is ommitted, it is set to the current timestamp.
 	 *
-	 * \return An array of \e id-s of created parties.
+	 * \return An array of primary key values of the created party(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array('name_' => 'Strana zelených', 'short_name' => 'SZ', 'country_code' => 'sk'))
+	 * \endcode creates a new party and returns something like
+	 * \code
+	 * Array
+	 * (
+	 *     [id] => 258
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data);
+		return $this->entity->create($data);
 	}
 
 	/**
-	 * Update party(s) satisfying parameters to the given values.
+	 * Update the given values of the parties that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the parties to update. Only parties satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected party.
+	 * \param $params An array of pairs <em>column => value</em> specifying the parties to update. Only the parties that satisfy all prescribed column values are updated.
+	 * If the parameter contains \c last_updated_on column then only the parties with older value in their \c last_updated_on column are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated party.
 	 *
-	 * \return An array of \e id-s of updated parties.
+	 * \return An array of primary key values of the updated parties.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data);
+		return $this->entity->update($params, $data);
 	}
 
 	/**
-	 * Delete party(s) according to given parameters.
+	 * Delete the party(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the parties to delete. Only parties satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the parties to delete. Only the parties that satisfy all prescribed column values are deleted.
 	 *
-	 * \return An array of \e id-s of deleted parties.
+	 * \return An array of primary key values of the deleted parties.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params);
+		return $this->entity->delete($params);
 	}
 }
-
-Party::init();
 
 ?>

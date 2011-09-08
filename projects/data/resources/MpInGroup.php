@@ -1,79 +1,146 @@
 <?php
 
 /**
- * Class MpInGroup provides information about memberships of MPs in groups through API and implements CRUD operations on database table MP_IN_GROUP.
+ * \ingroup data
  *
- * Columns of table MP_IN_GROUP are: <em>mp_id, group_id, role_code, party_id, constituency_id, since, until</em>. All columns are allowed to write to.
+ * Provides an interface to database table MP_IN_GROUP that holds memberships of MPs in groups.
+ *
+ * Columns of table MP_IN_GROUP are: <code>mp_id, group_id, role_code, party_id, constituency_id, since, until</code>.
+ *
+ * All columns are allowed to write to.
+ *
+ * Primary key consists of columns <code>mp_id, group_id, role_code, since</code>.
  */
 class MpInGroup
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'mp_in_group',
-			array('mp_id', 'group_id', 'role_code', 'party_id', 'constituency_id', 'since', 'until'),
-			array('mp_id', 'group_id', 'role_code', 'since')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'mp_in_group',
+			'columns' => array('mp_id', 'group_id', 'role_code', 'party_id', 'constituency_id', 'since', 'until'),
+			'pkey_columns' => array('mp_id', 'group_id', 'role_code', 'since')
+		));
 	}
 
 	/**
-	 * Read membership(s) according to given parameters.
+	 * Read the membership(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the memberships to select. Only memberships satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the memberships to select.
+	 * A special parameter \c \#datetime can be used (eg. '\#datetime' => '2010-06-30 9:30:00') to select only the memberships
+	 * valid at the given moment (the ones where \c since <= \c \#datetime < \c until).
+	 * Use <code>'\#datetime' => 'now'</code> to get memberships valid now.
 	 *
-	 * \return An array of memberships with structure <code>array(array('mp_id' => 32, 'group_id' => 4, 'role_code' => 'treasurer', 'party_id' => null, ...), ...)</code>.
+	 * \return An array of memberships that satisfy all prescribed column values.
 	 *
-	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only memberships valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get memberships valid at this moment.
+	 * \ex
+	 * \code
+	 * read(array('mp_id' => 664), '#datetime' => 'now')
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [mp_id] => 664
+	 *             [group_id] => 514
+	 *             [role_code] => member
+	 *             [party_id] => 
+	 *             [constituency_id] => 14
+	 *             [since] => 2010-05-29 00:00:00
+	 *             [until] => infinity
+	 *         )
+	 *
+	 *     [1] => Array
+	 *         (
+	 *             [mp_id] => 664
+	 *             [group_id] => 576
+	 *             [role_code] => member
+	 *             [party_id] => 
+	 *             [constituency_id] => 
+	 *             [since] => 2010-06-10 00:00:00
+	 *             [until] => infinity
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params);
+		return $this->entity->read($params);
 	}
 
 	/**
-	 * Create membership(s) with given values.
+	 * Create a membership(s) from given values.
 	 *
-	 * \param $data An array of memberships to create, where each membership is given by array of pairs <em>column => value</em>. Eg. <code>array(array('mp_id' => 32, 'group_id' => 4, 'role_code' => 'treasurer', 'party_id' => null, ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the membership to create. Alternatively, an array of such membership specifications.
+	 * If \c since and \c until columns are ommitted, they are set to \c -infinity, \c infinity, respectively.
 	 *
-	 * \return Number of created memberships.
+	 * \return An array of primary key values of the created membership(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array(
+	 * 	array('mp_id' => 664, 'group_id' => 514, 'role_code' => 'member', 'constituency_id' => 14),
+	 * 	array('mp_id' => 664, 'group_id' => 576, 'role_code' => 'member', since => '2011-01-01'),
+	 * ))
+	 * \endcode creates new memberships and returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [mp_id] => 664
+	 *             [group_id] => 514
+	 *             [role_code] => member
+	 *             [since] => -infinity
+	 *         )
+	 *
+	 *     [1] => Array
+	 *         (
+	 *             [mp_id] => 664
+	 *             [group_id] => 576
+	 *             [role_code] => member
+	 *             [since] => 2011-01-01 00:00:00
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data);
+		return $this->entity->create($data);
 	}
 
 	/**
-	 * Update membership(s) satisfying parameters to the given values.
+	 * Update the given values of the memberships that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the memberships to update. Only memberships satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected membership.
+	 * \param $params An array of pairs <em>column => value</em> specifying the memberships to update. Only the memberships that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated membership.
 	 *
-	 * \return Number of updated memberships.
+	 * \return An array of primary key values of the updated memberships.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data);
+		return $this->entity->update($params, $data);
 	}
 
 	/**
-	 * Delete membership(s) according to given parameters.
+	 * Delete the membership(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the memberships to delete. Only memberships satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the memberships to delete. Only the memberships that satisfy all prescribed column values are deleted.
 	 *
-	 * \return Number of deleted memberships.
+	 * \return An array of primary key values of the deleted memberships.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params);
+		return $this->entity->delete($params);
 	}
 }
-
-MpInGroup::init();
 
 ?>

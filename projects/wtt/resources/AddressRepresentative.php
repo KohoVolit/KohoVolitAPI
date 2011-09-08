@@ -1,24 +1,146 @@
 <?php
 
 /**
- * Class AddressRepresentative implements search of MPs that are representatives to a given address.
+ * \ingroup wtt
  *
- * Only the \e read method is present.
+ * Searches for MPs that are representatives for a given address in a given parliament(s).
  */
 class AddressRepresentative
 {
 	/**
-	 * Search for all MPs that are representatives to the address given in Google Maps API structure.
+	 * Search for all MPs that are representatives for the address (given in Google Maps API structure) in a given parliament(s).
 	 *
-	 * \param $params An array of pairs <em>address_field => value</em> specifying the address. Available address fields are:
-	 * <em>latitude, longitude, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3,
-	 * locality, sublocality, neighborhood, route, street_number</em>. Any field can be ommitted. Another available parameter is
-	 * <code>'parliament' => </code><em>parliament_codes_list</em> restricting the search to given parliaments. Parliament codes
-	 * in the list are separated by | character.
+	 * \param $params An array of pairs <em>field => value</em> specifying the address and the parliament(s).
+	 * Available address fields are: <code>latitude, longitude, country, administrative_area_level_1, administrative_area_level_2, administrative_area_level_3,
+	 * locality, sublocality, neighborhood, route, street_number</code>.
+	 * Another available field is \c parliament restricting the search to given parliament(s). It contains parliament codes separated by | character.
+	 * Any of the listed fields can be ommitted. If the parliament restriction is ommited, the search performs for all parliaments.
 	 *
-	 * \return An array of MPs structured by parliament name, constituency and political group.
+	 * \return An array of MPs structured by parliament, constituency and political group.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('country' => 'Česká republika', 'administrative_area_level_1' => 'Karlovarský', 'administrative_area_level_2' => 'Sokolov'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [parliament] => Array
+	 *         (
+	 *             [0] => Array
+	 *                 (
+	 *                     [code] => cz/psp
+	 *                     [name] => Poslanecká sněmovna Parlamentu České republiky
+	 *                     [constituency] => Array
+	 *                         (
+	 *                             [0] => Array
+	 *                                 (
+	 *                                     [name] => Karlovarský
+	 *                                     [group] => Array
+	 *                                         (
+	 *                                             [0] => Array
+	 *                                                 (
+	 *                                                     [name] => KSČM
+	 *                                                     [mp] => Array
+	 *                                                         (
+	 *                                                             [0] => Array
+	 *                                                                 (
+	 *                                                                     [parliament_code] => cz/psp
+	 *                                                                     [id] => 367
+	 *                                                                     [first_name] => Pavel
+	 *                                                                     [middle_names] => 
+	 *                                                                     [last_name] => Hojda
+	 *                                                                     [disambiguation] => 
+	 *                                                                     [email] => hojda@psp.cz
+	 *                                                                     [office_town] => Sokolov
+	 *                                                                     [office_distance] => 
+	 *                                                                 )
+	 *
+	 *                                                         )
+	 *
+	 *                                                 )
+	 *
+	 *                                             ...
+	 *
+	 *                                             [4] => Array
+	 *                                                 (
+	 *                                                     [name] => ČSSD
+	 *                                                     [mp] => Array
+	 *                                                         (
+	 *                                                             [0] => Array
+	 *                                                                 (
+	 *                                                                     [parliament_code] => cz/psp
+	 *                                                                     [id] => 713
+	 *                                                                     [first_name] => Josef
+	 *                                                                     [middle_names] => 
+	 *                                                                     [last_name] => Novotný
+	 *                                                                     [disambiguation] => ml., PSP ČR 2010-, Karlovarský kraj
+	 *                                                                     [email] => novotnyj1@psp.cz
+	 *                                                                     [office_town] => Karlovy Vary
+	 *                                                                     [office_distance] => 
+	 *                                                                 )
+	 *
+	 *                                                         )
+	 *
+	 *                                                 )
+	 *
+	 *                                         )
+	 *
+	 *                                 )
+	 *
+	 *                         )
+	 *
+	 *                 )
+	 *
+	 *             [1] => Array
+	 *                 (
+	 *                     [code] => cz/senat
+	 *                     [name] => Senát Parlamentu České republiky
+	 *                     [constituency] => Array
+	 *                         (
+	 *                             [0] => Array
+	 *                                 (
+	 *                                     [name] => Sokolov (2)
+	 *                                     [group] => Array
+	 *                                         (
+	 *                                             [0] => Array
+	 *                                                 (
+	 *                                                     [name] => ODS
+	 *                                                     [mp] => Array
+	 *                                                         (
+	 *                                                             [0] => Array
+	 *                                                                 (
+	 *                                                                     [parliament_code] => cz/senat
+	 *                                                                     [id] => 760
+	 *                                                                     [first_name] => Pavel
+	 *                                                                     [middle_names] => 
+	 *                                                                     [last_name] => Čáslava
+	 *                                                                     [disambiguation] => 
+	 *                                                                     [email] => caslavap@senat.cz
+	 *                                                                     [office_town] => 
+	 *                                                                     [office_distance] => 
+	 *                                                                 )
+	 *
+	 *                                                         )
+	 *
+	 *                                                 )
+	 *
+	 *                                         )
+	 *
+	 *                                 )
+	 *
+	 *                         )
+	 *
+	 *                 )
+	 *
+	 *         )
+	 *
+	 * )
+	 * \endcode
+	 *
+	 * The \c office_distance is calculated only if \c latitude and \c longitude are specified among the address fields and an office of the MP exists.
 	 */
-	public static function read($params)
+	public function read($params)
 	{
 		// get the list of representatives from database
 		$query = new Query();

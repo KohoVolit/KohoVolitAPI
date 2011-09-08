@@ -1,25 +1,46 @@
 <?php
 
 /**
- * Class PublicMessagePreview lists all sent public messages.
+ * \ingroup wtt
  *
- * Only the \e read method is present.
+ * Lists previews of sent public messages.
  */
 class PublicMessagePreview
 {
 	/**
-	 * Lists all sent public messages in descending order by the date and time they were sent.
+	 * Lists previews of sent public messages in descending order by the date and time they were sent.
 	 *
-	 * \param $params An array of pairs <em>name => value</em> where allowed names are:
-	 *	\li \c parliament_code - select only messages addressed (also) to a member of this parliament
-	 *	\li \c mp_id - select only messages addressed to this MP
-	 *	\li \c since - select only messages sent since (including) this date and time
-	 *	\li \c until - select only messages sent until (excluding) this date and time.
-	 * Example: <code>array('parliament_code' => 'cz/senat', 'since' => '2011-06-22 10:00:00')</code>.
+	 * \param $params An array of pairs <em>parameter => value</em> specifying the messages to select. Available parameters are:
+	 *	- \c parliament_code specifies to select only the messages addressed (also) to a member of this parliament
+	 *	- \c mp_id specifies to select only the messages addressed to this MP
+	 *	- \c since specifies to select only the messages sent since (including) this date and time
+	 *	- \c until specifies to select only the messages sent until (excluding) this date and time.
 	 *
-	 * \return Basic information on all sent public messages.
+	 * \return Basic information on sent public messages.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('mp_id' => 809))
+	 * \endcode returns something like
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [id] => 1262
+	 *             [subject] => My law proposal
+	 *             [body_] => Dear Mr. ...
+	 *             [sender_name] => Bilbo Baggins
+	 *             [sent_on] => 2011-09-06 09:09:35.00988
+	 *             [age_days] => 2.29212016417748
+	 *             [recipients] => Gajdůšková A.
+	 *             [response_exists] => yes
+	 *         )
+
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
 		$query = new Query();
 		$query->setQuery(

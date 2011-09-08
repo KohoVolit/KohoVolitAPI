@@ -5,20 +5,20 @@
  */
 class ApiServer
 {
-	private static $put_request_data;
+	private $put_request_data;
 
 	/**
 	 * ...
 	 */
-	public static function processHttpRequest()
+	public function processHttpRequest()
 	{
 		$request_method = strtoupper($_SERVER['REQUEST_METHOD']);
 
 		// data of PUT request can be read only once, store them for multiple use
 		if ($request_method == 'PUT')
-			parse_str(file_get_contents('php://input'), self::$put_request_data);
+			parse_str(file_get_contents('php://input'), $this->put_request_data);
 
-		self::logRequest();
+		$this->logRequest();
 
 		// include specific project settings if they are present
 		$project = $_GET['project'];
@@ -34,6 +34,7 @@ class ApiServer
 		$ok = @include API_ROOT . "/projects/$project/resources/$resource.php";
 		if (!$ok)
 			throw new Exception("There is no API resource <em>$resource</em> in project <em>$project</em>.", 404);
+		$resource_class = new $resource;
 
 		// get the search criteria for the record to work with
 		$params = self::decodeNullValues($_GET);
@@ -42,9 +43,9 @@ class ApiServer
 		switch ($request_method)
 		{
 			case 'GET':
-				if (method_exists($resource, 'read'))
+				if (method_exists($resource_class, 'read'))
 				{
-					$result = $resource::read($params);
+					$result = $resource_class->read($params);
 					if (isset($params['#limit']) && $params['#limit'] == 1 && !empty($result))
 						$result = current($result);
 					return array($resource => $result);
@@ -54,18 +55,18 @@ class ApiServer
 The public API access is read-only.
 Data modifying request methods are not allowed from remote, on localhost use ApiDirect class instead.
 			case 'POST':
-				if (method_exists($resource, 'create'))
-					return array($resource => $resource::create(self::decodeNullValues($_POST)));
+				if (method_exists($resource_class, 'create'))
+					return array($resource => $resource_class->create(self::decodeNullValues($_POST)));
 				break;
 
 			case 'PUT':
-				if (method_exists($resource, 'update'))
-					return array($resource => $resource::update($params, self::decodeNullValues(self::$put_request_data)));
+				if (method_exists($resource_class, 'update'))
+					return array($resource => $resource_class->update($params, self::decodeNullValues($this->put_request_data)));
 				break;
 
 			case 'DELETE':
-				if (method_exists($resource, 'delete'))
-					return array($resource => $resource::delete($params));
+				if (method_exists($resource_class, 'delete'))
+					return array($resource => $resource_class->delete($params));
 				break;
 */
 		}
@@ -77,7 +78,7 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 	/**
 	 * ...
 	 */
-	public static function sendHttpResponse($status_code, $data)
+	public function sendHttpResponse($status_code, $data)
 	{
 		// in case of successfull API request, format the result according to requested format
 		if ($status_code == 200)
@@ -189,7 +190,7 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 	/**
 	 * Logs current API call.
 	 */
-	private static function logRequest()
+	private function logRequest()
 	{
 		$p1 = strpos($_SERVER['REQUEST_URI'], '/', 1);
 		$p2 = strpos($_SERVER['REQUEST_URI'], '?', $p1 + 1);
@@ -203,7 +204,7 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 		if ($method == 'POST')
 			$data = json_encode(self::decodeNullValues($_POST));
 		else if ($method == 'PUT')
-			$data = json_encode(self::decodeNullValues(self::$put_request_data));
+			$data = json_encode(self::decodeNullValues($this->put_request_data));
 
 		return Db::query('insert into api_log(method, application, resource, query, data_, format, referrer) values ($1, $2, $3, $4, $5, $6, $7)',
 			array($method, $project, $resource, $query, $data, $format, $referrer),

@@ -1,21 +1,46 @@
 <?php
 
 /**
- * Class ResponseToMessage provides all needed information about responses to a given message.
+ * \ingroup wtt
  *
- * Only the \e read method is present.
+ * Provides all needed information about responses to a given message.
  */
 class ResponseToMessage
 {
 	/**
 	 * Returns all needed information to show about responses to a given message.
 	 *
-	 * \param $params An array with one pair \c 'message_id' => \e message_id specifying the message id to get responses to.
-	 * Example: <code>array('message' => 229)</code>.
+	 * \param $params An array of pairs <em>parameter => value</em> specifying the message to get responses to. Available parameters are:
+	 * - \c message_id specifying id of the message
 	 *
 	 * \return Details of the selected responses and of their authors - MPs.
+	 *
+	 * \ex
+	 * \code
+	 * read(array('message_id' => 232))
+	 * \endcode returns something like
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [message_id] => 232
+	 *             [subject] => Re: My law proposal
+	 *             [body_] => Dear Mr. Baggins ...
+	 *             [received_on] => 2011-07-12 18:35:56.226578
+	 *             [mp_id] => 731
+	 *             [first_name] => Jiří
+	 *             [middle_names] => 
+	 *             [last_name] => Skalický
+	 *             [disambiguation] => PSP ČR 2010-
+	 *             [sex] => m
+	 *             [parliament_code] => cz/psp
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
 		$query = new Query();
 		$query->setQuery(

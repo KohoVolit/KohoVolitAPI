@@ -1,78 +1,118 @@
 <?php
 
 /**
- * Class CountryAttribute provides information about countries' additional attributes through API and implements CRUD operations on database table COUNTRY_ATTRIBUTE.
+ * \ingroup data
  *
- * Columns of table COUNTRY_ATTRIBUTE are: <em>country_code</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
+ * Provides an interface to database table COUNTRY_ATTRIBUTE that holds countries' additional attributes.
+ *
+ * Columns of table COUNTRY_ATTRIBUTE are: <code>country_code, name_, value_, lang, since, until</code>.
+ *
+ * All columns are allowed to write to.
+ *
+ * Primary key consists of columns <code>country_code, name_, lang, since</code>.
  */
 class CountryAttribute
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $attribute;
+	private $attribute;
 
 	/**
-	 * Initialize information about the attribute table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$attribute = new Attribute(
-			'country_attribute',
-			array('country_code')
-		);
+		$this->entity = new Attribute(array(
+			'name' => 'country_attribute',
+			'columns' => array('country_code')
+		));
 	}
 
 	/**
-	 * Read country(s)' attributes according to given parameters.
+	 * Read the country attribute(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select.
+	 * A special parameter \c \#datetime can be used (eg. '\#datetime' => '2010-06-30 9:30:00') to select only the attributes
+	 * valid at the given moment (the ones where \c since <= \c \#datetime < \c until).
+	 * Use <code>'\#datetime' => 'now'</code> to get attributes valid now.
 	 *
-	 * \return An array of attributes with structure <code>array(array('country_code' => 'cz', 'name_' => 'flag', 'value_' => 'czech.gif', '-', ...), ...)</code>.
+	 * \return An array of attributes that satisfy all prescribed column values.
 	 *
-	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get attributes valid at this moment.
+	 * \ex
+	 * \code
+	 * read(array('country_code' => 'cz', 'name_' => 'name', 'lang' => 'sk'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [name_] => name
+	 *             [value_] => Česká republika
+	 *             [lang] => sk
+	 *             [since] => -infinity
+	 *             [until] => infinity
+	 *             [country_code] => cz
+	 *         ) 
+	 * 
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$attribute->read($params);
+		return $this->attribute->read($params);
 	}
 
 	/**
-	 * Create country(s)' attributes with given values.
+	 * Create a country attribute(s) from given values.
 	 *
-	 * \param $data An array of attributes to create, where each attribute is given by array of pairs <em>column => value</em>. Eg. <code>array(array('country_code' => 'cz', 'name_' => 'flag', 'value_' => 'czech.gif', '-', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the attribute to create. Alternatively, an array of such attribute specifications.
+	 * If \c since, \c until or \c lang columns are ommitted, they are set to \c -infinity, \c infinity, \c -, respectively.
 	 *
-	 * \return Number of created attributes.
+	 * \return An array of primary key values of the created attribute(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array('country_code' => 'cz', 'name_' => 'short_name', 'value_' => 'ČR', 'lang' => 'sk'))
+	 * \endcode creates a new country attribute and returns
+	 * \code
+	 * Array
+	 * (
+	 *     [country_code] => cz
+	 *     [name_] => short_name
+	 *     [lang] => sk
+	 *     [since] => -infinity
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$attribute->create($data);
+		return $this->attribute->create($data);
 	}
 
 	/**
-	 * Update country(s)' attributes satisfying parameters to the given values.
+	 * Update the given values of the country attributes that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to update. Only attributes satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected attribute.
+	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to update. Only the attributes that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated attribute.
 	 *
-	 * \return Number of updated attributes.
+	 * \return An array of primary key values of the updated attributes.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$attribute->update($params, $data);
+		return $this->attribute->update($params, $data);
 	}
 
 	/**
-	 * Delete country(s)' attributes according to given parameters.
+	 * Delete the country attribute(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to delete. Only attributes satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to delete. Only the attributes that satisfy all prescribed column values are deleted.
 	 *
-	 * \return Number of deleted attributes.
+	 * \return An array of primary key values of the deleted attributes.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$attribute->delete($params);
+		return $this->attribute->delete($params);
 	}
 }
-
-CountryAttribute::init();
 
 ?>

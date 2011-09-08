@@ -1,77 +1,110 @@
 <?php
 
 /**
- * Class GroupKind provides information about kinds of groups of MPs (eg. 'committee', 'commission', etc.) through API and implements CRUD operations on database table GROUP_KIND.
+ * \ingroup data
  *
- * Columns of table GROUP_KIND are: <em>code, name_, short_name, description, subkind_of</em>. All columns are allowed to write to.
+ * Provides an interface to database table GROUP_KIND that holds kinds of groups of MPs (eg.\ 'committee', 'commission', etc.).
+ *
+ * Columns of table GROUP_KIND are: <code>code, name_, short_name, description, subkind_of</code>.
+ *
+ * All columns are allowed to write to.
+ *
+ * Primary key is column <code>code</code>.
  */
 class GroupKind
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $entity;
+	private $entity;
 
 	/**
-	 * Initialize information about the entity table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$entity = new Entity(
-			'group_kind',
-			array('code', 'name_', 'short_name', 'description', 'subkind_of'),
-			array('code')
-		);
+		$this->entity = new Entity(array(
+			'name' => 'group_kind',
+			'columns' => array('code', 'name_', 'short_name', 'description', 'subkind_of'),
+			'pkey_columns' => array('code')
+		));
 	}
 
 	/**
-	 * Read group kind(s) according to given parameters.
+	 * Read the group kind(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the group kinds to select. Only group kinds satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the group kinds to select.
+	 * \return An array of group kinds that satisfy all prescribed column values.
 	 *
-	 * \return An array of group kinds with structure <code>array(array('code' => 'committee', 'name_' => 'Committee', 'short_name' => 'Cmt', ...), ...)</code>.
+	 * \ex
+	 * \code
+	 * read(array('code' => 'committee'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [code] => committee
+	 *             [name_] => Parliamentary committee
+	 *             [short_name] => Committee
+	 *             [description] => Committee of a parliament.
+	 *             [subkind_of] => parliament
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$entity->read($params);
+		return $this->entity->read($params);
 	}
 
 	/**
-	 * Create group kind(s) with given values.
+	 * Create a group kind(s) from given values.
 	 *
-	 * \param $data An array of group kinds to create, where each group kind is given by array of pairs <em>column => value</em>. Eg. <code>array(array('code' => 'committee', 'name_' => 'Committee', 'short_name' => 'Cmt', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the group kind to create. Alternatively, an array of such group kind specifications.
 	 *
-	 * \return An array of \e code-s of created group kinds.
+	 * \return An array of primary key values of the created group kind(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array('code' => 'subcommittee', 'name_' => 'Parliamentary subcommittee', 'short_name' => 'Subcommittee', 'description' => 'Subcommittee of a committee of a parliament.', 'subkind_of' => 'committee'))
+	 * \endcode creates a new group kind and returns
+	 * \code
+	 * Array
+	 * (
+	 *     [code] => subcommittee
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$entity->create($data);
+		return $this->entity->create($data);
 	}
 
 	/**
-	 * Update group kind(s) satisfying parameters to the given values.
+	 * Update the given values of the group kinds that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the group kinds to update. Only group kinds satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected group kind.
+	 * \param $params An array of pairs <em>column => value</em> specifying the group kinds to update. Only the group kinds that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated group kind.
 	 *
-	 * \return An array of \e codes-s of updated group kinds.
+	 * \return An array of primary key values of the updated group kinds.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$entity->update($params, $data);
+		return $this->entity->update($params, $data);
 	}
 
 	/**
-	 * Delete group kind(s) according to given parameters.
+	 * Delete the group kind(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the group kinds to delete. Only group kinds satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the group kinds to delete. Only the group kinds that satisfy all prescribed column values are deleted.
 	 *
-	 * \return An array of \e code-s of deleted groups.
+	 * \return An array of primary key values of the deleted group kinds.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$entity->delete($params);
+		return $this->entity->delete($params);
 	}
 }
-
-GroupKind::init();
 
 ?>

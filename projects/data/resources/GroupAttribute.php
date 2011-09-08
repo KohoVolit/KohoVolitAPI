@@ -1,78 +1,120 @@
 <?php
 
 /**
- * Class GroupAttribute provides information about MP groups' additional attributes through API and implements CRUD operations on database table GROUP_ATTRIBUTE.
+ * \ingroup data
  *
- * Columns of table GROUP_ATTRIBUTE are: <em>group_id, parl</em> and columns common for all attribute tables defined in the base class Attribute. All columns are allowed to write to.
+ * Provides an interface to database table GROUP_ATTRIBUTE that holds groups' additional attributes.
+ *
+ * Columns of table GROUP_ATTRIBUTE are: <code>group_id, name_, value_, lang, parl, since, until</code>.
+ *
+ * All columns are allowed to write to.
+ *
+ * Primary key consists of columns <code>group_id, name_, lang, parl, since</code>.
  */
 class GroupAttribute
 {
 	/// instance holding a list of table columns and table handling functions
-	private static $attribute;
+	private $attribute;
 
 	/**
-	 * Initialize information about the attribute table.
+	 * Initialize information about the underlying database table.
 	 */
-	public static function init()
+	public function __construct()
 	{
-		self::$attribute = new Attribute(
-			'group_attribute',
-			array('group_id', 'parl')
-		);
+		$this->entity = new Attribute(array(
+			'name' => 'group_attribute',
+			'columns' => array('group_id', 'parl')
+		));
 	}
 
 	/**
-	 * Read MP group(s)' attributes according to given parameters.
+	 * Read the group attribute(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
+	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select.
+	 * A special parameter \c \#datetime can be used (eg. '\#datetime' => '2010-06-30 9:30:00') to select only the attributes
+	 * valid at the given moment (the ones where \c since <= \c \#datetime < \c until).
+	 * Use <code>'\#datetime' => 'now'</code> to get attributes valid now.
 	 *
-	 * \return An array of attributes with structure <code>array(array('group_id' => 54, 'name_' => 'email', 'value_' => 'praha@kscm.cz', ...), ...)</code>.
+	 * \return An array of attributes that satisfy all prescribed column values.
 	 *
-	 * You can use <em>#datetime</em> within the <em>$params</em> (eg. '#datetime' => '2010-06-30 9:30:00') to select only attributes valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Use '#datetime' => 'now' to get attributes valid at this moment.
+	 * \ex
+	 * \code
+	 * read(array('group_id' => 54, 'name_' => 'source_code', 'parl' => 'cz/psp'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [name_] => source_code
+	 *             [value_] => 387
+	 *             [lang] => -
+	 *             [since] => 2010-06-20 00:00:00
+	 *             [until] => infinity
+	 *             [group_id] => 54
+	 *             [parl] => cz/psp
+	 *         ) 
+	 * 
+	 * )
+	 * \endcode
 	 */
-	public static function read($params)
+	public function read($params)
 	{
-		return self::$attribute->read($params);
+		return $this->attribute->read($params);
 	}
 
 	/**
-	 * Create MP group(s)' attributes with given values.
+	 * Create a group attribute(s) from given values.
 	 *
-	 * \param $data An array of attributes to create, where each attribute is given by array of pairs <em>column => value</em>. Eg. <code>array(array('group_id' => 54,  'name_' => 'email', 'value_' => 'praha@kscm.cz', ...), ...)</code>.
+	 * \param $data An array of pairs <em>column => value</em> specifying the attribute to create. Alternatively, an array of such attribute specifications.
+	 * If \c since, \c until, \c lang or \c parl columns are ommitted, they are set to \c -infinity, \c infinity, \c -, \c -, respectively.
 	 *
-	 * \return Number of created attributes.
+	 * \return An array of primary key values of the created attribute(s).
+	 *
+	 * \ex
+	 * \code
+	 * create(array('group_id' => 54, 'name_' => 'source_code', 'value_' => '387', 'parl' => 'cz/psp', 'since' => '2010-06-20'))
+	 * \endcode creates a new group attribute and returns
+	 * \code
+	 * Array
+	 * (
+	 *     [group_id] => 54
+	 *     [name_] => source_code
+	 *     [lang] => -
+	 *     [parl] => cz/psp
+	 *     [since] => 2010-06-20 00:00:00
+	 * )
+	 * \endcode
 	 */
-	public static function create($data)
+	public function create($data)
 	{
-		return self::$attribute->create($data);
+		return $this->attribute->create($data);
 	}
 
 	/**
-	 * Update MP group(s)' attributes satisfying parameters to the given values.
+	 * Update the given values of the group attributes that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to update. Only attributes satisfying all prescribed column values are updated.
-	 * \param $data An array of pairs <em>column => value</em> to set for each selected attribute.
+	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to update. Only the attributes that satisfy all prescribed column values are updated.
+	 * \param $data An array of pairs <em>column => value</em> to set for each updated attribute.
 	 *
-	 * \return Number of updated attributes.
+	 * \return An array of primary key values of the updated attributes.
 	 */
-	public static function update($params, $data)
+	public function update($params, $data)
 	{
-		return self::$attribute->update($params, $data);
+		return $this->attribute->update($params, $data);
 	}
 
 	/**
-	 * Delete MP group(s)' attributes according to given parameters.
+	 * Delete the group attribute(s) that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to delete. Only attributes satisfying all prescribed column values are deleted.
+	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to delete. Only the attributes that satisfy all prescribed column values are deleted.
 	 *
-	 * \return Number of deleted attributes.
+	 * \return An array of primary key values of the deleted attributes.
 	 */
-	public static function delete($params)
+	public function delete($params)
 	{
-		return self::$attribute->delete($params);
+		return $this->attribute->delete($params);
 	}
 }
-
-GroupAttribute::init();
 
 ?>
