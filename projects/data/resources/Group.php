@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table GROUP that holds groups of MPs (eg.\ committees, commissions, etc.).
  *
- * Columns of table GROUP are: <code>id, name_, short_name, group_kind_code, term_id, parliament_code, subgroup_of, last_updated_on</code>.
+ * Columns of table GROUP are: <code>id, name, short_name, group_kind_code, term_id, parliament_code, subgroup_of, last_updated_on</code>.
  *
  * Column <code>id</code> is a read-only column automaticaly generated on create.
  *
@@ -22,8 +22,8 @@ class Group
 	public function __construct()
 	{
 		$this->entity = new Entity(array(
-			'name' => 'group_',
-			'columns' => array('id', 'name_', 'short_name', 'group_kind_code', 'term_id', 'parliament_code', 'subgroup_of', 'last_updated_on'),
+			'name' => 'group',
+			'columns' => array('id', 'name', 'short_name', 'group_kind_code', 'term_id', 'parliament_code', 'subgroup_of', 'last_updated_on'),
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id')
 		));
@@ -46,7 +46,7 @@ class Group
 	 *     [0] => Array
 	 *         (
 	 *             [id] => 576
-	 *             [name_] => Poslanecký klub TOP 09 a Starostové
+	 *             [name] => Poslanecký klub TOP 09 a Starostové
 	 *             [short_name] => TOP09-S
 	 *             [group_kind_code] => political group
 	 *             [term_id] => 6
@@ -58,7 +58,7 @@ class Group
 	 *     [1] => Array
 	 *         (
 	 *             [id] => 655
-	 *             [name_] => Klub TOP 09 a Starostové
+	 *             [name] => Klub TOP 09 a Starostové
 	 *             [short_name] => TOP09-S
 	 *             [group_kind_code] => political group
 	 *             [term_id] => 7
@@ -85,7 +85,7 @@ class Group
 	 *
 	 * \ex
 	 * \code
-	 * create(array('name_' => 'Rozpočtový výbor', 'short_name' => 'RV', 'group_kind_code' => 'committee', 'parliament_code' => 'cz/psp', 'term_id' => 6, 'subgroup_of' => 514))
+	 * create(array('name' => 'Rozpočtový výbor', 'short_name' => 'RV', 'group_kind_code' => 'committee', 'parliament_code' => 'cz/psp', 'term_id' => 6, 'subgroup_of' => 514))
 	 * \endcode creates a new group and returns something like
 	 * \code
 	 * Array

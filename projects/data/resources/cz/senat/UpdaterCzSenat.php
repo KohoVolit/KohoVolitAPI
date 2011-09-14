@@ -123,7 +123,7 @@ class UpdaterCzSenat
 
 			foreach ((array) $src_groups as $src_group) {
 			  //get group_id
-			  $group_db = $this->api->readOne('Group', array('name_' => $src_group['name'], 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
+			  $group_db = $this->api->readOne('Group', array('name' => $src_group['name'], 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
 			  if ($group_db)
 			    $group_id = $group_db['id'];
 			  else {
@@ -408,7 +408,7 @@ class UpdaterCzSenat
 	*/
 	private function closeOffice($marked) {
 	  //get Senát's id
-	  $parl_db = $this->api->readOne('Group', array('name_' => 'Senát', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
+	  $parl_db = $this->api->readOne('Group', array('name' => 'Senát', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
 	  $parl_id = $parl_db['id'];
 
 	    //get all mps in Senát
@@ -437,7 +437,7 @@ class UpdaterCzSenat
 	private function closeMemberships($marked) {
 	  //get all mps with open membership in 'Senát'
 	    //get Senát's id
-	  $parl_db = $this->api->readOne('Group', array('name_' => 'Senát', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
+	  $parl_db = $this->api->readOne('Group', array('name' => 'Senát', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
 	  $parl_id = $parl_db['id'];
 
 	    //get all mps in Senát
@@ -514,7 +514,7 @@ class UpdaterCzSenat
 		$src_role_code = preg_replace('/[\'^"]/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', strip_tags($src_role['male_name'])))); // code = lowercase male name without accents
 
 		// search czech translations of common roles for the given male name (this is the case of generic roles like 'chairman')
-		/*$role = $this->api->readOne('RoleAttribute', array('name_' => 'male_name', 'value_' => $src_role['male_name'], 'lang' => 'cs'));
+		/*$role = $this->api->readOne('RoleAttribute', array('name' => 'male_name', 'value' => $src_role['male_name'], 'lang' => 'cs'));
 		if ($role)
 			return $role['role_code'];
 */
@@ -541,7 +541,7 @@ class UpdaterCzSenat
 
 	    //common data (insert)
 	    $data = array(
-	        'name_' => $src_group_kind['group_kind_plural_en'],
+	        'name' => $src_group_kind['group_kind_plural_en'],
 	        'code' => $this->senateGroupKind2DbGroupKind($src_group_kind_code),
 	        'subkind_of' => 'parliament',
 	    );
@@ -565,7 +565,7 @@ class UpdaterCzSenat
 
 	      //find parent group id
 	      if ($src_group_kind_code != 'parliament') {
-			  $parent_group = $this->api->readOne('Group', array('name_' => 'Senát', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
+			  $parent_group = $this->api->readOne('Group', array('name' => 'Senát', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
 			  if ($parent_group)
 				$parent_group_id = $parent_group['id'];
 			  else
@@ -574,13 +574,13 @@ class UpdaterCzSenat
 		  		$parent_group_id = null;
 
 		  //if group exists in db, it has source_code in group_attributes
-		  $src_code_in_db = $this->api->readOne('GroupAttribute', array('name_' => 'source_code', 'value_' => $src_group['source_code'], 'parl' => $this->parliament_code));
+		  $src_code_in_db = $this->api->readOne('GroupAttribute', array('name' => 'source_code', 'value' => $src_group['source_code'], 'parl' => $this->parliament_code));
 		  if ($src_code_in_db)
 			$group_id = $src_code_in_db['group_id'];
 
 	      //construct array of values
 		  $data = array (
-		  	'name_' => $src_group['name'],
+		  	'name' => $src_group['name'],
 			//'short_name' => $src_group['short_name'],
 			'group_kind_code' => $this->senateGroupKind2DbGroupKind($src_group_kind_code),
 			'parliament_code' => $this->parliament_code,
@@ -602,7 +602,7 @@ class UpdaterCzSenat
 			$group_id = $group_pkey['id'];
 
 			// insert group's source code
-			$this->api->create('GroupAttribute', array('group_id' => $group_id, 'name_' => 'source_code', 'value_' => $src_group['source_code'], 'parl' => $this->parliament_code));
+			$this->api->create('GroupAttribute', array('group_id' => $group_id, 'name' => 'source_code', 'value' => $src_group['source_code'], 'parl' => $this->parliament_code));
 	      }
 	    }
 	  }
@@ -682,19 +682,19 @@ class UpdaterCzSenat
 		$src_constituency = $this->api->read('Scraper', array('remote_resource' => 'constituency', 'id' => $region_code));
 		$src_constituency = $src_constituency['constituency'];
 
-		$constituency = $this->api->readOne('Constituency', array('parliament_code' => $this->parliament_code, 'name_' => $src_constituency['name'] . ' (' .$region_code.')'));
+		$constituency = $this->api->readOne('Constituency', array('parliament_code' => $this->parliament_code, 'name' => $src_constituency['name'] . ' (' .$region_code.')'));
 		if ($constituency)
 		{
 			// update existing constituency
 			$data['short_name'] = $region_code;
 			if (isset($src_constituency['description']))
 				$data['description'] = $src_constituency['description'];
-			$this->api->update('Constituency', array('parliament_code' => $this->parliament_code, 'name_' => $src_constituency['name'] . ' (' .$region_code.')'), $data);
+			$this->api->update('Constituency', array('parliament_code' => $this->parliament_code, 'name' => $src_constituency['name'] . ' (' .$region_code.')'), $data);
 			return $constituency['id'];
 		}
 
 		// insert a new constituency
-		$data = array('name_' => $src_constituency['name'] . ' (' .$region_code.')', 'parliament_code' => $this->parliament_code);
+		$data = array('name' => $src_constituency['name'] . ' (' .$region_code.')', 'parliament_code' => $this->parliament_code);
 		$data['short_name'] = $region_code;
 		if (isset($src_constituency['description']))
 			$data['description'] = $src_constituency['description'];
@@ -750,15 +750,15 @@ class UpdaterCzSenat
 		if (!isset($src_mp['image_url'])) return;
 		$this->log->write("Updating MP's image.", Log::DEBUG);
 		// check for existing image in the database and if it is not present, insert its filename and download the image file
-		$image_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'since' => $this->term_since));
+		$image_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'parl' => $this->parliament_code, 'since' => $this->term_since));
 		if (!$image_in_db)
 		{
 			// close record for image from previous term-of-office
-			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'parl' => $this->parliament_code, 'until' => 'infinity'), array('until' => $this->term_since));
+			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'parl' => $this->parliament_code, 'until' => 'infinity'), array('until' => $this->term_since));
 
 			// insert current image
 			$db_image_filename = $src_mp['source_code'] . '_' . $this->term_src_code . '.jpg';
-			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'image', 'value_' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'value' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since));
 
 			// if the directory for MP images does not exist, create it
 			$path = API_FILES_DIR . '/' . $this->parliament_code . '/images/mp';
@@ -783,19 +783,19 @@ class UpdaterCzSenat
 		$this->log->write("Updating MP's attribute '$attr_name'.", Log::DEBUG);
 
 		$src_value = !empty($src_mp[$attr_name]) ? (is_null($implode_separator) ? $src_mp[$attr_name] : implode($implode_separator, $src_mp[$attr_name])) : null;
-		$value_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $this->parliament_code, '#datetime' => $this->update_date));
+		$value_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $this->parliament_code, '#datetime' => $this->update_date));
 		if ($value_in_db)
-			$db_value = $value_in_db['value_'];
+			$db_value = $value_in_db['value'];
 
 		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && $src_value == $db_value) return;
 
 		// close the current record
 		if (isset($db_value))
-			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $this->parliament_code, 'since' =>  $value_in_db['since']), array('until' => $this->update_date));
+			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $this->parliament_code, 'since' =>  $value_in_db['since']), array('until' => $this->update_date));
 
 		// and insert a new one
 		if (isset($src_value))
-			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'value' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since));
 	}
 
 	/**
@@ -811,7 +811,7 @@ class UpdaterCzSenat
 		$this->log->write("Updating MP '{$src_mp['name']['first_name']} {$src_mp['name']['last_name']}' (source id $src_code).", Log::DEBUG);
 
 		// if MP is already in the database, update his data
-		$src_code_in_db = $this->api->readOne('MpAttribute', array('name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
+		$src_code_in_db = $this->api->readOne('MpAttribute', array('name' => 'source_code', 'value' => $src_code, 'parl' => $this->parliament_code));
 		if ($src_code_in_db)
 		{
 			$mp_id = $src_code_in_db['mp_id'];
@@ -841,7 +841,7 @@ class UpdaterCzSenat
 						$p = strrpos($pmp_code, '/');
 						$parliament_code = substr($pmp_code, 0, $p);
 						$mp_src_code = substr($pmp_code, $p + 1);
-						$mp_id_attr = $this->api->readOne('MpAttribute', array('name_' => 'source_code', 'value_' => $mp_src_code, 'parl' => $parliament_code));
+						$mp_id_attr = $this->api->readOne('MpAttribute', array('name' => 'source_code', 'value' => $mp_src_code, 'parl' => $parliament_code));
 						if ($mp_id_attr)
 							$mp_id = $mp_id_attr['mp_id'];
 						else
@@ -886,7 +886,7 @@ class UpdaterCzSenat
 		}
 
 		if ($action & self::MP_INSERT_SOURCE_CODE)
-			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $this->parliament_code));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => 'source_code', 'value' => $src_code, 'parl' => $this->parliament_code));
 
 		if ($action & self::MP_UPDATE)
 			$this->api->update('Mp', array('id' => $mp_id), $data);
@@ -931,23 +931,23 @@ class UpdaterCzSenat
 		$this->term_src_code = $term_to_update['term_code'];
 
 		// if the term is present in the database, update it and get its id
-		$src_code_in_db = $this->api->readOne('TermAttribute', array('name_' => 'source_code', 'value_' => $term_to_update['term_code'], 'parl' => $this->parliament_code));
+		$src_code_in_db = $this->api->readOne('TermAttribute', array('name' => 'source_code', 'value' => $term_to_update['term_code'], 'parl' => $this->parliament_code));
 		if ($src_code_in_db) {
 		  $term_id = $src_code_in_db['term_id'];
-		  $data = array('name_' => $term_to_update['name'], 'since' => $term_to_update['since'], 'short_name' => $term_to_update['term_code']);
+		  $data = array('name' => $term_to_update['name'], 'since' => $term_to_update['since'], 'short_name' => $term_to_update['term_code']);
 		 if ((isset($term_to_update['until'])) and ($term_to_update['until'] != ''))
 		   $data['until'] = $term_to_update['until'];
 		 $this->api->update('Term', array('id' => $term_id), $data);
 		} else {
 		  // if term is not in the database, insert it and get its id
-		  $data = array('name_' => $term_to_update['name'], 'country_code' => 'cz', 'parliament_kind_code' => 'national-upper', 'since' => $term_to_update['since'], 'short_name' => $term_to_update['term_code']);
+		  $data = array('name' => $term_to_update['name'], 'country_code' => 'cz', 'parliament_kind_code' => 'national-upper', 'since' => $term_to_update['since'], 'short_name' => $term_to_update['term_code']);
 		  if ((isset($term_to_update['until'])) and ($term_to_update['until'] != ''))
 			$data['until'] = $term_to_update['until'];
 		  $term_pkey = $this->api->create('Term', $data);
 		  $term_id = $term_pkey['id'];
 
 		  	// insert term's source code as an attribute
-			$this->api->create('TermAttribute', array('term_id' => $term_id, 'name_' => 'source_code', 'value_' => $term_to_update['term_code'], 'parl' => $this->parliament_code));
+			$this->api->create('TermAttribute', array('term_id' => $term_id, 'name' => 'source_code', 'value' => $term_to_update['term_code'], 'parl' => $this->parliament_code));
 		}
 
 		// prepare start date of this term and start date of the following term
@@ -976,7 +976,7 @@ class UpdaterCzSenat
 		{
 			$this->api->create('Parliament', array(
 				'code' => $this->parliament_code,
-				'name_' => 'Senát Parlamentu České republiky',
+				'name' => 'Senát Parlamentu České republiky',
 				'short_name' => 'Senát ČR',
 				'description' => 'Horní komora parlamentu České republiky.',
 				'parliament_kind_code' => 'national-upper',
@@ -986,9 +986,9 @@ class UpdaterCzSenat
 
 			// english translation
 			$this->api->create('ParliamentAttribute', array(
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name_' => 'name_', 'value_' => 'Senate of Parliament of the Czech republic'),
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name_' => 'short_name', 'value_' => 'Senate CR'),
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name_' => 'description', 'value_' => 'Upper house of the Czech republic parliament.')
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'Senate of Parliament of the Czech republic'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'Senate CR'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Upper house of the Czech republic parliament.')
 			));
 		}
 

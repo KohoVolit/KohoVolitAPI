@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table LANGUAGE_ATTRIBUTE that holds languages' additional attributes.
  *
- * Columns of table LANGUAGE_ATTRIBUTE are: <code>language_code, name_, value_, lang, since, until</code>.
+ * Columns of table LANGUAGE_ATTRIBUTE are: <code>language_code, name, value, lang, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>language_code, name_, lang, since</code>.
+ * Primary key consists of columns <code>language_code, name, lang, since</code>.
  */
 class LanguageAttribute
 {
@@ -39,15 +39,15 @@ class LanguageAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('language_code' => 'sk', 'name_' => 'flag'))
+	 * read(array('language_code' => 'sk', 'name' => 'flag'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => flag
-	 *             [value_] => sk.gif
+	 *             [name] => flag
+	 *             [value] => sk.gif
 	 *             [lang] => -
 	 *             [since] => -infinity
 	 *             [until] => infinity
@@ -72,13 +72,13 @@ class LanguageAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('language_code' => 'sk', 'name_' => 'flag', 'value_' => 'sk.gif'))
+	 * create(array('language_code' => 'sk', 'name' => 'flag', 'value' => 'sk.gif'))
 	 * \endcode creates a new language attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [language_code] => sk
-	 *     [name_] => flag
+	 *     [name] => flag
 	 *     [lang] => -
 	 *     [since] => -infinity
 	 * )

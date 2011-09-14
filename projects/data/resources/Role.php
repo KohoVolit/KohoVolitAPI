@@ -3,9 +3,9 @@
 /**
  * \ingroup data
  *
- * Provides an interface to database table ROLE_ that holds roles of MP memberships in groups (eg.\ member, chairman, treasurer, etc.).
+ * Provides an interface to database table ROLE that holds roles of MP memberships in groups (eg.\ member, chairman, treasurer, etc.).
  *
- * Columns of table ROLE_ are: <code>code, male_name, female_name, description</code>.
+ * Columns of table ROLE are: <code>code, male_name, female_name, description</code>.
  *
  * All columns are allowed to write to.
  *
@@ -22,7 +22,7 @@ class Role
 	public function __construct()
 	{
 		$this->entity = new Entity(array(
-			'name' => 'role_',
+			'name' => 'role',
 			'columns' => array('code', 'male_name', 'female_name', 'description'),
 			'pkey_columns' => array('code')
 		));

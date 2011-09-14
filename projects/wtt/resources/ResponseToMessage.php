@@ -26,7 +26,7 @@ class ResponseToMessage
 	 *         (
 	 *             [message_id] => 232
 	 *             [subject] => Re: My law proposal
-	 *             [body_] => Dear Mr. Baggins ...
+	 *             [body] => Dear Mr. Baggins ...
 	 *             [received_on] => 2011-07-12 18:35:56.226578
 	 *             [mp_id] => 731
 	 *             [first_name] => Jiří
@@ -45,7 +45,7 @@ class ResponseToMessage
 		$query = new Query();
 		$query->setQuery(
 			"select\n" .
-			"	message_id, subject, body_, received_on, mp_id, first_name, middle_names, last_name, disambiguation, sex, parliament_code\n" .
+			"	message_id, subject, \"body\", received_on, mp_id, first_name, middle_names, last_name, disambiguation, sex, parliament_code\n" .
 			"from\n" .
 			"	response as r\n" .
 			"	join mp on mp.id = r.mp_id\n" .

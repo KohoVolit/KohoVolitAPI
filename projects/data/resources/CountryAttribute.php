@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table COUNTRY_ATTRIBUTE that holds countries' additional attributes.
  *
- * Columns of table COUNTRY_ATTRIBUTE are: <code>country_code, name_, value_, lang, since, until</code>.
+ * Columns of table COUNTRY_ATTRIBUTE are: <code>country_code, name, value, lang, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>country_code, name_, lang, since</code>.
+ * Primary key consists of columns <code>country_code, name, lang, since</code>.
  */
 class CountryAttribute
 {
@@ -39,15 +39,15 @@ class CountryAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('country_code' => 'cz', 'name_' => 'name', 'lang' => 'sk'))
+	 * read(array('country_code' => 'cz', 'name' => 'name', 'lang' => 'sk'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => name
-	 *             [value_] => Česká republika
+	 *             [name] => name
+	 *             [value] => Česká republika
 	 *             [lang] => sk
 	 *             [since] => -infinity
 	 *             [until] => infinity
@@ -72,13 +72,13 @@ class CountryAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('country_code' => 'cz', 'name_' => 'short_name', 'value_' => 'ČR', 'lang' => 'sk'))
+	 * create(array('country_code' => 'cz', 'name' => 'short_name', 'value' => 'ČR', 'lang' => 'sk'))
 	 * \endcode creates a new country attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [country_code] => cz
-	 *     [name_] => short_name
+	 *     [name] => short_name
 	 *     [lang] => sk
 	 *     [since] => -infinity
 	 * )

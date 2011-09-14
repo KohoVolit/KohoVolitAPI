@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table CONSTITUENCY_ATTRIBUTE that holds constituencies' additional attributes.
  *
- * Columns of table COUNTRY_ATTRIBUTE are: <code>constituency_id, name_, value_, lang, parl, since, until</code>.
+ * Columns of table COUNTRY_ATTRIBUTE are: <code>constituency_id, name, value, lang, parl, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>constituency_id, name_, lang, parl, since</code>.
+ * Primary key consists of columns <code>constituency_id, name, lang, parl, since</code>.
  */
 class ConstituencyAttribute
 {
@@ -46,8 +46,8 @@ class ConstituencyAttribute
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => map
-	 *             [value_] => maps/cz/psp/zc.png
+	 *             [name] => map
+	 *             [value] => maps/cz/psp/zc.png
 	 *             [lang] => -
 	 *             [since] => -infinity
 	 *             [until] => infinity
@@ -73,13 +73,13 @@ class ConstituencyAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('constituency_id' => 25, 'name_' => 'map', 'value_' => 'maps/cz/psp/zc.png'))
+	 * create(array('constituency_id' => 25, 'name' => 'map', 'value' => 'maps/cz/psp/zc.png'))
 	 * \endcode creates a new constituency attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [constituency_id] => 25
-	 *     [name_] => map
+	 *     [name] => map
 	 *     [lang] => -
 	 *     [parl] => -
 	 *     [since] => -infinity

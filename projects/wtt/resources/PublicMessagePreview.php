@@ -29,7 +29,7 @@ class PublicMessagePreview
 	 *         (
 	 *             [id] => 1262
 	 *             [subject] => My law proposal
-	 *             [body_] => Dear Mr. ...
+	 *             [body] => Dear Mr. ...
 	 *             [sender_name] => Bilbo Baggins
 	 *             [sent_on] => 2011-09-06 09:09:35.00988
 	 *             [age_days] => 2.29212016417748
@@ -46,7 +46,7 @@ class PublicMessagePreview
 		$query->setQuery(
 			"select\n" .
 			"	id, subject,\n" .
-			"	substr(body_, 1, 200) || case when length(body_) > 200 then '...' else '' end as body_,\n" .
+			"	substr(\"body\", 1, 200) || case when length(\"body\") > 200 then '...' else '' end as \"body\",\n" .
 			"	sender_name, sent_on,\n" .
 			"	(extract('epoch' from now()) - extract('epoch' from sent_on)) / 86400 as age_days,\n" .
 			"	recipients, response_exists\n" .
@@ -83,7 +83,7 @@ class PublicMessagePreview
 			"	) as r\n" .
 			"	on r.message_id = m.id\n" .
 			"where\n" .
-			"	state_ = 'sent'\n" .
+			"	\"state\" = 'sent'\n" .
 			"	and is_public = 'yes'\n"
 		);
 

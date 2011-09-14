@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table GROUP_KIND that holds kinds of groups of MPs (eg.\ 'committee', 'commission', etc.).
  *
- * Columns of table GROUP_KIND are: <code>code, name_, short_name, description, subkind_of</code>.
+ * Columns of table GROUP_KIND are: <code>code, name, short_name, description, subkind_of</code>.
  *
  * All columns are allowed to write to.
  *
@@ -23,7 +23,7 @@ class GroupKind
 	{
 		$this->entity = new Entity(array(
 			'name' => 'group_kind',
-			'columns' => array('code', 'name_', 'short_name', 'description', 'subkind_of'),
+			'columns' => array('code', 'name', 'short_name', 'description', 'subkind_of'),
 			'pkey_columns' => array('code')
 		));
 	}
@@ -44,7 +44,7 @@ class GroupKind
 	 *     [0] => Array
 	 *         (
 	 *             [code] => committee
-	 *             [name_] => Parliamentary committee
+	 *             [name] => Parliamentary committee
 	 *             [short_name] => Committee
 	 *             [description] => Committee of a parliament.
 	 *             [subkind_of] => parliament
@@ -67,7 +67,7 @@ class GroupKind
 	 *
 	 * \ex
 	 * \code
-	 * create(array('code' => 'subcommittee', 'name_' => 'Parliamentary subcommittee', 'short_name' => 'Subcommittee', 'description' => 'Subcommittee of a committee of a parliament.', 'subkind_of' => 'committee'))
+	 * create(array('code' => 'subcommittee', 'name' => 'Parliamentary subcommittee', 'short_name' => 'Subcommittee', 'description' => 'Subcommittee of a committee of a parliament.', 'subkind_of' => 'committee'))
 	 * \endcode creates a new group kind and returns
 	 * \code
 	 * Array

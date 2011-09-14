@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table MESSAGE that holds messages sent to MPs.
  *
- * Columns of table MESSAGE are: <code>id, subject, body_, sender_name, sender_address, sender_email, is_public, state_, written_on, sent_on, confirmation_code, approval_code</code>.
+ * Columns of table MESSAGE are: <code>id, subject, body, sender_name, sender_address, sender_email, is_public, state, written_on, sent_on, confirmation_code, approval_code</code>.
  *
  * Column <code>id</code> is a read-only column automaticaly generated on create.
  *
@@ -25,7 +25,7 @@ class Message
 	{
 		$this->entity = new Entity(array(
 			'name' => 'message',
-			'columns' => array('id', 'subject', 'body_', 'sender_name', 'sender_address', 'sender_email', 'is_public', 'state_', 'written_on', 'sent_on', 'confirmation_code', 'approval_code'),
+			'columns' => array('id', 'subject', 'body', 'sender_name', 'sender_address', 'sender_email', 'is_public', 'state', 'written_on', 'sent_on', 'confirmation_code', 'approval_code'),
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id')
 		));
@@ -40,7 +40,7 @@ class Message
 	 *
 	 * \ex
 	 * \code
-	 * read(array('sender_email' => 'bilbo@hobbiton.me', 'state_' => 'sent'))
+	 * read(array('sender_email' => 'bilbo@hobbiton.me', 'state' => 'sent'))
 	 * \endcode returns
 	 * \code
 	 * Array
@@ -49,12 +49,12 @@ class Message
 	 *         (
 	 *             [id] => 123
 	 *             [subject] => My law proposal
-	 *             [body_] => Dear Mr. ...
+	 *             [body] => Dear Mr. ...
 	 *             [sender_name] => Bilbo Baggins
 	 *             [sender_address] => Bag End, Hobbiton
 	 *             [sender_email] => bilbo@hobbiton.me
 	 *             [is_public] => yes
-	 *             [state_] => sent
+	 *             [state] => sent
 	 *             [written_on] => 2011-05-26 13:06:04
 	 *             [sent_on] => 2011-05-26 13:09:32
 	 *             [confirmation_code] => abcdefghij
@@ -73,13 +73,13 @@ class Message
 	 * Create a message(s) from given values.
 	 *
 	 * \param $data An array of pairs <em>column => value</em> specifying the message to create. Alternatively, an array of such message specifications.
-	 * If \c state_ or \c written_on columns are ommitted, they are set to \c created and the current timestamp, respectively.
+	 * If \c state or \c written_on columns are ommitted, they are set to \c created and the current timestamp, respectively.
 	 *
 	 * \return An array of primary key values of the created message(s).
 	 *
 	 * \ex
 	 * \code
-	 * create(array('subject' => 'My law proposal', 'body_' => 'Dear Mr. ...', 'sender_name' => 'Bilbo Baggins', 'sender_email' => 'bilbo@hobbiton.me', 'is_public' => 'yes', 'confirmation_code' => 'abcdefghij'))
+	 * create(array('subject' => 'My law proposal', 'body' => 'Dear Mr. ...', 'sender_name' => 'Bilbo Baggins', 'sender_email' => 'bilbo@hobbiton.me', 'is_public' => 'yes', 'confirmation_code' => 'abcdefghij'))
 	 * \endcode creates a new message and returns something like
 	 * \code
 	 * Array

@@ -191,13 +191,13 @@ class UpdaterCzLocal
 	       $group_name = trim($mp['political_group:full_name']);
 	  
 	  if (isset($group_name) and ($group_name != '')) {
-	    $group_db = $this->api->readOne('Group', array('name_' => $group_name, 'parliament_code' => $mp['parliament_code'], 'group_kind_code' => $group_kind_code, 'term_id' => $term_id));
+	    $group_db = $this->api->readOne('Group', array('name' => $group_name, 'parliament_code' => $mp['parliament_code'], 'group_kind_code' => $group_kind_code, 'term_id' => $term_id));
 	    if ($group_db)
 			$group_id = $group_db['id'];
 	    else {  //insert new group
 	      $this->log->write("Inserting new group '{$group_name}' ({$mp['parliament_code']})", Log::DEBUG);
 		  $data = array(
-		    'name_' => $group_name,
+		    'name' => $group_name,
 		    'parliament_code' => $mp['parliament_code'],
 		    'group_kind_code' => $group_kind_code,
 		    'term_id' => $term_id,
@@ -240,7 +240,7 @@ class UpdaterCzLocal
 	private function updateArea($area,$constituency_id) {
 	  $data = array(
 	 	'constituency_id' => $constituency_id,
-	    'country' => 'Česká republika',
+	    'country' => 'Česká republika',
 	    'administrative_area_level_1' => $area['administrative_area_level_1'],
 	    'administrative_area_level_2' => $area['administrative_area_level_2'],
 	    'administrative_area_level_3' => '*',
@@ -272,14 +272,14 @@ class UpdaterCzLocal
 	private function updateConstituency($parliament_code, $constit_name) {
 		$this->log->write("Updating constituency '{$constit_name}' ({$parliament_code}).", Log::DEBUG);
 		
-		$constituency = $this->api->readOne('Constituency', array('parliament_code' => $parliament_code, 'name_' => $constit_name));
+		$constituency = $this->api->readOne('Constituency', array('parliament_code' => $parliament_code, 'name' => $constit_name));
 		//if exists, return id
 		if ($constituency) {
 		  return $constituency['id'];
 		}
 		//if does not exist, insert it
 		$data = array (
-		  'name_' => $constit_name,
+		  'name' => $constit_name,
 		  'parliament_code' => $parliament_code,
 		);
 		$constituency_pkey = $this->api->create('Constituency', $data);
@@ -299,19 +299,19 @@ class UpdaterCzLocal
 		$this->log->write("Updating MP's attribute '$attr_name'.", Log::DEBUG);
 
 		$src_value = !empty($src_mp[$attr_name]) ? (is_null($implode_separator) ? $src_mp[$attr_name] : implode($implode_separator, $src_mp[$attr_name])) : null;
-		$value_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $src_mp['parliament_code'], '#datetime' => $this->update_date));
+		$value_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $src_mp['parliament_code'], '#datetime' => $this->update_date));
 		if ($value_in_db)
-			$db_value = $value_in_db['value_'];
+			$db_value = $value_in_db['value'];
 
 		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && $src_value == $db_value) return;
 
 		// close the current record
 		if (isset($db_value))
-			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'parl' => $src_mp['parliament_code'], 'since' =>  $value_in_db['since']), array('until' => $this->update_date));
+			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $src_mp['parliament_code'], 'since' =>  $value_in_db['since']), array('until' => $this->update_date));
 
 		// and insert a new one
 		if (isset($src_value))
-			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => $attr_name, 'value_' => $src_value, 'parl' => $src_mp['parliament_code'], 'since' => $this->update_date, 'until' => $this->next_term_since));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'value' => $src_value, 'parl' => $src_mp['parliament_code'], 'since' => $this->update_date, 'until' => $this->next_term_since));
 	}
 	
 	/**
@@ -327,7 +327,7 @@ class UpdaterCzLocal
 	  	$this->log->write("Updating MP '{$src_mp['first_name']} {$src_mp['last_name']}' (parliament {$src_mp['parliament_name']}).", Log::DEBUG);
 	  	
 	  	// if MP is already in the database, update his data
-		$src_code_in_db = $this->api->readOne('MpAttribute', array('name_' => 'source_code', 'value_' => $src_code, 'parl' => $src_mp['parliament_code']));
+		$src_code_in_db = $this->api->readOne('MpAttribute', array('name' => 'source_code', 'value' => $src_code, 'parl' => $src_mp['parliament_code']));
 		if ($src_code_in_db)
 		{
 			$mp_id = $src_code_in_db['mp_id'];
@@ -358,7 +358,7 @@ class UpdaterCzLocal
 						$p = strrpos($pmp_code, '/');
 						$parliament_code = substr($pmp_code, 0, $p);
 						$mp_src_code = substr($pmp_code, $p + 1);
-						$mp_id_attr = $this->api->readOne('MpAttribute', array('name_' => 'source_code', 'value_' => $mp_src_code, 'parl' => $parliament_code));
+						$mp_id_attr = $this->api->readOne('MpAttribute', array('name' => 'source_code', 'value' => $mp_src_code, 'parl' => $parliament_code));
 						if ($mp_id_attr)
 							$mp_id = $mp_id_attr['mp_id'];
 						else
@@ -406,7 +406,7 @@ class UpdaterCzLocal
 		}
 
 		if ($action & self::MP_INSERT_SOURCE_CODE)
-			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name_' => 'source_code', 'value_' => $src_code, 'parl' => $src_mp['parliament_code']));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => 'source_code', 'value' => $src_code, 'parl' => $src_mp['parliament_code']));
 
 		if ($action & self::MP_UPDATE)
 			$this->api->update('Mp', array('id' => $mp_id), $data);
@@ -442,7 +442,7 @@ class UpdaterCzLocal
 		{
 			$this->api->create('Parliament', array(
 				'code' => $src_parliament['parliament_code'],
-				'name_' => $src_parliament['parliament_name'],
+				'name' => $src_parliament['parliament_name'],
 				'parliament_kind_code' => 'local',
 				'country_code' => 'cz',
 				'default_language' => 'cs',
@@ -456,10 +456,10 @@ class UpdaterCzLocal
 		
 		//if term does not exist yet, insert it, otherwise update it
 		$this->log->write("Updating term '{$src_parliament['term']}'.", Log::DEBUG);
-		$term = $this->api->readOne('Term', array('name_' => $src_parliament['term'], 'parliament_kind_code' => 'local', 'country_code' => 'cz'));
+		$term = $this->api->readOne('Term', array('name' => $src_parliament['term'], 'parliament_kind_code' => 'local', 'country_code' => 'cz'));
 		if (!$term) {
 		  $term = $this->api->create('Term', array(
-		    'name_' => $src_parliament['term'],
+		    'name' => $src_parliament['term'],
 		    'parliament_kind_code' => 'local',
 		    'country_code' => 'cz',
 		    'since' => $src_parliament['since'],
@@ -479,10 +479,10 @@ class UpdaterCzLocal
 		//if group(=parliament) does not exist yet, insert it, otherwise update it
 		$this->log->write("Updating group '{$src_parliament['parliament_name']}'.", Log::DEBUG);
 		// if group=parliament does not exist yet, insert it
-		$group = $this->api->readOne('Group', array('name_' => $src_parliament['parliament_name'], 'parliament_code' => $src_parliament['parliament_code'], 'term_id' => $term['id']));
+		$group = $this->api->readOne('Group', array('name' => $src_parliament['parliament_name'], 'parliament_code' => $src_parliament['parliament_code'], 'term_id' => $term['id']));
 		if (!$group) {
 		  $this->api->create('Group', array(
-		    'name_' => $src_parliament['parliament_name'],
+		    'name' => $src_parliament['parliament_name'],
 		    'parliament_code' => $src_parliament['parliament_code'],
 		    'group_kind_code' => 'parliament',
 		    'term_id' => $term['id'],
@@ -490,10 +490,10 @@ class UpdaterCzLocal
 		}
 		
 		// update the timestamp the group has been last updated on
-		$this->api->update('Group', array('name_' => $src_parliament['parliament_name'], 'parliament_code' => $src_parliament['parliament_code'],'group_kind_code' => 'parliament','term_id' => $term['id']), array('last_updated_on' => 'now'));
+		$this->api->update('Group', array('name' => $src_parliament['parliament_name'], 'parliament_code' => $src_parliament['parliament_code'],'group_kind_code' => 'parliament','term_id' => $term['id']), array('last_updated_on' => 'now'));
 
 		//get id
-		$group = $this->api->readOne('Group', array('name_' => $src_parliament['parliament_name'], 'parliament_code' => $src_parliament['parliament_code'],'group_kind_code' => 'parliament','term_id' => $term['id']));		
+		$group = $this->api->readOne('Group', array('name' => $src_parliament['parliament_name'], 'parliament_code' => $src_parliament['parliament_code'],'group_kind_code' => 'parliament','term_id' => $term['id']));		
 
 		//save parliament and term and group=parliament into array
 		$out[$src_parliament['parliament_code']] = array(

@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table LANGUAGE that holds languages for content translations.
  *
- * Columns of table LANGUAGE are: <code>code, name_, short_name, description, locale</code>.
+ * Columns of table LANGUAGE are: <code>code, name, short_name, description, locale</code>.
  *
  * All columns are allowed to write to.
  *
@@ -22,8 +22,8 @@ class Language
 	public function __construct()
 	{
 		$this->entity = new Entity(array(
-			'name' => 'language_',
-			'columns' => array('code', 'name_', 'short_name', 'description', 'locale'),
+			'name' => 'language',
+			'columns' => array('code', 'name', 'short_name', 'description', 'locale'),
 			'pkey_columns' => array('code')
 		));
 	}
@@ -45,7 +45,7 @@ class Language
 	 *     [0] => Array
 	 *         (
 	 *             [code] => cs
-	 *             [name_] => česky
+	 *             [name] => česky
 	 *             [short_name] => čeština
 	 *             [description] => 
 	 *             [locale] => cs_CZ.UTF-8
@@ -67,7 +67,7 @@ class Language
 	 *
 	 * \ex
 	 * \code
-	 * create(array('code' => 'sk', 'name_' => 'po slovensky', 'short_name' => 'slovenčina', 'locale' => 'sk_SK.UTF-8'))
+	 * create(array('code' => 'sk', 'name' => 'po slovensky', 'short_name' => 'slovenčina', 'locale' => 'sk_SK.UTF-8'))
 	 * \endcode creates a new language and returns
 	 * \code
 	 * Array

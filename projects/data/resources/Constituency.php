@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table CONSTITUENCY that holds constituencies a parliament is elected for.
  *
- * Columns of table CONSTITUENCY are: <code>id, name_, short_name, description, parliament_code, since, until</code>.
+ * Columns of table CONSTITUENCY are: <code>id, name, short_name, description, parliament_code, since, until</code>.
  *
  * Column <code>id</code> is a read-only column automaticaly generated on create.
  *
@@ -23,7 +23,7 @@ class Constituency
 	{
 		$this->entity = new Entity(array(
 			'name' => 'constituency',
-			'columns' => array('id', 'name_', 'short_name', 'description', 'parliament_code', 'since', 'until'),
+			'columns' => array('id', 'name', 'short_name', 'description', 'parliament_code', 'since', 'until'),
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id')
 		));
@@ -49,7 +49,7 @@ class Constituency
 	 *     [0] => Array
 	 *         (
 	 *             [id] => 27
-	 *             [name_] => Chomutov (5)
+	 *             [name] => Chomutov (5)
 	 *             [short_name] => 5
 	 *             [description] => celý okres Chomutov
 	 *             [parliament_code] => cz/senat
@@ -75,7 +75,7 @@ class Constituency
 	 *
 	 * \ex
 	 * \code
-	 * create(array('name_' => 'Chomutov (5)', 'short_name' => '5', 'description' => 'celý okres Chomutov', 'parliament_code' => 'cz/senat'))
+	 * create(array('name' => 'Chomutov (5)', 'short_name' => '5', 'description' => 'celý okres Chomutov', 'parliament_code' => 'cz/senat'))
 	 * \endcode creates a new constituency and returns something like
 	 * \code
 	 * Array

@@ -101,7 +101,9 @@ class Query
 
 	public function buildSelect($table, $columns, $filter, $table_columns)
 	{
-		$this->query = "select $columns from $table";
+		foreach ($table_columns as $tc)
+			$columns = str_replace($tc, '"' . $tc . '"', $columns);
+		$this->query = "select $columns from \"$table\"";
 		$this->params = array();
 		$this->addWhereCondition($filter, $table_columns);
 		if (isset($filter['#limit']))
@@ -137,15 +139,15 @@ class Query
 				$dollars .= '$' . count($this->params) . ', ';
 			}
 		}
-		$this->query = "insert into $table (" . implode(', ', $columns) . ') values (' . rtrim($dollars, ', ') . ')';
+		$this->query = "insert into \"$table\" (\"" . implode('", "', $columns) . '") values (' . rtrim($dollars, ', ') . ')';
 
 		if (!empty($return_columns))
-			$this->query .= ' returning ' . implode(', ', $return_columns);
+			$this->query .= ' returning "' . implode('", "', $return_columns) . '"';
 	}
 
 	public function buildUpdate($table, $filter, $data, $table_columns, $return_columns = array(), $ro_columns = array())
 	{
-		$this->query = "update $table set";
+		$this->query = "update \"$table\" set";
 		$this->params = array();
 
 		foreach ((array)$data as $column => $value)
@@ -155,11 +157,11 @@ class Query
 			if (!in_array($column, $table_columns, true)) continue;
 
 			if (is_null($value))
-				$this->query .= " $column = null,";
+				$this->query .= " \"$column\" = null,";
 			else
 			{
 				$this->params[] = $value;
-				$this->query .= " $column = $" . count($this->params) . ',';
+				$this->query .= " \"$column\" = $" . count($this->params) . ',';
 			}
 		}
 		$this->query = rtrim($this->query, ',');
@@ -167,16 +169,16 @@ class Query
 		$this->addWhereCondition($filter, $table_columns);
 
 		if (!empty($return_columns))
-			$this->query .= ' returning ' . implode(', ', $return_columns);
+			$this->query .= ' returning "' . implode('", "', $return_columns) . '"';
 	}
 
 	public function buildDelete($table, $filter, $table_columns, $return_columns = array())
 	{
-		$this->query = "delete from $table";
+		$this->query = "delete from \"$table\"";
 		$this->params = array();
 		$this->addWhereCondition($filter, $table_columns);
 		if (!empty($return_columns))
-			$this->query .= ' returning ' . implode(', ', $return_columns);
+			$this->query .= ' returning "' . implode('", "', $return_columns) . '"';
 	}
 
 	private function addWhereCondition($filter, $table_columns)
@@ -189,11 +191,11 @@ class Query
 			if (!in_array($column, $table_columns, true)) continue;
 
 			if (is_null($value))
-				$this->query .= " and $column is null";
+				$this->query .= " and \"$column\" is null";
 			else
 			{
 				$this->params[] = $value;
-				$this->query .= " and $column = $" . count($this->params);
+				$this->query .= " and \"$column\" = $" . count($this->params);
 			}
 		}
 		if (isset($filter['#datetime']) && in_array('since', $table_columns, true) && in_array('until', $table_columns, true))

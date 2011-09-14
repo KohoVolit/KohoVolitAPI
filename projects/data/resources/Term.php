@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table TERM that holds terms of office a parliament is elected in.
  *
- * Columns of table TERM are: <code>id, name_, short_name, description, country_code, parliament_kind_code, since, until</code>.
+ * Columns of table TERM are: <code>id, name, short_name, description, country_code, parliament_kind_code, since, until</code>.
  *
  * Column <code>id</code> is a read-only column automaticaly generated on create.
  *
@@ -23,7 +23,7 @@ class Term
 	{
 		$this->entity = new Entity(array(
 			'name' => 'term',
-			'columns' => array('id', 'name_', 'short_name', 'description', 'country_code', 'parliament_kind_code', 'since', 'until'),
+			'columns' => array('id', 'name', 'short_name', 'description', 'country_code', 'parliament_kind_code', 'since', 'until'),
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id')
 		));
@@ -49,7 +49,7 @@ class Term
 	 *     [0] => Array
 	 *         (
 	 *             [id] => 6
-	 *             [name_] => od 2010
+	 *             [name] => od 2010
 	 *             [short_name] => 
 	 *             [description] => 
 	 *             [country_code] => cz
@@ -76,7 +76,7 @@ class Term
 	 *
 	 * \ex
 	 * \code
-	 * create(array('name_' => '2006 - 2010', 'country_code' => 'sk', 'parliament_kind_code' => 'local', 'since' => '2006-12-03', 'until' => '2010-11-28'))
+	 * create(array('name' => '2006 - 2010', 'country_code' => 'sk', 'parliament_kind_code' => 'local', 'since' => '2006-12-03', 'until' => '2010-11-28'))
 	 * \endcode creates a new term and returns something like
 	 * \code
 	 * Array

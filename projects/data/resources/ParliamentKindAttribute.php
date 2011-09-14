@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table PARLIAMENT_KIND_ATTRIBUTE that holds parliament kinds' additional attributes.
  *
- * Columns of table PARLIAMENT_KIND_ATTRIBUTE are: <code>parliament_kind_code, name_, value_, lang, since, until</code>.
+ * Columns of table PARLIAMENT_KIND_ATTRIBUTE are: <code>parliament_kind_code, name, value, lang, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>parliament_kind_code, name_, lang, since</code>.
+ * Primary key consists of columns <code>parliament_kind_code, name, lang, since</code>.
  */
 class ParliamentKindAttribute
 {
@@ -39,15 +39,15 @@ class ParliamentKindAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('parliament_kind_code' => 'regional', 'name_' => 'short_name', 'lang' => 'cs'))
+	 * read(array('parliament_kind_code' => 'regional', 'name' => 'short_name', 'lang' => 'cs'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => short_name
-	 *             [value_] => Krajský
+	 *             [name] => short_name
+	 *             [value] => Krajský
 	 *             [lang] => cs
 	 *             [since] => -infinity
 	 *             [until] => infinity
@@ -72,13 +72,13 @@ class ParliamentKindAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('parliament_kind_code' => 'regional', 'name_' => 'name', 'value_' => 'Krajské zastupitelstvo', 'lang' => 'cs'))
+	 * create(array('parliament_kind_code' => 'regional', 'name' => 'name', 'value' => 'Krajské zastupitelstvo', 'lang' => 'cs'))
 	 * \endcode creates a new parliament kind attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [parliament_kind_code] => regional
-	 *     [name_] => name
+	 *     [name] => name
 	 *     [lang] => cs
 	 *     [since] => -infinity
 	 * )

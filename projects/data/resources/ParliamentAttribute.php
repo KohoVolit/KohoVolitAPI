@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table PARLIAMENT_ATTRIBUTE that holds parliaments' additional attributes.
  *
- * Columns of table PARLIAMENT_ATTRIBUTE are: <code>parliament_code, name_, value_, lang, since, until</code>.
+ * Columns of table PARLIAMENT_ATTRIBUTE are: <code>parliament_code, name, value, lang, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>parliament_code, name_, lang, since</code>.
+ * Primary key consists of columns <code>parliament_code, name, lang, since</code>.
  */
 class ParliamentAttribute
 {
@@ -39,15 +39,15 @@ class ParliamentAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('parliament_code' => 'cz/senat', 'name_' => 'last_update'))
+	 * read(array('parliament_code' => 'cz/senat', 'name' => 'last_update'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => last_update
-	 *             [value_] => 2011-06-24
+	 *             [name] => last_update
+	 *             [value] => 2011-06-24
 	 *             [lang] => -
 	 *             [since] => -infinity
 	 *             [until] => infinity
@@ -72,13 +72,13 @@ class ParliamentAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('parliament_code' => 'cz/psp', 'name_' => 'name', 'value_' => 'Chamber of Deputies of Parliament of the Czech republic', 'lang' => 'en'))
+	 * create(array('parliament_code' => 'cz/psp', 'name' => 'name', 'value' => 'Chamber of Deputies of Parliament of the Czech republic', 'lang' => 'en'))
 	 * \endcode creates a new parliament attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [parliament_code] => cz/psp
-	 *     [name_] => name
+	 *     [name] => name
 	 *     [lang] => en
 	 *     [since] => -infinity
 	 * )

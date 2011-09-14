@@ -5,17 +5,17 @@ create table message
 (
 	id serial primary key,
 	subject varchar not null,
-	body_ text not null,
+	"body" text not null,
 	sender_name varchar not null,
 	sender_address varchar,
 	sender_email varchar not null,
 	is_public varchar not null check (is_public in ('yes', 'no')),
-	state_ varchar not null default 'created' check (state_ in ('created', 'waiting for approval', 'refused', 'sent')),
+	"state" varchar not null default 'created' check ("state" in ('created', 'waiting for approval', 'refused', 'sent')),
 	written_on timestamp not null default current_timestamp,
 	sent_on timestamp,
 	confirmation_code varchar not null unique,
 	approval_code varchar
---	unique (subject, body_, sender_email)
+--	unique (subject, "body", sender_email)
 );
 
 create table response
@@ -24,7 +24,7 @@ create table response
 	mp_id integer references mp on delete cascade on update cascade,
 	parliament_code varchar references parliament on delete set null on update cascade,
 	subject varchar,
-	body_ text,
+	"body" text,
 	full_email_data text,
 	received_on timestamp,
 	received_privately varchar check (received_privately in ('yes', 'no')),

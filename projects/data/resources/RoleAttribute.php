@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table ROLE_ATTRIBUTE that holds MP roles' additional attributes.
  *
- * Columns of table ROLE_ATTRIBUTE are: <code>role_code, name_, value_, lang, parl, since, until</code>.
+ * Columns of table ROLE_ATTRIBUTE are: <code>role_code, name, value, lang, parl, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>role_code, name_, lang, parl, since</code>.
+ * Primary key consists of columns <code>role_code, name, lang, parl, since</code>.
  */
 class RoleAttribute
 {
@@ -39,15 +39,15 @@ class RoleAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('role_code' => 'chairman', 'name_' => 'icon'))
+	 * read(array('role_code' => 'chairman', 'name' => 'icon'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => icon
-	 *             [value_] => roles/chairman.gif
+	 *             [name] => icon
+	 *             [value] => roles/chairman.gif
 	 *             [lang] => -
 	 *             [since] => -infinity
 	 *             [until] => infinity
@@ -73,13 +73,13 @@ class RoleAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('role_code' => chairman, 'name_' => 'female_name', 'value_' => 'predsedníčka', 'lang' => 'sk'))
+	 * create(array('role_code' => chairman, 'name' => 'female_name', 'value' => 'predsedníčka', 'lang' => 'sk'))
 	 * \endcode creates a new role attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [role_code] => chairman
-	 *     [name_] => female_name
+	 *     [name] => female_name
 	 *     [lang] => sk
 	 *     [parl] => -
 	 *     [since] => -infinity

@@ -5,15 +5,15 @@ create or replace function mp_attribute_temporal_check()
 returns trigger as $$
 begin
 	if tg_op = 'INSERT' then
-		perform * from mp_attribute where (mp_id, name_, lang, parl) = (new.mp_id, new.name_, new.lang, new.parl) and until > new.since and since < new.until limit 1;
+		perform * from mp_attribute where (mp_id, "name", lang, parl) = (new.mp_id, new."name", new.lang, new.parl) and until > new.since and since < new.until limit 1;
 	else  -- tg_op = 'UPDATE'
-		perform * from mp_attribute where (mp_id, name_, lang, parl) = (new.mp_id, new.name_, new.lang, new.parl) and until > new.since and since < new.until 
-			and (mp_id, name_, lang, parl, since) != (old.mp_id, old.name_, old.lang, old. parl, old.since)
+		perform * from mp_attribute where (mp_id, "name", lang, parl) = (new.mp_id, new."name", new.lang, new.parl) and until > new.since and since < new.until 
+			and (mp_id, "name", lang, parl, since) != (old.mp_id, old."name", old.lang, old. parl, old.since)
 			limit 1;
 	end if;
 	if found then
-		raise exception 'Time period in the row (mp_id=%, name_=''%'', value_=''%'', lang=''%'', parl=''%'', since=''%'', until=''%'') being inserted (or updated) into MP_ATTRIBUTE overlaps with a period of another value of the attribute.',
-			new.mp_id, new.name_, new.value_, new.lang, new.parl, new.since, new.until;
+		raise exception 'Time period in the row (mp_id=%, name=''%'', value=''%'', lang=''%'', parl=''%'', since=''%'', until=''%'') being inserted (or updated) into MP_ATTRIBUTE overlaps with a period of another value of the attribute.',
+			new.mp_id, new."name", new."value", new.lang, new.parl, new.since, new.until;
 	end if;
 	return new;
 end; $$ language plpgsql;
@@ -48,9 +48,9 @@ returns void as $$
 declare
 	l_since timestamp;
 begin
-	select until into l_since from mp_attribute where mp_id = a_mp_id and name_ = a_column_name and lang = '-' and parl = '-' order by until desc limit 1;
+	select until into l_since from mp_attribute where mp_id = a_mp_id and "name" = a_column_name and lang = '-' and parl = '-' order by until desc limit 1;
 	if not found then l_since = '-infinity'; end if;
-	insert into mp_attribute(mp_id, name_, value_, since, until) values (a_mp_id, a_column_name, a_column_value, l_since, a_update_date);
+	insert into mp_attribute(mp_id, "name", "value", since, until) values (a_mp_id, a_column_name, a_column_value, l_since, a_update_date);
 end; $$ language plpgsql;
 
 create or replace function mp_changed_values_archivation()

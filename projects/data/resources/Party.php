@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table PARTY that holds political parties.
  *
- * Columns of table PARTY are: <code>id, name_, short_name, description, country_code, last_updated_on</code>.
+ * Columns of table PARTY are: <code>id, name, short_name, description, country_code, last_updated_on</code>.
  *
  * Column <code>id</code> is a read-only column automaticaly generated on create.
  *
@@ -23,7 +23,7 @@ class Party
 	{
 		$this->entity = new Entity(array(
 			'name' => 'party',
-			'columns' => array('id', 'name_', 'short_name', 'description', 'country_code', 'last_updated_on'),
+			'columns' => array('id', 'name', 'short_name', 'description', 'country_code', 'last_updated_on'),
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id')
 		));
@@ -46,7 +46,7 @@ class Party
 	 *     [0] => Array
 	 *         (
 	 *             [id] => 234
-	 *             [name_] => Kresťanskodemokratické hnutie
+	 *             [name] => Kresťanskodemokratické hnutie
 	 *             [short_name] => KDH
 	 *             [description] =>
 	 *             [country_code] => sk
@@ -71,7 +71,7 @@ class Party
 	 *
 	 * \ex
 	 * \code
-	 * create(array('name_' => 'Strana zelených', 'short_name' => 'SZ', 'country_code' => 'sk'))
+	 * create(array('name' => 'Strana zelených', 'short_name' => 'SZ', 'country_code' => 'sk'))
 	 * \endcode creates a new party and returns something like
 	 * \code
 	 * Array

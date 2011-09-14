@@ -38,10 +38,9 @@ create table mp_attribute
 (
 	mp_id integer references mp on delete cascade on update cascade,
 	parl varchar references parliament on delete restrict on update cascade default '-',
-	primary key (mp_id, name_, lang, parl, since),
-	foreign key (lang) references language_ on delete restrict on update cascade,
-	foreign key (parl) references parliament on delete restrict on update cascade
-) inherits (attribute_);
+	primary key (mp_id, "name", lang, parl, since),
+	foreign key (lang) references "language" on delete restrict on update cascade
+) inherits ("attribute");
 
 -- privileges on objects
 grant select

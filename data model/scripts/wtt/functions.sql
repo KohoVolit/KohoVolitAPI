@@ -46,11 +46,11 @@ returns table(parliament_name varchar, parliament_code varchar, constituency_nam
 	email varchar, political_group varchar, office_town varchar, office_distance double precision)
 as $$
 	select
-		p.name_,
+		p."name",
 		p.code,
-		c.name_,
+		c."name",
 		mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation,
-		ma.value_,
+		ma."value",
 		club.short_name,
 		split_part(o.address, '|', 4),
 		acos(sin(radians(o.latitude)) * sin(radians($2)) + cos(radians(o.latitude)) * cos(radians($2)) * cos(radians($3 - o.longitude))) * 6371 as distance
@@ -59,14 +59,14 @@ as $$
 		join constituency as c on c.id = a.constituency_id and ($1 is null or c.parliament_code = any (string_to_array($1, '|')))
 		join parliament as p on p.code = c.parliament_code
 		join mp_in_group as mig_parl on mig_parl.constituency_id = c.id and mig_parl.role_code = 'member' and mig_parl.since <= 'now' and mig_parl.until > 'now'
-		join group_ as g on g.id = mig_parl.group_id and g.group_kind_code = 'parliament'
+		join "group" as g on g.id = mig_parl.group_id and g.group_kind_code = 'parliament'
 		join term as t on t.id = g.term_id and t.since <= 'now' and t.until > 'now'
 		join mp on mp.id = mig_parl.mp_id
-		left join mp_attribute as ma on ma.mp_id = mp.id and ma.name_ = 'email' and ma.parl = p.code and ma.since <= 'now' and ma.until > 'now'
-		left join mp_in_group as mig_club on mig_club.mp_id = mp.id and mig_club.role_code = 'member' and mig_club.since <= 'now' and mig_club.until > 'now' and mig_club.group_id in (select id from group_ where group_kind_code = 'political group')
-		left join group_ as club on club.id = mig_club.group_id
+		left join mp_attribute as ma on ma.mp_id = mp.id and ma."name" = 'email' and ma.parl = p.code and ma.since <= 'now' and ma.until > 'now'
+		left join mp_in_group as mig_club on mig_club.mp_id = mp.id and mig_club.role_code = 'member' and mig_club.since <= 'now' and mig_club.until > 'now' and mig_club.group_id in (select id from "group" where group_kind_code = 'political group' and parliament_code = p.code)
+		left join "group" as club on club.id = mig_club.group_id
 		left join (select distinct on (mp_id, parliament_code) mp_id, parliament_code, address, latitude, longitude from office
 			where since <= 'now' and until > 'now' order by mp_id, parliament_code, relevance desc) as o
 			on o.mp_id = mp.id and o.parliament_code = c.parliament_code
-	order by p.name_, c.name_, club.short_name, distance
+	order by p."name", c."name", club.short_name, distance
 $$ language sql stable;

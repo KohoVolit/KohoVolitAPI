@@ -206,7 +206,7 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 		else if ($method == 'PUT')
 			$data = json_encode(self::decodeNullValues($this->put_request_data));
 
-		return Db::query('insert into api_log(method, application, resource, query, data_, format, referrer) values ($1, $2, $3, $4, $5, $6, $7)',
+		return Db::query('insert into api_log(method, project, resource, query, data, format, referrer) values ($1, $2, $3, $4, $5, $6, $7)',
 			array($method, $project, $resource, $query, $data, $format, $referrer),
 			'kv_admin');
 	}

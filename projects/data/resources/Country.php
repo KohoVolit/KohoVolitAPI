@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table COUNTRY that holds countries.
  *
- * Columns of table COUNTRY are: <code>code, name_, short_name, description</code>.
+ * Columns of table COUNTRY are: <code>code, name, short_name, description</code>.
  *
  * All columns are allowed to write to.
  *
@@ -23,7 +23,7 @@ class Country
 	{
 		$this->entity = new Entity(array(
 			'name' => 'country',
-			'columns' => array('code', 'name_', 'short_name', 'description'),
+			'columns' => array('code', 'name', 'short_name', 'description'),
 			'pkey_columns' => array('code')
 		));
 	}
@@ -45,7 +45,7 @@ class Country
 	 *     [0] => Array
 	 *         (
 	 *             [code] => cz
-	 *             [name_] => Czech republic
+	 *             [name] => Czech republic
 	 *             [short_name] => Czechia
 	 *             [description] => 
 	 *         ) 
@@ -66,7 +66,7 @@ class Country
 	 *
 	 * \ex
 	 * \code
-	 * create(array('code' => 'sk', 'name_' => 'Slovak republic', 'short_name' => 'Slovakia'))
+	 * create(array('code' => 'sk', 'name' => 'Slovak republic', 'short_name' => 'Slovakia'))
 	 * \endcode creates a new country and returns
 	 * \code
 	 * Array

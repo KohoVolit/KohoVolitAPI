@@ -92,8 +92,8 @@ class Mp
 	 * \ex
 	 * \code
 	 * create(array(
-	 * 	array('first_name_' => 'Vlasta', 'last_name' => 'Parkanová', 'sex' => 'f', 'pre_title' => 'JUDr.', 'post_title' => '', 'born_on' => '1951-11-21'),
-	 * 	array('first_name_' => 'Václav', 'last_name' => 'Cempírek', 'sex' => 'm', 'pre_title' => 'prof. Ing.', 'post_title' => 'Ph.D.', 'born_on' => '1954-05-06'),
+	 * 	array('first_name' => 'Vlasta', 'last_name' => 'Parkanová', 'sex' => 'f', 'pre_title' => 'JUDr.', 'post_title' => '', 'born_on' => '1951-11-21'),
+	 * 	array('first_name' => 'Václav', 'last_name' => 'Cempírek', 'sex' => 'm', 'pre_title' => 'prof. Ing.', 'post_title' => 'Ph.D.', 'born_on' => '1954-05-06'),
 	 * ))
 	 * \endcode creates new MPs and returns something like
 	 * \code

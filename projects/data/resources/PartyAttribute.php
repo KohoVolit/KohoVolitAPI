@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table PARTY_ATTRIBUTE that holds parties' additional attributes.
  *
- * Columns of table PARTY_ATTRIBUTE are: <code>party_id, name_, value_, lang, parl, since, until</code>.
+ * Columns of table PARTY_ATTRIBUTE are: <code>party_id, name, value, lang, parl, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>party_id, name_, lang, parl, since</code>.
+ * Primary key consists of columns <code>party_id, name, lang, parl, since</code>.
  */
 class PartyAttribute
 {
@@ -39,15 +39,15 @@ class PartyAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('party_id' => 83, 'name_' => 'logo'))
+	 * read(array('party_id' => 83, 'name' => 'logo'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => logo
-	 *             [value_] => parties/cz/cssd.gif
+	 *             [name] => logo
+	 *             [value] => parties/cz/cssd.gif
 	 *             [lang] => -
 	 *             [since] => -infinity
 	 *             [until] => infinity
@@ -73,13 +73,13 @@ class PartyAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('group_id' => 83, 'name_' => 'logo', 'value_' => 'parties/cz/cssd.gif'))
+	 * create(array('group_id' => 83, 'name' => 'logo', 'value' => 'parties/cz/cssd.gif'))
 	 * \endcode creates a new party attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [party_id] => 83
-	 *     [name_] => logo
+	 *     [name] => logo
 	 *     [lang] => -
 	 *     [parl] => -
 	 *     [since] => -infinity

@@ -4,7 +4,7 @@
  * Class Attribute encapsulates manipulation with underlying database table for attributes of entities through API.
  *
  * The class specifies columns common for all attribute tables and implements CRUD operations on those database tables.
- * Columns common for all attribute tables are: <em>name_, value_, lang, since, until</em>. All columns are allowed to write to.
+ * Columns common for all attribute tables are: <em>name, value, lang, since, until</em>. All columns are allowed to write to.
  */
  class Attribute
  {
@@ -21,8 +21,8 @@
 	public function __construct($table_properties)
 	{
 		$this->tableProperties = $table_properties;
-		$this->tableProperties['columns'] = array_merge($table_properties['columns'], array('name_', 'value_', 'lang', 'since', 'until'));
-		$this->tableProperties['pkey_columns'] = array_merge($table_properties['columns'], array('name_', 'lang', 'since'));
+		$this->tableProperties['columns'] = array_merge($table_properties['columns'], array('name', 'value', 'lang', 'since', 'until'));
+		$this->tableProperties['pkey_columns'] = array_merge($table_properties['columns'], array('name', 'lang', 'since'));
 	}
 
 	/**
@@ -30,20 +30,20 @@
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the attributes to select. Only attributes satisfying all prescribed column values are returned.
 	 *
-	 * \return An array of attributes, eg. <code>array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...)</code>.
+	 * \return An array of attributes, eg. <code>array(array('mp_id' => 32, 'name' => 'hobbies', 'value' => 'eating, smoking', ...), ...)</code>.
 	 */
 	public function read($params)
 	{
 		$query = new Query();
 		$query->buildSelect($this->tableProperties['name'], '*', $params, $this->tableProperties['columns']);
-//		$query->appendQuery(' order by ' . reset($this->tableProperties['columns']) . ', name_, lang, since desc');
+//		$query->appendQuery(' order by ' . reset($this->tableProperties['columns']) . ', name, lang, since desc');
 		return $query->execute();
 	}
 
 	/**
 	 * Create attributes with given values.
 	 *
-	 * \param $data An attribute to create given by array of pairs <em>column => value</em>. Alternatively, an array of such attributes. Eg. <code>array(array('mp_id' => 32, 'name_' => 'hobbies', 'value_' => 'eating, smoking', ...), ...)</code>.
+	 * \param $data An attribute to create given by array of pairs <em>column => value</em>. Alternatively, an array of such attributes. Eg. <code>array(array('mp_id' => 32, 'name' => 'hobbies', 'value' => 'eating, smoking', ...), ...)</code>.
 	 *
 	 * \return An array of primary key values of all created attributes.
 	 */

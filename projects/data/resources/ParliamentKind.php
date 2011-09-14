@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table PARLIAMENT_KIND that holds kinds of parliament.
  *
- * Columns of table PARLIAMENT_KIND are: <code>code, name_, short_name, description</code>.
+ * Columns of table PARLIAMENT_KIND are: <code>code, name, short_name, description</code>.
  *
  * All columns are allowed to write to.
  *
@@ -23,7 +23,7 @@ class ParliamentKind
 	{
 		$this->entity = new Entity(array(
 			'name' => 'parliament_kind',
-			'columns' => array('code', 'name_', 'short_name', 'description'),
+			'columns' => array('code', 'name', 'short_name', 'description'),
 			'pkey_columns' => array('code')
 		));
 	}
@@ -45,7 +45,7 @@ class ParliamentKind
 	 *     [0] => Array
 	 *         (
 	 *             [code] => national-upper
-	 *             [name_] => Upper house of the national parliament
+	 *             [name] => Upper house of the national parliament
 	 *             [short_name] => Upper house
 	 *             [description] => Upper house of the national level parliament - senate.
 	 *         )
@@ -66,7 +66,7 @@ class ParliamentKind
 	 *
 	 * \ex
 	 * \code
-	 * create(array('code' => 'local', 'name_' => 'Local parliament', 'short_name' => 'Local', 'description' => 'Parliament at a city level.'))
+	 * create(array('code' => 'local', 'name' => 'Local parliament', 'short_name' => 'Local', 'description' => 'Parliament at a city level.'))
 	 * \endcode creates a new parliament kind and returns
 	 * \code
 	 * Array

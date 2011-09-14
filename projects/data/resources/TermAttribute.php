@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table TERM_ATTRIBUTE that holds terms' additional attributes.
  *
- * Columns of table TERM_ATTRIBUTE are: <code>term_id, name_, value_, lang, parl, since, until</code>.
+ * Columns of table TERM_ATTRIBUTE are: <code>term_id, name, value, lang, parl, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>term_id, name_, lang, parl, since</code>.
+ * Primary key consists of columns <code>term_id, name, lang, parl, since</code>.
  */
 class TermAttribute
 {
@@ -39,15 +39,15 @@ class TermAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('term_id' => 7, 'name_' => 'source_code', 'parl' => 'cz/senat'))
+	 * read(array('term_id' => 7, 'name' => 'source_code', 'parl' => 'cz/senat'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => source_code
-	 *             [value_] => 8
+	 *             [name] => source_code
+	 *             [value] => 8
 	 *             [lang] => -
 	 *             [since] => -infinity
 	 *             [until] => infinity
@@ -73,13 +73,13 @@ class TermAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('term_id' => 7, 'name_' => 'source_code', 'value_' => '8', 'parl' => 'cz/senat'))
+	 * create(array('term_id' => 7, 'name' => 'source_code', 'value' => '8', 'parl' => 'cz/senat'))
 	 * \endcode creates a new term attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [term_id] => 7
-	 *     [name_] => source_code
+	 *     [name] => source_code
 	 *     [lang] => -
 	 *     [parl] => cz/senat
 	 *     [since] => -infinity

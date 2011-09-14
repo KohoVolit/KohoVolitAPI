@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table GROUP_KIND_ATTRIBUTE that holds group kinds' additional attributes.
  *
- * Columns of table GROUP_KIND_ATTRIBUTE are: <code>group_kind_code, name_, value_, lang, parl, since, until</code>.
+ * Columns of table GROUP_KIND_ATTRIBUTE are: <code>group_kind_code, name, value, lang, parl, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>group_kind_code, name_, lang, parl, since</code>.
+ * Primary key consists of columns <code>group_kind_code, name, lang, parl, since</code>.
  */
 class GroupKindAttribute
 {
@@ -39,15 +39,15 @@ class GroupKindAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('group_kind_code' => 'commission, 'name_' => 'icon'))
+	 * read(array('group_kind_code' => 'commission, 'name' => 'icon'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => icon
-	 *             [value_] => commision.gif
+	 *             [name] => icon
+	 *             [value] => commision.gif
 	 *             [lang] => -
 	 *             [since] => -infinity
 	 *             [until] => infinity
@@ -73,13 +73,13 @@ class GroupKindAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('group_kind_code' => commision, 'name_' => 'icon', 'value_' => 'commision.gif'))
+	 * create(array('group_kind_code' => commision, 'name' => 'icon', 'value' => 'commision.gif'))
 	 * \endcode creates a new group kind attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [group_kind_code] => commision
-	 *     [name_] => icon
+	 *     [name] => icon
 	 *     [lang] => -
 	 *     [parl] => -
 	 *     [since] => -infinity

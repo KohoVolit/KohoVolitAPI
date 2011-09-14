@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table MP_ATTRIBUTE that holds MPs' additional attributes.
  *
- * Columns of table MP_ATTRIBUTE are: <code>gmp_id, name_, value_, lang, parl, since, until</code>.
+ * Columns of table MP_ATTRIBUTE are: <code>gmp_id, name, value, lang, parl, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>mp_id, name_, lang, parl, since</code>.
+ * Primary key consists of columns <code>mp_id, name, lang, parl, since</code>.
  */
 class MpAttribute
 {
@@ -39,15 +39,15 @@ class MpAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('mp_id' => 556, 'name_' => 'email', 'parl' => 'cz/psp'))
+	 * read(array('mp_id' => 556, 'name' => 'email', 'parl' => 'cz/psp'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => email
-	 *             [value_] => dedicf@psp.cz
+	 *             [name] => email
+	 *             [value] => dedicf@psp.cz
 	 *             [lang] => -
 	 *             [since] => 2010-05-29 00:00:00
 	 *             [until] => infinity
@@ -73,13 +73,13 @@ class MpAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('mp_id' => 556, 'name_' => 'assistant', 'value_' => 'Martin Schuster, Richard Střelka', 'parl' => 'cz/psp', 'since' => '2011-05-29'))
+	 * create(array('mp_id' => 556, 'name' => 'assistant', 'value' => 'Martin Schuster, Richard Střelka', 'parl' => 'cz/psp', 'since' => '2011-05-29'))
 	 * \endcode creates a new MP attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [mp_id] => 556
-	 *     [name_] => assistant
+	 *     [name] => assistant
 	 *     [lang] => -
 	 *     [parl] => cz/psp
 	 *     [since] => 2011-05-29 00:00:00

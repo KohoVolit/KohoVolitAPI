@@ -27,7 +27,7 @@ class MessageToMp
 	 *         (
 	 *             [id] => 1030
 	 *             [subject] => My law proposal
-	 *             [body_] => Dear Mr. ...
+	 *             [body] => Dear Mr. ...
 	 *             [is_public] => yes
 	 *             [sender_name] => Bilbo Baggins
 	 *             [sender_address] => Bag End, Hobbiton 
@@ -46,13 +46,13 @@ class MessageToMp
 		$query = new Query();
 		$query->setQuery(
 			"select\n" .
-			"	m.id, m.subject, m.body_, m.is_public, m.sender_name, sender_address, mp.id as mp_id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation\n" .
+			"	m.id, m.subject, m.\"body\", m.is_public, m.sender_name, sender_address, mp.id as mp_id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation\n" .
 			"from\n" .
 			"	message as m\n" .
 			"	join response as r on r.message_id = m.id\n" .
 			"	join mp on mp.id = r.mp_id\n" .
 			"where\n" .
-			"	m.state_ = 'sent'\n" .
+			"	m.\"state\" = 'sent'\n" .
 			"	and r.mp_id = $1\n" .
 			"	and r.parliament_code = $2"
 		);

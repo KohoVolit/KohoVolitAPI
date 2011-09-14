@@ -5,11 +5,11 @@
  *
  * Provides an interface to database table GROUP_ATTRIBUTE that holds groups' additional attributes.
  *
- * Columns of table GROUP_ATTRIBUTE are: <code>group_id, name_, value_, lang, parl, since, until</code>.
+ * Columns of table GROUP_ATTRIBUTE are: <code>group_id, name, value, lang, parl, since, until</code>.
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>group_id, name_, lang, parl, since</code>.
+ * Primary key consists of columns <code>group_id, name, lang, parl, since</code>.
  */
 class GroupAttribute
 {
@@ -39,15 +39,15 @@ class GroupAttribute
 	 *
 	 * \ex
 	 * \code
-	 * read(array('group_id' => 54, 'name_' => 'source_code', 'parl' => 'cz/psp'))
+	 * read(array('group_id' => 54, 'name' => 'source_code', 'parl' => 'cz/psp'))
 	 * \endcode returns
 	 * \code
 	 * Array
 	 * (
 	 *     [0] => Array
 	 *         (
-	 *             [name_] => source_code
-	 *             [value_] => 387
+	 *             [name] => source_code
+	 *             [value] => 387
 	 *             [lang] => -
 	 *             [since] => 2010-06-20 00:00:00
 	 *             [until] => infinity
@@ -73,13 +73,13 @@ class GroupAttribute
 	 *
 	 * \ex
 	 * \code
-	 * create(array('group_id' => 54, 'name_' => 'source_code', 'value_' => '387', 'parl' => 'cz/psp', 'since' => '2010-06-20'))
+	 * create(array('group_id' => 54, 'name' => 'source_code', 'value' => '387', 'parl' => 'cz/psp', 'since' => '2010-06-20'))
 	 * \endcode creates a new group attribute and returns
 	 * \code
 	 * Array
 	 * (
 	 *     [group_id] => 54
-	 *     [name_] => source_code
+	 *     [name] => source_code
 	 *     [lang] => -
 	 *     [parl] => cz/psp
 	 *     [since] => 2010-06-20 00:00:00

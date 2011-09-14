@@ -1,7 +1,7 @@
 -- KohoVolit.eu Generación Cuarta
 -- inserts into tables of package GROUP
 
-insert into group_kind (code, name_, short_name, description, subkind_of) values
+insert into group_kind (code, "name", short_name, description, subkind_of) values
 ('parliament', 'Parliament', 'Parliament', 'Parliament at any administrative level.', null),
 ('political group', 'Political group', 'Group', 'Political group in a parliament.', 'parliament'),
 ('committee', 'Parliamentary committee', 'Committee', 'Committee of a parliament.', 'parliament'),
@@ -12,65 +12,65 @@ insert into group_kind (code, name_, short_name, description, subkind_of) values
 ('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament'),
 ('other', 'Other group', 'Other', 'Other group.', 'parliament');
 
-insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
-('parliament', 'sk', 'name_', 'Parlament'),
+insert into group_kind_attribute (group_kind_code, lang, "name", "value") values
+('parliament', 'sk', 'name', 'Parlament'),
 ('parliament', 'sk', 'short_name', 'Parlament'),
 ('parliament', 'sk', 'description', 'Parlament na ľubovoľnej administratívnej úrovni.'),
-('political group', 'sk', 'name_', 'Poslanecký klub'),
+('political group', 'sk', 'name', 'Poslanecký klub'),
 ('political group', 'sk', 'short_name', 'Klub'),
 ('political group', 'sk', 'description', 'Poslanecký klub v parlamente.'),
-('committee', 'sk', 'name_', 'Parlamentný výbor'),
+('committee', 'sk', 'name', 'Parlamentný výbor'),
 ('committee', 'sk', 'short_name', 'Výbor'),
 ('committee', 'sk', 'description', 'Výbor parlamentu.'),
-('subcommittee', 'sk', 'name_', 'Parlamentný podvýbor'),
+('subcommittee', 'sk', 'name', 'Parlamentný podvýbor'),
 ('subcommittee', 'sk', 'short_name', 'Podvýbor'),
 ('subcommittee', 'sk', 'description', 'Podvýbor výboru parlamentu.'),
-('commission', 'sk', 'name_', 'Parlamentná komisia'),
+('commission', 'sk', 'name', 'Parlamentná komisia'),
 ('commission', 'sk', 'short_name', 'Komisia'),
 ('commission', 'sk', 'description', 'Komisia parlamentu.'),
-('delegation', 'sk', 'name_', 'Parlamentná delegácia'),
+('delegation', 'sk', 'name', 'Parlamentná delegácia'),
 ('delegation', 'sk', 'short_name', 'Delegácia'),
 ('delegation', 'sk', 'description', 'Delegácia parlamentu.'),
-('friendship group', 'sk', 'name_', 'Medziparlamentná skupina'),
+('friendship group', 'sk', 'name', 'Medziparlamentná skupina'),
 ('friendship group', 'sk', 'short_name', 'Medziparlament'),
 ('friendship group', 'sk', 'description', 'Medziparlamentná skupina priateľstva s parlamentom inej krajiny.'),
-('working group', 'sk', 'name_', 'Pracovná skupina'),
+('working group', 'sk', 'name', 'Pracovná skupina'),
 ('working group', 'sk', 'short_name', 'Prac. skupina'),
 ('working group', 'sk', 'description', 'Pracovná alebo expertná skupina.'),
-('other', 'sk', 'name_', 'Iná skupina'),
+('other', 'sk', 'name', 'Iná skupina'),
 ('other', 'sk', 'short_name', 'Iná'),
 ('other', 'sk', 'description', 'Iná skupina.');
 
-insert into group_kind_attribute (group_kind_code, lang, name_, value_) values
-('parliament', 'cs', 'name_', 'Parlament'),
+insert into group_kind_attribute (group_kind_code, lang, "name", "value") values
+('parliament', 'cs', 'name', 'Parlament'),
 ('parliament', 'cs', 'short_name', 'Parlament'),
 ('parliament', 'cs', 'description', 'Parlament na libovolné administrativní úrovni.'),
-('political group', 'cs', 'name_', 'Poslanecký klub'),
+('political group', 'cs', 'name', 'Poslanecký klub'),
 ('political group', 'cs', 'short_name', 'Klub'),
 ('political group', 'cs', 'description', 'Poslanecký klub v parlamentu.'),
-('committee', 'cs', 'name_', 'Parlamentní výbor'),
+('committee', 'cs', 'name', 'Parlamentní výbor'),
 ('committee', 'cs', 'short_name', 'Výbor'),
 ('committee', 'cs', 'description', 'Výbor parlamentu.'),
-('subcommittee', 'cs', 'name_', 'Parlamentní podvýbor'),
+('subcommittee', 'cs', 'name', 'Parlamentní podvýbor'),
 ('subcommittee', 'cs', 'short_name', 'Podvýbor'),
 ('subcommittee', 'cs', 'description', 'Podvýbor výboru parlamentu.'),
-('commission', 'cs', 'name_', 'Parlamentní komise'),
+('commission', 'cs', 'name', 'Parlamentní komise'),
 ('commission', 'cs', 'short_name', 'Komise'),
 ('commission', 'cs', 'description', 'Komise parlamentu.'),
-('delegation', 'cs', 'name_', 'Parlamentní delegace'),
+('delegation', 'cs', 'name', 'Parlamentní delegace'),
 ('delegation', 'cs', 'short_name', 'Delegace'),
 ('delegation', 'cs', 'description', 'Delegace parlamentu.'),
-('friendship group', 'cs', 'name_', 'Meziparlamentní skupina'),
+('friendship group', 'cs', 'name', 'Meziparlamentní skupina'),
 ('friendship group', 'cs', 'short_name', 'Meziparlament'),
 ('friendship group', 'cs', 'description', 'Meziparlamentní skupina v rámci MPU.'),
-('working group', 'cs', 'name_', 'Pracovní skupina'),
+('working group', 'cs', 'name', 'Pracovní skupina'),
 ('working group', 'cs', 'short_name', 'Prac. skupina'),
 ('working group', 'cs', 'description', 'Pracovní nebo expertní skupina.'),
-('other', 'cs', 'name_', 'Jiná skupina'),
+('other', 'cs', 'name', 'Jiná skupina'),
 ('other', 'cs', 'short_name', 'Jiná'),
 ('other', 'cs', 'description', 'Jiná skupina.');
 
-insert into role_ (code, male_name, female_name, description) values
+insert into "role" (code, male_name, female_name, description) values
 ('member', 'member', 'member', null),
 ('substitute', 'substitute', 'substitute', null),
 ('chairman', 'chairman', 'chairwoman', null),
@@ -84,7 +84,7 @@ insert into role_ (code, male_name, female_name, description) values
 ('deputy-treasurer', 'deputy-treasurer', 'deputy-treasurer', null),
 ('quaestor', 'quaestor', 'quaestor', null);
 
-insert into role_attribute (role_code, lang, name_, value_) values
+insert into role_attribute (role_code, lang, "name", "value") values
 ('member', 'sk', 'male_name', 'člen'),
 ('member', 'sk', 'female_name', 'členka'),
 ('substitute', 'sk', 'male_name', 'náhradník'),
@@ -110,7 +110,7 @@ insert into role_attribute (role_code, lang, name_, value_) values
 ('quaestor', 'sk', 'male_name', 'kvestor'),
 ('quaestor', 'sk', 'female_name', 'kvestorka');
 
-insert into role_attribute (role_code, lang, name_, value_) values
+insert into role_attribute (role_code, lang, "name", "value") values
 ('member', 'cs', 'male_name', 'člen'),
 ('member', 'cs', 'female_name', 'členka'),
 ('substitute', 'cs', 'male_name', 'náhradník'),

@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table RESPONSE that holds responses of MPs to received messages.
  *
- * Columns of table RESPONSE are: <code>message_id, mp_id, parliament_code, subject, body_, full_email_data, received_on, received_privately, reply_code, survey_code</code>.
+ * Columns of table RESPONSE are: <code>message_id, mp_id, parliament_code, subject, body, full_email_data, received_on, received_privately, reply_code, survey_code</code>.
  *
  * All columns are allowed to write to.
  *
@@ -23,7 +23,7 @@ class Response
 	{
 		$this->entity = new Entity(array(
 			'name' => 'response',
-			'columns' => array('message_id', 'mp_id', 'parliament_code', 'subject', 'body_', 'full_email_data', 'received_on', 'received_privately', 'reply_code', 'survey_code'),
+			'columns' => array('message_id', 'mp_id', 'parliament_code', 'subject', 'body', 'full_email_data', 'received_on', 'received_privately', 'reply_code', 'survey_code'),
 			'pkey_columns' => array('message_id', 'mp_id', 'parliament_code')
 		));
 	}
@@ -48,7 +48,7 @@ class Response
 	 *             [mp_id] => 712
 	 *             [parliament_code] => me/shire
 	 *             [subject] => Re: My law proposal
-	 *             [body_] => Dear Mr. Baggins ...
+	 *             [body] => Dear Mr. Baggins ...
 	 *             [full_email_data] => From ...
 	 *             [received_on] => 2011-05-29 16:08:32
 	 *             [received_privately] => 

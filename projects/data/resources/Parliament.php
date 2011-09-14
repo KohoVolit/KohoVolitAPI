@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table PARLIAMENT that holds parliaments.
  *
- * Columns of table PARLIAMENT are: <code>code, name_, short_name, description, parliament_kind_code, country_code, default_language, last_updated_on</code>.
+ * Columns of table PARLIAMENT are: <code>code, name, short_name, description, parliament_kind_code, country_code, default_language, last_updated_on</code>.
  *
  * All columns are allowed to write to.
  *
@@ -23,7 +23,7 @@ class Parliament
 	{
 		$this->entity = new Entity(array(
 			'name' => 'parliament',
-			'columns' => array('code', 'name_', 'short_name', 'description', 'parliament_kind_code', 'country_code', 'default_language', 'last_updated_on'),
+			'columns' => array('code', 'name', 'short_name', 'description', 'parliament_kind_code', 'country_code', 'default_language', 'last_updated_on'),
 			'pkey_columns' => array('code')
 		));
 	}
@@ -45,7 +45,7 @@ class Parliament
 	 *     [0] => Array
 	 *         (
 	 *             [code] => cz/psp
-	 *             [name_] => Poslanecká sněmovna Parlamentu České republiky
+	 *             [name] => Poslanecká sněmovna Parlamentu České republiky
 	 *             [short_name] => PSP ČR
 	 *             [description] => Dolní komora parlamentu České republiky.
 	 *             [parliament_kind_code] => national-lower
@@ -72,7 +72,7 @@ class Parliament
 	 *
 	 * \ex
 	 * \code
-	 * create(array('code' => 'cz/senat', 'name_' => 'Senát Parlamentu České republiky', 'short_name' => 'Senát ČR', 'parliament_kind_code' => 'national-upper', 'country_code' => 'cz', 'default_language' => 'cs'))
+	 * create(array('code' => 'cz/senat', 'name' => 'Senát Parlamentu České republiky', 'short_name' => 'Senát ČR', 'parliament_kind_code' => 'national-upper', 'country_code' => 'cz', 'default_language' => 'cs'))
 	 * \endcode creates a new parliament and returns
 	 * \code
 	 * Array
