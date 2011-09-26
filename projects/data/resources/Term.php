@@ -54,7 +54,7 @@ class Term
 	 *             [description] => 
 	 *             [country_code] => cz
 	 *             [parliament_kind_code] => national-lower
-	 *             [since] => 2010-05-29 00:00:00
+	 *             [since] => 2010-05-29 12:00:00
 	 *             [until] => infinity
 	 *         )
 	 *

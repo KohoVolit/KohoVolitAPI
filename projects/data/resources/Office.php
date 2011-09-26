@@ -54,7 +54,7 @@ class Office
 	 *             [latitude] => 49.0701727
 	 *             [longitude] => 17.4594702
 	 *             [relevance] => 
-	 *             [since] => 2011-05-26 00:00:00
+	 *             [since] => 2011-05-26 12:00:00
 	 *             [until] => infinity
 	 *         )
 	 *

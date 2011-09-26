@@ -8,6 +8,10 @@ class UpdaterCzPsp
 	/// API client reference used for all API calls
 	private $api;
 
+	/// time and time zone used when storing dates into 'timestamp with time zone' fields
+	const TIME_ZONE = 'Europe/Prague';
+	const NOON = ' 12:00 Europe/Prague';
+
 	/// id and source code (ie. id on the official website) of the term of office to update the data for
 	private $term_id;
 	private $term_src_code;
@@ -118,7 +122,8 @@ class UpdaterCzPsp
 				// skip wrong groups on the official cz/psp parliament website
 				if (($src_group['id'] == 864 && $this->term_src_code != '6') ||
 					($src_group['id'] == 728 && $this->term_src_code == '4') ||
-					(strcmp($src_group['since'], $this->term_until) > 0 || isset($src_group['until']) && strcmp($src_group['until'], $this->term_since) < 0))
+					(strcmp($src_group['since'] . self::NOON, $this->term_until) > 0 ||
+						isset($src_group['until']) && strcmp($src_group['until'] . self::NOON, $this->term_since) < 0))
 				{
 					$this->log->write('Skipping wrong group (' . print_r($src_group, true) . ") in MP (source id = {$src_mp['id']}).", Log::ERROR);
 					continue;
@@ -187,7 +192,9 @@ class UpdaterCzPsp
 				'description' => 'Dolní komora parlamentu České republiky.',
 				'parliament_kind_code' => 'national-lower',
 				'country_code' => 'cz',
-				'default_language' => 'cs'
+				'weight' => 1.0,
+				'time_zone' => self::TIME_ZONE,
+				'address_representatives_function' => 'address_representatives_national_lower'
 			));
 
 			// english translation
@@ -234,28 +241,28 @@ class UpdaterCzPsp
 
 		// if there is no such term in the term list, terminate with error (class Log writing a message with level FATAL_ERROR throws an exception)
 		if (!isset($term_to_update))
-			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check " . API_DOMAIN . "/data/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
+			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check " . API_DOMAIN . "/data/Scraper?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
 
 		// if the term is present in the database, update it and get its id
 		$src_code_in_db = $this->api->readOne('TermAttribute', array('name' => 'source_code', 'value' => $term_src_code, 'parl' => $this->parliament_code));
 		if ($src_code_in_db)
 		{
 			$term_id = $src_code_in_db['term_id'];
-			$data = array('name' => $term_to_update['name'], 'since' => $term_to_update['since']);
+			$data = array('name' => $term_to_update['name'], 'since' => $term_to_update['since'] . self::NOON);
 			if (isset($term_to_update['short_name']))
 				$data['short_name'] = $term_to_update['short_name'];
 			if (isset($term_to_update['until']))
-				$data['until'] = $term_to_update['until'];
+				$data['until'] = $term_to_update['until'] . self::NOON;
 			$this->api->update('Term', array('id' => $term_id), $data);
 		}
 		else
 		{
 			// if term is not in the database, insert it and get its id
-			$data = array('name' => $term_to_update['name'], 'country_code' => 'cz', 'parliament_kind_code' => 'national-lower', 'since' => $term_to_update['since']);
+			$data = array('name' => $term_to_update['name'], 'country_code' => 'cz', 'parliament_kind_code' => 'national-lower', 'since' => $term_to_update['since'] . self::NOON);
 			if (isset($term_to_update['short_name']))
 				$data['short_name'] = $term_to_update['short_name'];
 			if (isset($term_to_update['until']))
-				$data['until'] = $term_to_update['until'];
+				$data['until'] = $term_to_update['until'] . self::NOON;
 			$term_pkey = $this->api->create('Term', $data);
 			$term_id = $term_pkey['id'];
 
@@ -264,10 +271,10 @@ class UpdaterCzPsp
 		}
 
 		// prepare start and end dates of this term and start date of the following term
-		$this->term_since = $term_to_update['since'];
-		$this->term_until = isset($term_to_update['until']) ? $term_to_update['until'] : '9999-12-31';	//	'infinity' cannot be used due to date comaprisons by strcmp
+		$this->term_since = $term_to_update['since'] . self::NOON;
+		$this->term_until = isset($term_to_update['until']) ? $term_to_update['until'] . self::NOON : '9999-12-31';	//	'infinity' cannot be used due to date comparisons by strcmp
 		$index = array_search($term_to_update, $term_list);
-		$this->next_term_since = isset($term_list[$index+1]) ? $term_list[$index+1]['since'] : 'infinity';
+		$this->next_term_since = isset($term_list[$index+1]) ? $term_list[$index+1]['since'] . self::NOON : 'infinity';
 
 		// set the effective date which the update process actually runs to
 		$this->update_date = (isset($params['term'])) ? $this->term_since : 'now';
@@ -679,20 +686,20 @@ class UpdaterCzPsp
 		$this->log->write("Updating membership (mp_id=$mp_id, group_id=$group_id, role_code='$role_code', since={$src_group['since']}).", Log::DEBUG);
 
 		// if membership is already present in database, update its details
-		$memb = $this->api->readOne('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'since' => $src_group['since']));
+		$memb = $this->api->readOne('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'since' => $src_group['since'] . self::NOON));
 		if ($memb)
 		{
 			$data = array('constituency_id' => $constituency_id);
 			if (isset($src_group['until']))
-				$data['until'] = $src_group['until'];
-			$this->api->update('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'since' => $src_group['since']), $data);
+				$data['until'] = $src_group['until'] . self::NOON;
+			$this->api->update('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'since' => $src_group['since'] . self::NOON), $data);
 		}
 		// if it is not present, insert it
 		else
 		{
-			$data = array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'constituency_id' => $constituency_id, 'since' => $src_group['since']);
+			$data = array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'constituency_id' => $constituency_id, 'since' => $src_group['since'] . self::NOON);
 			if (isset($src_group['until']))
-				$data['until'] = $src_group['until'];
+				$data['until'] = $src_group['until'] . self::NOON;
 			$this->api->create('MpInGroup', $data);
 		}
 	}

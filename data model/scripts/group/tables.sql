@@ -49,8 +49,8 @@ create table mp_in_group
 	role_code varchar references "role" on delete restrict on update cascade default 'member' ,
 	party_id integer references party on delete restrict on update cascade,
 	constituency_id integer references constituency on delete restrict on update cascade,
-	since timestamp not null default '-infinity',
-	until timestamp not null default 'infinity',
+	since timestamp with time zone not null default '-infinity',
+	until timestamp with time zone not null default 'infinity',
 	primary key (mp_id, group_id, role_code, since),
 	check (since <= until)
 );

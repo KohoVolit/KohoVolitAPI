@@ -10,17 +10,15 @@ class Utils
 	 */
 	public static function dateToIso($date, $language)
 	{
-		$date = str_replace('&nbsp;', '', $date);
-		$date = str_replace('. ', '.', $date);
-		if (empty($date)) return null;
+		$date = str_replace('&nbsp;', ' ', $date);
 		if ($language == 'cs' || $language == 'sk')
-			$input_format = 'j.n.Y';
+			$date = preg_replace('#(\d{1,2})\. *(\d{1,2})\. *(\d{4}) *#', '\3-0\2-0\1', $date);
 		else if ($language == 'en')
-			$input_format = 'n/j/Y';
+			$date = preg_replace('#(\d{1,2}/(\d{1,2})/(\d{4})#', '\3-0\1-0\2', $date);
 		else
-			return null;
-		$datetime = DateTime::createFromFormat($input_format, $date);
-		return $datetime->format('Y-m-d');
+			$date = null;
+		$date = preg_replace('#-0(\d{2})#', '-\1', $date);
+		return $date;
 	}
 
 	/**

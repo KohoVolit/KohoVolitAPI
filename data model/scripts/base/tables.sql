@@ -35,8 +35,8 @@ create table "attribute"
 	"name" varchar,
 	"value" varchar,
 	lang varchar references "language" on delete restrict on update cascade default '-',
-	since timestamp not null default '-infinity',
-	until timestamp not null default 'infinity',
+	since timestamp with time zone not null default '-infinity',
+	until timestamp with time zone not null default 'infinity',
 	check (since <= until)
 );
 

@@ -302,7 +302,7 @@ class ScraperCzSenat
 	    foreach ((array) $term_lines as $line) {
 		  $line = str_replace('&nbsp;',' ',$line);
 		  $term_code = ScraperUtils::getFirstString($line,'>','.');
-		  $term['term_code'] = $term_code;
+		  $term['id'] = $term_code;
 		  $line_ar = explode(' ',$line);
 		  $term['name'] = $term_code . '. ' . $line_ar[1] . ' ' . $line_ar[2];
 		  $date = new DateTime($line_ar[3]);
@@ -313,7 +313,7 @@ class ScraperCzSenat
 		  } else {
 		    $term['until'] = '';
 		  }
-		  $result['term']['term_'.$term_code] = $term;
+		  $result['term'][] = $term;
 		}
 		$result['current_term'] = $term;
 	  }

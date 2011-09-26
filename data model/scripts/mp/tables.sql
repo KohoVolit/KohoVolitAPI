@@ -27,8 +27,8 @@ create table office
 	latitude double precision,
 	longitude double precision,
 	relevance real,
-	since timestamp not null default '-infinity',
-	until timestamp not null default 'infinity',
+	since timestamp with time zone not null default '-infinity',
+	until timestamp with time zone not null default 'infinity',
 	primary key (mp_id, parliament_code, address, since),
 	check (since <= until)
 );

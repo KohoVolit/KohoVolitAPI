@@ -17,7 +17,9 @@ create table parliament
 	description text,
 	parliament_kind_code varchar references parliament_kind on delete restrict on update cascade,
 	country_code varchar references country on delete restrict on update cascade,
-	default_language varchar references "language" on delete restrict on update cascade,
+	weight real,
+	time_zone varchar,
+	address_representatives_function varchar,
 	last_updated_on timestamp
 );
 
@@ -29,8 +31,8 @@ create table term
 	description text,
 	country_code varchar not null references country on delete restrict on update cascade,
 	parliament_kind_code varchar not null references parliament_kind on delete restrict on update cascade,
-	since timestamp not null default '-infinity',
-	until timestamp not null default 'infinity',
+	since timestamp with time zone not null default '-infinity',
+	until timestamp with time zone not null default 'infinity',
 	unique ("name", country_code, parliament_kind_code),
 	check (since <= until)
 );
@@ -42,8 +44,8 @@ create table constituency
 	short_name varchar,
 	description text,
 	parliament_code varchar not null references parliament on delete cascade on update cascade,
-	since timestamp not null default '-infinity',
-	until timestamp not null default 'infinity',
+	since timestamp with time zone not null default '-infinity',
+	until timestamp with time zone not null default 'infinity',
 	unique ("name", parliament_code, since),
 	check (since <= until)
 );

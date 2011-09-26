@@ -49,7 +49,7 @@ class GroupAttribute
 	 *             [name] => source_code
 	 *             [value] => 387
 	 *             [lang] => -
-	 *             [since] => 2010-06-20 00:00:00
+	 *             [since] => 2010-06-20 12:00:00
 	 *             [until] => infinity
 	 *             [group_id] => 54
 	 *             [parl] => cz/psp
@@ -82,7 +82,7 @@ class GroupAttribute
 	 *     [name] => source_code
 	 *     [lang] => -
 	 *     [parl] => cz/psp
-	 *     [since] => 2010-06-20 00:00:00
+	 *     [since] => 2010-06-20 12:00:00
 	 * )
 	 * \endcode
 	 */

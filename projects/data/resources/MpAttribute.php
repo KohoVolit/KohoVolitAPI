@@ -49,7 +49,7 @@ class MpAttribute
 	 *             [name] => email
 	 *             [value] => dedicf@psp.cz
 	 *             [lang] => -
-	 *             [since] => 2010-05-29 00:00:00
+	 *             [since] => 2010-05-29 12:00:00
 	 *             [until] => infinity
 	 *             [mp_id] => 556
 	 *             [parl] => cz/psp
@@ -82,7 +82,7 @@ class MpAttribute
 	 *     [name] => assistant
 	 *     [lang] => -
 	 *     [parl] => cz/psp
-	 *     [since] => 2011-05-29 00:00:00
+	 *     [since] => 2011-05-29 12:00:00
 	 * )
 	 * \endcode
 	 */

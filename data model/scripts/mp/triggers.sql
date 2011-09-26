@@ -46,7 +46,7 @@ create trigger office_temporal_check
 create or replace function mp_archive_value(a_mp_id integer, a_column_name varchar, a_column_value varchar, a_update_date timestamp)
 returns void as $$
 declare
-	l_since timestamp;
+	l_since timestamp with time zone;
 begin
 	select until into l_since from mp_attribute where mp_id = a_mp_id and "name" = a_column_name and lang = '-' and parl = '-' order by until desc limit 1;
 	if not found then l_since = '-infinity'; end if;

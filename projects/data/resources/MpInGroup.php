@@ -40,7 +40,7 @@ class MpInGroup
 	 *
 	 * \ex
 	 * \code
-	 * read(array('mp_id' => 664), '#datetime' => 'now')
+	 * read(array('mp_id' => 664, '#datetime' => 'now'))
 	 * \endcode returns
 	 * \code
 	 * Array
@@ -52,7 +52,7 @@ class MpInGroup
 	 *             [role_code] => member
 	 *             [party_id] => 
 	 *             [constituency_id] => 14
-	 *             [since] => 2010-05-29 00:00:00
+	 *             [since] => 2010-05-29 12:00:00
 	 *             [until] => infinity
 	 *         )
 	 *
@@ -63,7 +63,7 @@ class MpInGroup
 	 *             [role_code] => member
 	 *             [party_id] => 
 	 *             [constituency_id] => 
-	 *             [since] => 2010-06-10 00:00:00
+	 *             [since] => 2010-06-10 12:00:00
 	 *             [until] => infinity
 	 *         )
 	 *
@@ -106,7 +106,7 @@ class MpInGroup
 	 *             [mp_id] => 664
 	 *             [group_id] => 576
 	 *             [role_code] => member
-	 *             [since] => 2011-01-01 00:00:00
+	 *             [since] => 2011-01-01 12:00:00
 	 *         )
 	 *
 	 * )

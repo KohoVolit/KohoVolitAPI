@@ -8,9 +8,21 @@ class UpdaterCzSenat
   	/// API client reference used for all API calls
 	private $api;
 
+	/// time and time zone used when storing dates into 'timestamp with time zone' fields
+	const TIME_ZONE = 'Europe/Prague';
+	const NOON = ' 12:00 Europe/Prague';
+
 	/// id and source code (ie. id on the official website) of the term of office to update the data for
 	private $term_id;
 	private $term_src_code;
+
+	/// start date of the term of office to update the data for and start date of the next term
+	private $term_since;
+	private $next_term_since;
+
+	/// effective date which the update process actually runs to
+	private $update_date;
+	private $date;	// class DateTime
 
 	/// code of this updated parliament
 	private $parliament_code;
@@ -24,11 +36,6 @@ class UpdaterCzSenat
 	const MP_DISAMBIGUATE = 0x4;
 	const MP_UPDATE = 0x8;
 
-	/// date for update
-	private $date; //class DateTime
-	private $update_date; //formatted date/time
-
-
 	/**
 	 * Creates API client reference to use during the whole update process.
 	 */
@@ -39,12 +46,16 @@ class UpdaterCzSenat
 		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
 
-		//convert $param['date'] into DateTime object, default = today
+		date_default_timezone_set(self::TIME_ZONE);
+
+		//convert $param['date'] into DateTime object, default = now
 		if (isset($params['date']))
+		{
 	  		$this->date = new DateTime($params['date']);
+			$this->date->setTime(12, 0);
+		}
 		else
 	  		$this->date = new DateTime();
-		//$this->update_date = $this->date->format('Y-m-d H:i:s');
 	}
 
 	/**
@@ -142,7 +153,7 @@ class UpdaterCzSenat
 			    $const_id = null;
 
 			  $this->updateMembership($mp_id, $group_id, $role_code, $const_id);
-			  
+
 			  //every person with other role than 'member' (e.g. 'chairman' must be also a 'member')
 			  if ($role_code != 'member') {
 			    //Senát is already updated with constituency
@@ -160,7 +171,7 @@ class UpdaterCzSenat
 		}
 		$this->closeMemberships($marked);
 		$this->closeOffice($marked);
-		
+
 		//update areas only if param 'area' is set (approx. 2 hours of updating)
 		if (isset($params['area']))
 		  $this->updateAreas();
@@ -290,7 +301,7 @@ class UpdaterCzSenat
 	  }
 
 	}
-	
+
 	/**
 	* correct exception in Praha regions into db format
 	*
@@ -412,17 +423,17 @@ class UpdaterCzSenat
 	  $parl_id = $parl_db['id'];
 
 	    //get all mps in Senát
-	  $mps_db = $this->api->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', '#datetime' => $this->date->format('Y-m-d')));
+	  $mps_db = $this->api->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', '#datetime' => $this->update_date));
 
 	  //loop through all mps
 	  foreach((array) $mps_db as $row) {
 	    if (!isset($marked[$row['mp_id']])) { //mp no longer in parliament
 	      //get his office(s)
-	      $offices = $this->api->read('Office', array('mp_id' => $row['mp_id'], 'parliament_code' => $this->parliament_code, '#datetime' => $this->date->format('Y-m-d')));
+	      $offices = $this->api->read('Office', array('mp_id' => $row['mp_id'], 'parliament_code' => $this->parliament_code, '#datetime' => $this->update_date));
 	      //close them
 	      foreach((array) $offices as $office) {
 	        $this->log->write("Closing office (mp_id={$row['mp_id']}, address={$office['address']}, since={$row['since']}).", Log::DEBUG);
-	      $this->api->update('Office', array('mp_id' => $row['mp_id'], 'address' => $office['address'], 'since' => $office['since'], 'parliament_code' => $this->parliament_code), array('until' => $this->date->format('Y-m-d')));
+	      $this->api->update('Office', array('mp_id' => $row['mp_id'], 'address' => $office['address'], 'since' => $office['since'], 'parliament_code' => $this->parliament_code), array('until' => $this->update_date));
 	      }
 	    }
 
@@ -441,12 +452,12 @@ class UpdaterCzSenat
 	  $parl_id = $parl_db['id'];
 
 	    //get all mps in Senát
-	  $mps_db = $this->api->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', '#datetime' => $this->date->format('Y-m-d')));
+	  $mps_db = $this->api->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', '#datetime' => $this->update_date));
 
 	  //loop through all mps
 	  foreach((array) $mps_db as $row) {
 	    //get all memberships of MP
-	    $membs = $this->api->read('MpInGroup', array('mp_id' => $row['mp_id'], '#datetime' => $this->date->format('Y-m-d')));
+	    $membs = $this->api->read('MpInGroup', array('mp_id' => $row['mp_id'], '#datetime' => $this->update_date));
 	    //loop through all mp's memberships
 	    foreach((array) $membs as $memb) {
 
@@ -461,7 +472,7 @@ class UpdaterCzSenat
 
 	      //otherwise close the membership
 	      $this->log->write("Closing membership (mp_id={$memb['mp_id']}, group_id={$memb['group_id']}, role_code='{$memb['role_code']}', since={$memb['since']}).", Log::DEBUG);
-	      $this->api->update('MpInGroup', array('mp_id' => $memb['mp_id'], 'group_id' => $memb['group_id'], 'role_code' => $memb['role_code'], 'since' => $memb['since']), array('until' => $this->date->format('Y-m-d')));
+	      $this->api->update('MpInGroup', array('mp_id' => $memb['mp_id'], 'group_id' => $memb['group_id'], 'role_code' => $memb['role_code'], 'since' => $memb['since']), array('until' => $this->update_date));
 	    }
 
 	  }
@@ -472,19 +483,17 @@ class UpdaterCzSenat
 	 * Update information about the membership of an MP in a group. If it is not present in database, insert it.
 	 * Membership is identified by the quadruple (\e mp_id, \e group_id, \e role_code, \e since).
 	 *
- 	 * \param $src_group array of key => value pairs with properties of a scraped group
 	 * \param $mp_id \e id of the MP in database
 	 * \param $group_id \e id of the group in database
 	 * \param $role_code \e code of the role in database that MP stands in the membership
 	 * \param $constituency_id \e id of the constituency in database applicable for the membership or null
-	 * \param $date \e date of the membership, object DateTime
 	 */
 	private function updateMembership($mp_id, $group_id, $role_code, $constituency_id)
 	{
 		$this->log->write("Updating membership (mp_id=$mp_id, group_id=$group_id, role_code='$role_code').", Log::DEBUG);
 
 		// if membership is already present in database, update its details
-		$memb = $this->api->readOne('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, '#datetime' => $this->date->format('Y-m-d')));
+		$memb = $this->api->readOne('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, '#datetime' => $this->update_date));
 		if ($memb)
 		{
 		  if ($constituency_id) {	//chybne, pokud $constituency_id je null
@@ -495,7 +504,7 @@ class UpdaterCzSenat
 		// if it is not present, insert it
 		else
 		{
-			$data = array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'constituency_id' => $constituency_id, 'since' => $this->date->format('Y-m-d'));
+			$data = array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'constituency_id' => $constituency_id, 'since' => $this->update_date);
 			$this->api->create('MpInGroup', $data);
 		}
 	}
@@ -588,7 +597,7 @@ class UpdaterCzSenat
 			'last_updated_on' => $this->update_date,
 			'subgroup_of' => $parent_group_id,
 		  );
-		  
+
 		  //add short_name for political groups:
 		  if ($src_group_kind_code == 'caucuses')
 		    $data['short_name'] = $this->senateShortName($src_group['name']);
@@ -607,7 +616,7 @@ class UpdaterCzSenat
 	    }
 	  }
 	}
-	
+
 	/**
 	* transform name into short name for political group in Senate (not present in senat.cz)
 	* issue warning if a new political group is formed
@@ -615,7 +624,7 @@ class UpdaterCzSenat
 	* example: senateShortName('Senátorský klub České strany sociálně demokratické') -> 'ČSSD'
 	*
 	* @param $name
-	* 
+	*
 	* @return $short_name
 	*/
 	private function senateShortName($name) {
@@ -635,7 +644,7 @@ class UpdaterCzSenat
 	      return $name;
 	  }
 	}
-	
+
 
 	/**
 	* transform group_kind_code as at senat.cz into standard ones for db
@@ -718,18 +727,18 @@ class UpdaterCzSenat
 	  //if new office, insert it and close previous one
 	  if (!$office_in_db and ($src_mp['office'] != '')) { //new office
 	    //close previous
-	    $this->api->update('Office', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, '#datetime' => $this->date->format('Y-m-d')), array('until' => $this->date->format('Y-m-d')));
+	    $this->api->update('Office', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, '#datetime' => $this->update_date), array('until' => $this->update_date));
 	    //insert the new one
 	    $geo = $this->api->read('Scraper', array('remote_resource' => 'geocode', 'address' => $src_mp['office']));
 	    if ($geo['coordinates']['ok'])
-	      $this->api->create('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'], 'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since, 'latitude' => $geo['coordinates']['lat'], 'longitude' => $geo['coordinates']['lng']));
+	      $this->api->create('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'], 'since' => $this->update_date, 'until' => $this->next_term_since, 'latitude' => $geo['coordinates']['lat'], 'longitude' => $geo['coordinates']['lng']));
 	    else
-	      $this->api->create('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'], 'since' => $this->date->format('Y-m-d'), 'until' => $this->next_term_since));
+	      $this->api->create('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, 'address' => $src_mp['office'], 'since' => $this->update_date, 'until' => $this->next_term_since));
 
 	  } else { //no new office
 	    //check if any office at all, if not, close all
 	    if ($src_mp['office'] == '') { //no src office
-	      $this->api->update('Office', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, '#datetime' => $this->date->format('Y-m-d')), array('until' => $this->date->format('Y-m-d')));
+	      $this->api->update('Office', array('mp_id' => $mp_id, 'parl' => $this->parliament_code, '#datetime' => $this->update_date), array('until' => $this->update_date));
 	    }
 	  }
 	}
@@ -872,7 +881,7 @@ class UpdaterCzSenat
 		if (isset($src_mp['name']['pre_title']))
 			$data['pre_title'] = $src_mp['name']['pre_title'];
 		//date now
-		$data['last_updated_on'] = date('Y-m-d H:i:s.u');
+		$data['last_updated_on'] = $this->update_date;
 
 		// perform appropriate actions to update or insert MP
 		if ($action & self::MP_INSERT)
@@ -897,7 +906,7 @@ class UpdaterCzSenat
 	/**
 	 * Update information about the term of office for given date. If the term is not present in database, insert it.
 	 *
-	 * \param $params <em>$params['term']</em> indicates date to update data for. If ommitted, today is assumed.
+	 * \param $params not used.
 	 *
 	 * \returns id of the term to update data for.
 	 */
@@ -905,58 +914,55 @@ class UpdaterCzSenat
 	{
 		$this->log->write('Updating term.', Log::DEBUG);
 
-
 		$term_ar = $this->api->read('Scraper', array('remote_resource' => 'term_list'));
 		$term_list = $term_ar['term'];
 
 		//find scraped term for the date
-		foreach((array) $term_ar['term'] as $t) {
-		  if ($t['until'] != '') { //if it is not current term
+		foreach((array) $term_list as $t) {
+	      $since = new DateTime($t['since']);
+		  if (!empty($t['until'])) { //if it is not current term
 		    $until = new DateTime($t['until']);
-		    $until->add(new DateInterval('P1D'));	//add 1 day
-		    $since = new DateTime($t['since']);
-		    if (($this->date < $until) and ($this->date >= $since))
+		    if (($this->date <= $until) and ($this->date >= $since))
 		      $term_to_update = $t;
 		  } else { //it is current term
-		    $since = new DateTime($t['since']);
 		    if ($this->date >= $since)
 		      $term_to_update = $t;
 		  }
 		}
 		// if there is no such term in the term list, terminate with error (class Log writing a message with level FATAL_ERROR throws an exception)
 		if (!isset($term_to_update))
-		  $this->log->write("The date {$this->date->format('Y-m-d')} for updating parliament {$this->parliament_code} does not belong to any term, check " . API_DOMAIN . "/data/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
+		  $this->log->write('The date ' . $this->date->format('Y-m-d H:i:s') . " to update parliament {$this->parliament_code} for does not belong to any term, check " . API_DOMAIN . "/data/Scraper?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
 
 		//set "global" variables
-		$this->term_src_code = $term_to_update['term_code'];
+		$this->term_src_code = $term_to_update['id'];
 
 		// if the term is present in the database, update it and get its id
-		$src_code_in_db = $this->api->readOne('TermAttribute', array('name' => 'source_code', 'value' => $term_to_update['term_code'], 'parl' => $this->parliament_code));
+		$src_code_in_db = $this->api->readOne('TermAttribute', array('name' => 'source_code', 'value' => $this->term_src_code, 'parl' => $this->parliament_code));
 		if ($src_code_in_db) {
 		  $term_id = $src_code_in_db['term_id'];
-		  $data = array('name' => $term_to_update['name'], 'since' => $term_to_update['since'], 'short_name' => $term_to_update['term_code']);
-		 if ((isset($term_to_update['until'])) and ($term_to_update['until'] != ''))
-		   $data['until'] = $term_to_update['until'];
+		  $data = array('name' => $term_to_update['name'], 'since' => $term_to_update['since'] . self::NOON, 'short_name' => $this->term_src_code);
+		 if ((isset($term_to_update['until'])) and (!empty($term_to_update['until'])))
+		   $data['until'] = $term_to_update['until'] . self::NOON;
 		 $this->api->update('Term', array('id' => $term_id), $data);
 		} else {
 		  // if term is not in the database, insert it and get its id
-		  $data = array('name' => $term_to_update['name'], 'country_code' => 'cz', 'parliament_kind_code' => 'national-upper', 'since' => $term_to_update['since'], 'short_name' => $term_to_update['term_code']);
-		  if ((isset($term_to_update['until'])) and ($term_to_update['until'] != ''))
-			$data['until'] = $term_to_update['until'];
+		  $data = array('name' => $term_to_update['name'], 'country_code' => 'cz', 'parliament_kind_code' => 'national-upper', 'since' => $term_to_update['since'] . self::NOON, 'short_name' => $this->term_src_code);
+		  if ((isset($term_to_update['until'])) and (!empty($term_to_update['until'])))
+			$data['until'] = $term_to_update['until'] . self::NOON;
 		  $term_pkey = $this->api->create('Term', $data);
 		  $term_id = $term_pkey['id'];
 
 		  	// insert term's source code as an attribute
-			$this->api->create('TermAttribute', array('term_id' => $term_id, 'name' => 'source_code', 'value' => $term_to_update['term_code'], 'parl' => $this->parliament_code));
+			$this->api->create('TermAttribute', array('term_id' => $term_id, 'name' => 'source_code', 'value' => $this->term_src_code, 'parl' => $this->parliament_code));
 		}
 
 		// prepare start date of this term and start date of the following term
-		$this->term_since = $term_to_update['since'];
+		$this->term_since = $term_to_update['since'] . NOON;
 		$index = array_search($term_to_update, $term_list);
-		$this->next_term_since = isset($term_list[$index+1]) ? $term_list[$index+1]['since'] : 'infinity';
+		$this->next_term_since = isset($term_list[$index+1]) ? $term_list[$index+1]['since'] . NOON : 'infinity';
 
 		// set the effective date which the update process actually runs to
-		$this->update_date = ($this->next_term_since == 'infinity') ? 'now' : $this->term_since;
+		$this->update_date = (isset($params['date'])) ? $this->date->format('Y-m-d H:i:s') . ' ' . self::TIME_ZONE : 'now';
 
 		return $term_id;
 	}
@@ -981,7 +987,9 @@ class UpdaterCzSenat
 				'description' => 'Horní komora parlamentu České republiky.',
 				'parliament_kind_code' => 'national-upper',
 				'country_code' => 'cz',
-				'default_language' => 'cs'
+				'weight' => 2.0,
+				'time_zone' => self::TIME_ZONE,
+				'address_representatives_function' => 'address_representatives_national_upper'
 			));
 
 			// english translation
