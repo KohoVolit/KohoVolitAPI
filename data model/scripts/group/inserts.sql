@@ -108,7 +108,11 @@ insert into role_attribute (role_code, lang, "name", "value") values
 ('deputy-treasurer', 'sk', 'male_name', 'zástupca pokladníka'),
 ('deputy-treasurer', 'sk', 'female_name', 'zástupkyňa pokladníka'),
 ('quaestor', 'sk', 'male_name', 'kvestor'),
-('quaestor', 'sk', 'female_name', 'kvestorka');
+('quaestor', 'sk', 'female_name', 'kvestorka'),
+('verifier', 'sk', 'male_name', 'overovateľ'),
+('verifier', 'sk', 'female_name', 'overovateľka');
+
+
 
 insert into role_attribute (role_code, lang, "name", "value") values
 ('member', 'cs', 'male_name', 'člen'),
@@ -134,4 +138,6 @@ insert into role_attribute (role_code, lang, "name", "value") values
 ('deputy-treasurer', 'cs', 'male_name', 'zástupce pokladníka'),
 ('deputy-treasurer', 'cs', 'female_name', 'zástupkyně pokladníka'),
 ('quaestor', 'cs', 'male_name', 'kvestor'),
-('quaestor', 'cs', 'female_name', 'kvestorka');
+('quaestor', 'cs', 'female_name', 'kvestorka'),
+('verifier', 'sk', 'male_name', 'ověřovatel'),
+('verifier', 'sk', 'female_name', 'ověřovatelka');
