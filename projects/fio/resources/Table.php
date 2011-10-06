@@ -31,7 +31,8 @@ class Table {
     $src_params = $params;
     $src_params['format'] = 'php';
     $source = $this->api->read('Scraper');
-  
+    return $source;
+    
     $table = new simple_html_dom();
     $table = str_get_html("<table><div>**</div></table>");
     
