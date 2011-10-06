@@ -2,7 +2,7 @@
 
 /**
  * ...
- * If a table contains \e since and \e until columns then \e #datetime can be used within parameters of \c read(), \c update() and \c delete() methods (eg. '#datetime' => '2010-06-30 9:30:00') that restricts the where condition to only entities valid at the given moment (the ones where <em>since</em> <= #datetime < <em>until</em>). Value '#datetime' => 'now' can be used to get entities valid now.
+ * If a table contains \e since and \e until columns then \e _datetime can be used within parameters of \c read(), \c update() and \c delete() methods (eg. '_datetime' => '2010-06-30 9:30:00') that restricts the where condition to only entities valid at the given moment (the ones where <em>since</em> <= _datetime < <em>until</em>). Value '_datetime' => 'now' can be used to get entities valid now.
  */
 class Query
 {
@@ -106,14 +106,14 @@ class Query
 		$this->query = "select $columns from \"$table\"";
 		$this->params = array();
 		$this->addWhereCondition($filter, $table_columns);
-		if (isset($filter['#limit']))
+		if (isset($filter['_limit']))
 		{
-			$this->params[] = $filter['#limit'];
+			$this->params[] = $filter['_limit'];
 			$this->query .= ' limit $' . count($this->params);
 		}
-		if (isset($filter['#offset']))
+		if (isset($filter['_offset']))
 		{
-			$this->params[] = $filter['#offset'];
+			$this->params[] = $filter['_offset'];
 			$this->query .= ' offset $' . count($this->params);
 		}
 	}
@@ -198,9 +198,9 @@ class Query
 				$this->query .= " and \"$column\" = $" . count($this->params);
 			}
 		}
-		if (isset($filter['#datetime']) && in_array('since', $table_columns, true) && in_array('until', $table_columns, true))
+		if (isset($filter['_datetime']) && in_array('since', $table_columns, true) && in_array('until', $table_columns, true))
 		{
-			$this->params[] = $filter['#datetime'];
+			$this->params[] = $filter['_datetime'];
 			$n = count($this->params);
 			$this->query .= ' and since <= $' . $n . ' and until > $' . $n;
 		}

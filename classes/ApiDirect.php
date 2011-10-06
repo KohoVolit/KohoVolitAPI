@@ -43,7 +43,7 @@ class ApiDirect
 	 */
 	public function readOne($resource, $params = null)
 	{
-		$result = $this->read($resource, array('#limit' => 1) + $params);
+		$result = $this->read($resource, array('_limit' => 1) + $params);
 		return count($result) > 0 ? $result[0] : array();
 	}
 

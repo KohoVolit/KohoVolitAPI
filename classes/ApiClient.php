@@ -48,7 +48,7 @@ class ApiClient
 	 */
 	public function readOne($resource, $params = null)
 	{
-		return $this->read($resource, array('#limit' => 1) + $params);
+		return $this->read($resource, array('_limit' => 1) + $params);
 	}
 
 	/**

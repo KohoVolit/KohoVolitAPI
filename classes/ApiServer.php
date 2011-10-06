@@ -46,7 +46,7 @@ class ApiServer
 				if (method_exists($resource_class, 'read'))
 				{
 					$result = $resource_class->read($params);
-					if (isset($params['#limit']) && $params['#limit'] == 1 && !empty($result))
+					if (isset($params['_limit']) && $params['_limit'] == 1 && !empty($result))
 						$result = current($result);
 					return array($resource => $result);
 				}
@@ -83,9 +83,14 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 		// in case of successfull API request, format the result according to requested format
 		if ($status_code == 200)
 		{
-			$format = (!empty($_GET['format'])) ? $_GET['format'] : 'xml';
+			$format = (!empty($_GET['format'])) ? $_GET['format'] : 'raw';
 			switch ($format)
 			{
+				case 'raw':
+					$header = 'Content-Type: text/plain; charset=UTF-8';
+					$body = is_array(current($data)) ? print_r(current($data), true) : current($data);
+					break;
+
 				case 'php':
 					$header = 'Content-Type: text/plain; charset=UTF-8';
 					$body = serialize(current($data));

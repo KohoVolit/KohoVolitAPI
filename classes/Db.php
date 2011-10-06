@@ -19,15 +19,15 @@ class Db
 
 		if (!empty($parliament))
 			pg_query(self::$connection, "set search_path to \"$parliament\", public");
-			
+
 		if (!empty($params))
 			$result = pg_query_params(self::$connection, $query, $params);
 		else
 			$result = pg_query(self::$connection, $query);
-			
+
 		if ($result === false)
 			throw new Exception('Query to the database failed: ' . pg_last_error(self::$connection) . '. Parameters: ' . print_r($params, true), 400);
-			
+
 		$res = pg_fetch_all($result);
 		return ($res !== false) ? $res : array();
 	}
@@ -38,7 +38,7 @@ class Db
 	private static function open($user)
 	{
 		self::$connection = pg_connect(file_get_contents(API_ROOT . "/config/db/$user"));
-		
+
 		if (!self::$connection)
 			throw new Exception('Could not connect to database.', 503);
 	}
@@ -49,6 +49,22 @@ class Db
 	private static function close()
 	{
 		pg_close(self::$connection);
+	}
+
+	/**
+	 * ...
+	 */
+	public static function arrayOfIntegersArgument($array)
+	{
+		return '{' . implode(', ', $array) . '}';
+	}
+
+	/**
+	 * ...
+	 */
+	public static function arrayOfStringsArgument($array)
+	{
+		return '{"' . implode('", "', $array) . '"}';
 	}
 }
 
