@@ -1,6 +1,8 @@
 <?php
 
-// constant API_DIR must be defined
+// Modify this API_DIR constant to point to your API installation directory
+// when using this class outside the API itself.
+define ("API_DIR", API_ROOT);
 
 /**
  * ...

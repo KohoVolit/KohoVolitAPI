@@ -16,7 +16,7 @@
    }
    
    /**
-   *
+   * Main function of the scraper
    */
    public function scrape($params) {
      $remote_resource = $params['remote_resource'];
@@ -29,7 +29,7 @@
    }
    
    /**
-   *
+   * scrapes account list from scraperwiki
    */
    public function scrapeAccountList($params) {
       $csv = ScraperUtils::grabber("https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=csv&name=fio_bank_-_list_of_transparent_accounts&query=select%20*%20from%20swdata");
@@ -38,7 +38,9 @@
    }
    
    /**
-   *
+   * scrapes an account directly from Fio bank
+   * 
+   * \return array of values
    */
 	public function scrapeAccount($params) {
     /*https://www.fio.cz/scgi-bin/hermes/dz-transparent.cgi?
@@ -94,10 +96,12 @@
       $out['info']['owner'] = str_replace('Majitel účtu: ','',$spans[2]->innertext);
       $out['info']['account_name'] = str_replace('Název účtu: ','',$spans[3]->innertext);
       $out['info']['currency'] = str_replace('Měna účtu: ','',$spans[4]->innertext);
-     $out['info']['openning_date'] = Utils::dateToIso(str_replace('Datum založení účtu: ','',$spans[5]->innertext),'cs');
+      $out['info']['openning_date'] = Utils::dateToIso(str_replace('Datum založení účtu: ','',$spans[5]->innertext),'cs');
       $tmp = explode('-',str_replace('Období: ','',$spans[6]->innertext));
-     $out['info']['since'] = Utils::dateToIso(trim($tmp[0]),'cs');
+      $out['info']['since'] = Utils::dateToIso(trim($tmp[0]),'cs');
       $out['info']['until'] = Utils::dateToIso(trim($tmp[1]),'cs');
+      $out['info']['account'] = (isset($params['account']) ? $params['account'] : '') .
+       (isset($params['ID_ucet']) ? $params['ID_ucet'] : '');
     
       $tables = $dom->find('table[class=table_prm]');
       if (count($tables) > 0) {
