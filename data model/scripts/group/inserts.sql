@@ -139,5 +139,5 @@ insert into role_attribute (role_code, lang, "name", "value") values
 ('deputy-treasurer', 'cs', 'female_name', 'zástupkyně pokladníka'),
 ('quaestor', 'cs', 'male_name', 'kvestor'),
 ('quaestor', 'cs', 'female_name', 'kvestorka'),
-('verifier', 'sk', 'male_name', 'ověřovatel'),
-('verifier', 'sk', 'female_name', 'ověřovatelka');
+('verifier', 'cs', 'male_name', 'ověřovatel'),
+('verifier', 'cs', 'female_name', 'ověřovatelka');
