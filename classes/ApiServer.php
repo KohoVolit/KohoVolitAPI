@@ -95,6 +95,11 @@ Data modifying request methods are not allowed from remote, on localhost use Api
 					$header = 'Content-Type: text/plain; charset=UTF-8';
 					$body = serialize(current($data));
 					break;
+					
+				case 'html':
+					$header = 'Content-Type: text/html; charset=UTF-8';
+					$body = current($data);
+					break;
 
 				case 'json':
 					$header = 'Content-Type: application/json';

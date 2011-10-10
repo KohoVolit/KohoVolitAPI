@@ -1,7 +1,8 @@
 <?php
 
-// Modify the API_DIR constant to point to your API installation directory when using this class outside of the API itself.
-define("API_DIR", API_ROOT);
+// API_DIR constant must be defined here and point to your API installation directory when using ApiDirect class.
+// The following check handles just internal usage of ApiDirect within the API itself.
+if (!defined('API_DIR')) define("API_DIR", API_ROOT);
 
 /**
  * ...
