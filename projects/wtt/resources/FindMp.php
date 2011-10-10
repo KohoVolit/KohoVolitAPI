@@ -13,7 +13,7 @@ class FindMp
 	 * \param $params An array of pairs <em>parameter => value</em> specifying MPs to select. Available parameters are:
 	 * - \c constituency specifying constituency id
 	 * - \c groups specifying a vertical bar-separated list of groups' ids
-	 * - \c \#datetime specifying date and time of the memeberships. If ommitted the current moment is supposed.
+	 * - \c _datetime specifying date and time of the memeberships. If ommitted the current moment is supposed.
 	 *
 	 * \return An array of MP names.
 	 *
@@ -49,7 +49,7 @@ class FindMp
 	{
 		$groups = isset($params['groups']) ? explode('|', $params['groups']) : null;
 		$constituency = isset($params['constituency']) ? $params['constituency'] : null;
-		$datetime = isset($params['#datetime']) ? $params['#datetime'] : 'now';
+		$datetime = isset($params['_datetime']) ? $params['_datetime'] : 'now';
 
 		// build a query to search for MPs
 		$query = new Query();

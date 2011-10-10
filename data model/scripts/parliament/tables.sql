@@ -19,7 +19,6 @@ create table parliament
 	country_code varchar references country on delete restrict on update cascade,
 	weight real,
 	time_zone varchar,
-	address_representatives_function varchar,
 	last_updated_on timestamp
 );
 

@@ -148,10 +148,10 @@ class UpdaterCzLocal
 		// if the membership exists today, update it
 		// if not -> if the membership exists with equal 'since', update it, otherwise insert it
 		// (should catch some changes in 'since')
-		$membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], '#datetime' => $this->update_date));
+		$membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], '_datetime' => $this->update_date));
 		if ($membership) {
 			// update
-			$this->api->update('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], '#datetime' => $this->update_date), $data);
+			$this->api->update('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], '_datetime' => $this->update_date), $data);
 		} else {
 			$membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], 'since' => $data['since']));
 			if ($membership) {
@@ -292,7 +292,7 @@ class UpdaterCzLocal
 		$this->log->write("Updating MP's attribute '$attr_name'.", Log::DEBUG);
 
 		$src_value = !empty($src_mp[$attr_name]) ? (is_null($implode_separator) ? $src_mp[$attr_name] : implode($implode_separator, $src_mp[$attr_name])) : null;
-		$value_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $src_mp['parliament_code'], '#datetime' => $this->update_date));
+		$value_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $src_mp['parliament_code'], '_datetime' => $this->update_date));
 		if ($value_in_db)
 			$db_value = $value_in_db['value'];
 
@@ -476,10 +476,12 @@ class UpdaterCzLocal
 					'parliament_kind_code' => 'local',
 					'country_code' => 'cz',
 					'weight' => ($src_parliament['parliament_code'] == 'cz/starostove') ? 4.0 : 5.0,
-					'time_zone' => self::TIME_ZONE,
-					'address_representatives_function' => 'address_representatives_local'
+					'time_zone' => self::TIME_ZONE
 				));
 			}
+
+			// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
+			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $src_parliament['parliament_code'], 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup')));
 
 			// update the timestamp the parliament has been last updated on
 			$this->api->update('Parliament', array('code' => $src_parliament['parliament_code']), array('last_updated_on' => 'now'));

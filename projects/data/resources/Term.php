@@ -33,15 +33,15 @@ class Term
 	 * Read the term(s) that satisfy given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the terms to select.
-	 * A special parameter \c \#datetime can be used (eg. '\#datetime' => '2010-06-30 9:30:00') to select only the terms
-	 * open at the given moment (the ones where \c since <= \c \#datetime < \c until).
-	 * Use <code>'\#datetime' => 'now'</code> to get terms open now.
+	 * A special parameter \c _datetime can be used (eg. '_datetime' => '2010-06-30 9:30:00') to select only the terms
+	 * open at the given moment (the ones where \c since <= \c _datetime < \c until).
+	 * Use <code>'_datetime' => 'now'</code> to get terms open now.
 	 *
 	 * \return An array of terms that satisfy all prescribed column values.
 	 *
 	 * \ex
 	 * \code
-	 * read(array('country_code' => 'cz', 'parliament_kind_code' => 'national-lower', '#datetime' => 'now'))
+	 * read(array('country_code' => 'cz', 'parliament_kind_code' => 'national-lower', '_datetime' => 'now'))
 	 * \endcode returns
 	 * \code
 	 * Array

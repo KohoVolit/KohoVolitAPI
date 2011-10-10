@@ -3,9 +3,9 @@
 
 insert into parliament_kind (code, "name", short_name, description) values
 ('supernational', 'Supernational parliament', 'Supernational', 'Parliament at supernational level, eg. European parliament.'),
+('national', 'National parliament', 'National', 'National parliament.'),
 ('national-upper', 'Upper house of the national parliament', 'Upper house', 'Upper house of the national level parliament - senate.'),
 ('national-lower', 'Lower house of the national parliament', 'Lower house', 'Lower house of the national level parliament - chamber of deputies.'),
-('national', 'National parliament', 'Parliament', 'National parliament'),
 ('government', 'Government', 'Government', 'Government of the country.'),
 ('regional', 'Regional parliament', 'Regional', 'Parliament at a regional level.'),
 ('local', 'Local parliament', 'Local', 'Parliament at a city level.');
@@ -21,7 +21,7 @@ insert into parliament_kind_attribute (parliament_kind_code, lang, "name", "valu
 ('national-lower', 'sk', 'short_name', 'Dolná komora'),
 ('national-lower', 'sk', 'description', 'Dolná komora národného parlamentu - poslanecká snemovňa.'),
 ('national', 'sk', 'name', 'Národný parlament'),
-('national', 'sk', 'short_name', 'Parlament'),
+('national', 'sk', 'short_name', 'Národný'),
 ('national', 'sk', 'description', 'Národný parlament.'),
 ('government', 'sk', 'name', 'Vláda'),
 ('government', 'sk', 'short_name', 'Vláda'),
@@ -44,8 +44,8 @@ insert into parliament_kind_attribute (parliament_kind_code, lang, "name", "valu
 ('national-lower', 'cs', 'short_name', 'Dolní komora'),
 ('national-lower', 'cs', 'description', 'Dolní komora národního parlamentu - poslanecká sněmovna.'),
 ('national', 'cs', 'name', 'Národní parlament'),
-('national', 'cs', 'short_name', 'Parlament'),
-('national', 'cs', 'description', 'Národní parlament'),
+('national', 'cs', 'short_name', 'Národní'),
+('national', 'cs', 'description', 'Národní parlament.'),
 ('government', 'cs', 'name', 'Vláda'),
 ('government', 'cs', 'short_name', 'Vláda'),
 ('government', 'cs', 'description', 'Vláda krajiny.'),

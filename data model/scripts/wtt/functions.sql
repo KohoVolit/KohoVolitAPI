@@ -26,12 +26,36 @@ as $$
 		and ($9 is null or street_number in ('*', $9))
 $$ language sql stable;
 
--- returns all MPs that are representatives for the given address and parliament(s)
--- MPs are sorted by parliament_code, political group and distance of their office to the given address
+-- returns details of the given parliaments
+create or replace function parliament_details(
+	parliament_code varchar[],
+	lang varchar = null)
+returns table(code varchar, "name" varchar, short_name varchar, description varchar, weight real, time_zone varchar, wtt_repinfo_function varchar)
+as $$
+	select
+		p.code,
+		coalesce(pa_n."value", p."name"),
+		coalesce(pa_sn."value", p.short_name),
+		coalesce(pa_d."value", p.description),
+		p.weight,
+		p.time_zone,
+		pa_wrf."value"
+	from
+		parliament as p
+		left join parliament_attribute as pa_n on pa_n.parliament_code = p.code and pa_n."name" = 'name' and pa_n.lang = $2 and pa_n.since <= 'now' and pa_n.until > 'now'
+		left join parliament_attribute as pa_sn on pa_sn.parliament_code = p.code and pa_sn."name" = 'short_name' and pa_sn.lang = $2 and pa_sn.since <= 'now' and pa_sn.until > 'now'
+		left join parliament_attribute as pa_d on pa_d.parliament_code = p.code and pa_d."name" = 'description' and pa_d.lang = $2 and pa_d.since <= 'now' and pa_d.until > 'now'
+		left join parliament_attribute as pa_wrf on pa_wrf.parliament_code = p.code and pa_wrf."name" = 'wtt_repinfo_function'
+	where
+		p.code = any ($1)
+	order by p.weight, p.code
+$$ language sql stable;
+
+-- returns id-s of all MPs that are representatives for the given address and parliament(s); returns also parliament and constituency details translated to given language
+-- records are ordered by parliament weight and constituency name
 create or replace function address_representative(
-	parliament varchar = null,
-	latitude double precision = null,
-	longitude double precision = null,
+	parliament varchar[] = null,
+	lang varchar = null,
 	country varchar = null,
 	administrative_area_level_1 varchar = null,
 	administrative_area_level_2 varchar = null,
@@ -41,32 +65,136 @@ create or replace function address_representative(
 	neighborhood varchar = null,
 	route varchar = null,
 	street_number varchar = null)
-returns table(parliament_name varchar, parliament_code varchar, constituency_name varchar,
-	id integer, first_name varchar, middle_names varchar, last_name varchar, disambiguation varchar,
-	email varchar, political_group varchar, office_town varchar, office_distance double precision)
+returns table(
+	mp_id integer,
+	parliament_code varchar,
+	constituency_name varchar, constituency_short_name varchar, constituency_description varchar)
 as $$
 	select
-		p."name",
+		mig.mp_id,
 		p.code,
-		c."name",
-		mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation,
-		ma."value",
-		club.short_name,
-		split_part(o.address, '|', 4),
-		acos(sin(radians(o.latitude)) * sin(radians($2)) + cos(radians(o.latitude)) * cos(radians($2)) * cos(radians($3 - o.longitude))) * 6371 as distance
+		coalesce(ca_n."value", c."name") as constituency_name,
+		coalesce(ca_sn."value", c.short_name),
+		coalesce(ca_d."value", c.description)
 	from
-		(select distinct constituency_id from area_match($4, $5, $6, $7, $8, $9, $10, $11, $12)) as a
-		join constituency as c on c.id = a.constituency_id and ($1 is null or c.parliament_code = any (string_to_array($1, '|')))
+		(select distinct constituency_id from area_match($3, $4, $5, $6, $7, $8, $9, $10, $11)) as a
+		join constituency as c on c.id = a.constituency_id and ($1 is null or c.parliament_code = any ($1))
 		join parliament as p on p.code = c.parliament_code
-		join mp_in_group as mig_parl on mig_parl.constituency_id = c.id and mig_parl.role_code = 'member' and mig_parl.since <= 'now' and mig_parl.until > 'now'
-		join "group" as g on g.id = mig_parl.group_id and g.group_kind_code = 'parliament'
+		join mp_in_group as mig on mig.constituency_id = c.id and mig.role_code = 'member' and mig.since <= 'now' and mig.until > 'now'
+		join "group" as g on g.id = mig.group_id and g.group_kind_code = 'parliament'
 		join term as t on t.id = g.term_id and t.since <= 'now' and t.until > 'now'
-		join mp on mp.id = mig_parl.mp_id
-		left join mp_attribute as ma on ma.mp_id = mp.id and ma."name" = 'email' and ma.parl = p.code and ma.since <= 'now' and ma.until > 'now'
-		left join mp_in_group as mig_club on mig_club.mp_id = mp.id and mig_club.role_code = 'member' and mig_club.since <= 'now' and mig_club.until > 'now' and mig_club.group_id in (select id from "group" where group_kind_code = 'political group' and parliament_code = p.code)
-		left join "group" as club on club.id = mig_club.group_id
+		left join constituency_attribute as ca_n on ca_n.constituency_id = c.id and ca_n."name" = 'name' and ca_n.lang = $2 and ca_n.since <= 'now' and ca_n.until > 'now'
+		left join constituency_attribute as ca_sn on ca_sn.constituency_id = c.id and ca_sn."name" = 'short_name' and ca_sn.lang = $2 and ca_sn.since <= 'now' and ca_sn.until > 'now'
+		left join constituency_attribute as ca_d on ca_d.constituency_id = c.id and ca_d."name" = 'description' and ca_d.lang = $2 and ca_d.since <= 'now' and ca_d.until > 'now'
+	order by p.weight, constituency_name
+$$ language sql stable;
+
+-- returns information (with political group) about given MPs as representatives of a given parliament
+-- records are ordered by political group name and distance of the office
+create or replace function wtt_repinfo_politgroup(
+	mp_id integer[],
+	parliament_code varchar,
+	lang varchar = null,
+	latitude double precision = null,
+	longitude double precision = null)
+returns table(
+	id integer, first_name varchar, middle_names varchar, last_name varchar, disambiguation varchar,
+	email varchar, image varchar, additional_info varchar,
+	political_group_name varchar, political_group_short_name varchar, political_group_logo varchar)
+as $$
+	select
+		mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation,
+		ma_e."value",
+		$2 || '/images/mp/' || ma_i."value",
+		cast (null as varchar),
+		coalesce(ga_n."value", g."name") as political_group_name,
+		coalesce(ga_sn."value", g.short_name),
+		$2 || '/images/group/' || ga_i."value"
+	from
+		mp
+		left join mp_attribute as ma_e on ma_e.mp_id = mp.id and ma_e."name" = 'email' and ma_e.parl = $2 and ma_e.since <= 'now' and ma_e.until > 'now'
+		left join mp_attribute as ma_i on ma_i.mp_id = mp.id and ma_i."name" = 'image' and ma_i.parl = $2 and ma_i.since <= 'now' and ma_i.until > 'now'
+		left join mp_in_group as mig on mig.mp_id = mp.id and mig.role_code = 'member' and mig.since <= 'now' and mig.until > 'now' and mig.group_id in (select id from "group" where group_kind_code = 'political group' and parliament_code = $2)
+		left join "group" as g on g.id = mig.group_id
+		left join group_attribute as ga_n on ga_n.group_id = g.id and ga_n."name" = 'name' and ga_n.lang = $3 and ga_n.since <= 'now' and ga_n.until > 'now'
+		left join group_attribute as ga_sn on ga_sn.group_id = g.id and ga_sn."name" = 'short_name' and ga_sn.lang = $3 and ga_sn.since <= 'now' and ga_sn.until > 'now'
+		left join group_attribute as ga_i on ga_i.group_id = g.id and ga_i."name" = 'logo' and ga_i.since <= 'now' and ga_i.until > 'now'
+	where
+		 mp.id = any ($1)
+	order by
+		political_group_name
+$$ language sql stable;
+
+-- returns information (with political group and office) about given MPs as representatives of a given parliament
+-- records are ordered by political group name and distance of the office
+create or replace function wtt_repinfo_politgroup_office(
+	mp_id integer[],
+	parliament_code varchar,
+	lang varchar = null,
+	latitude double precision = null,
+	longitude double precision = null)
+returns table(
+	id integer, first_name varchar, middle_names varchar, last_name varchar, disambiguation varchar,
+	email varchar, image varchar, additional_info varchar,
+	political_group_name varchar, political_group_short_name varchar, political_group_logo varchar)
+as $$
+	select
+		mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation,
+		ma_e."value",
+		$2 || '/images/mp/' || ma_i."value",
+		split_part(o.address, '|', 4) || ', ' || round(acos(sin(radians(o.latitude)) * sin(radians($4)) + cos(radians(o.latitude)) * cos(radians($4)) * cos(radians($5 - o.longitude))) * 6371) || ' km',
+		coalesce(ga_n."value", g."name") as political_group_name,
+		coalesce(ga_sn."value", g.short_name),
+		$2 || '/images/group/' || ga_i."value"
+	from
+		mp
+		left join mp_attribute as ma_e on ma_e.mp_id = mp.id and ma_e."name" = 'email' and ma_e.parl = $2 and ma_e.since <= 'now' and ma_e.until > 'now'
+		left join mp_attribute as ma_i on ma_i.mp_id = mp.id and ma_i."name" = 'image' and ma_i.parl = $2 and ma_i.since <= 'now' and ma_i.until > 'now'
+		left join mp_in_group as mig on mig.mp_id = mp.id and mig.role_code = 'member' and mig.since <= 'now' and mig.until > 'now' and mig.group_id in (select id from "group" where group_kind_code = 'political group' and parliament_code = $2)
+		left join "group" as g on g.id = mig.group_id
+		left join group_attribute as ga_n on ga_n.group_id = g.id and ga_n."name" = 'name' and ga_n.lang = $3 and ga_n.since <= 'now' and ga_n.until > 'now'
+		left join group_attribute as ga_sn on ga_sn.group_id = g.id and ga_sn."name" = 'short_name' and ga_sn.lang = $3 and ga_sn.since <= 'now' and ga_sn.until > 'now'
+		left join group_attribute as ga_i on ga_i.group_id = g.id and ga_i."name" = 'logo' and ga_i.since <= 'now' and ga_i.until > 'now'
 		left join (select distinct on (mp_id, parliament_code) mp_id, parliament_code, address, latitude, longitude from office
 			where since <= 'now' and until > 'now' order by mp_id, parliament_code, relevance desc) as o
-			on o.mp_id = mp.id and o.parliament_code = c.parliament_code
-	order by p."name", c."name", club.short_name, distance
+			on o.mp_id = mp.id and o.parliament_code = $2
+	where
+		 mp.id = any ($1)
+	order by
+		political_group_name,
+		acos(sin(radians(o.latitude)) * sin(radians($4)) + cos(radians(o.latitude)) * cos(radians($4)) * cos(radians($5 - o.longitude))) * 6371
+$$ language sql stable;
+
+-- returns groups of a given parlament (all or only direct subgroups of a given group kind)
+-- records are ordered by group kind weight
+create or replace function parliament_group(
+	parliament_code varchar,
+	lang varchar = null,
+	subkind_of varchar = null)
+returns table(
+	id integer, "name" varchar, short_name varchar,
+	group_kind_code varchar, group_kind_name varchar, group_kind_short_name varchar, group_kind_description varchar)
+as $$
+select
+	g.id,
+	coalesce(ga_n."value", g."name") as group_name,
+	coalesce(ga_sn."value", g.short_name),
+	gk.code,
+	coalesce(gka_n."value", gk."name"),
+	coalesce(gka_sn."value", gk.short_name),
+	coalesce(gka_d."value", gk.description)
+from
+	parliament as p
+	join "group" as g on g.parliament_code = p.code and g.group_kind_code != 'parliament'
+	join term as t on t.id = g.term_id and t.parliament_kind_code = p.parliament_kind_code and since <= 'now' and until > 'now'
+	join group_kind as gk on gk.code = g.group_kind_code and ($3 is null or gk.subkind_of = $3)
+	left join group_attribute as ga_n on ga_n.group_id = g.id and ga_n."name" = 'name' and ga_n.lang = $2 and ga_n.since <= 'now' and ga_n.until > 'now'
+	left join group_attribute as ga_sn on ga_sn.group_id = g.id and ga_sn."name" = 'short_name' and ga_sn.lang = $2 and ga_sn.since <= 'now' and ga_sn.until > 'now'
+	left join group_kind_attribute as gka_n on gka_n.group_kind_code = gk.code and gka_n."name" = 'name' and gka_n.lang = $2 and gka_n.since <= 'now' and gka_n.until > 'now'
+	left join group_kind_attribute as gka_sn on gka_sn.group_kind_code = gk.code and gka_sn."name" = 'short_name' and gka_sn.lang = $2 and gka_sn.since <= 'now' and gka_sn.until > 'now'
+	left join group_kind_attribute as gka_d on gka_d.group_kind_code = gk.code and gka_d."name" = 'description' and gka_d.lang = $2 and gka_d.since <= 'now' and gka_d.until > 'now'
+where
+	p.code = $1
+order by
+	gk.weight, gk.code, group_name
 $$ language sql stable;

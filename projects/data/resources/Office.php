@@ -32,15 +32,15 @@ class Office
 	 * Read the MP office(s) that satisfy given parameters.
 	 *
 	 * \param $params An array of pairs <em>column => value</em> specifying the offices to select.
-	 * A special parameter \c \#datetime can be used (eg. '\#datetime' => '2010-06-30 9:30:00') to select only the offices
-	 * valid at the given moment (the ones where \c since <= \c \#datetime < \c until).
-	 * Use <code>'\#datetime' => 'now'</code> to get offices valid now.
+	 * A special parameter \c _datetime can be used (eg. '_datetime' => '2010-06-30 9:30:00') to select only the offices
+	 * valid at the given moment (the ones where \c since <= \c _datetime < \c until).
+	 * Use <code>'_datetime' => 'now'</code> to get offices valid now.
 	 *
 	 * \return An array of MP offices that satisfy all prescribed column values.
 	 *
 	 * \ex
 	 * \code
-	 * read(array('mp_id' => 829, 'parliament_code' => 'cz/senat', '#datetime' => 'now'))
+	 * read(array('mp_id' => 829, 'parliament_code' => 'cz/senat', '_datetime' => 'now'))
 	 * \endcode returns
 	 * \code
 	 * Array

@@ -1,16 +1,16 @@
 -- KohoVolit.eu Generación Cuarta
 -- inserts into tables of package GROUP
 
-insert into group_kind (code, "name", short_name, description, subkind_of) values
-('parliament', 'Parliament', 'Parliament', 'Parliament at any administrative level.', null),
-('political group', 'Political group', 'Group', 'Political group in a parliament.', 'parliament'),
-('committee', 'Parliamentary committee', 'Committee', 'Committee of a parliament.', 'parliament'),
-('subcommittee', 'Parliamentary subcommittee', 'Subcommittee', 'Subcommittee of a committee of a parliament.', 'committee'),
-('commission', 'Parliamentary commission', 'Commission', 'Commission of a parliament.', 'parliament'),
-('delegation', 'Parliamentary delegation', 'Delegation', 'Delegation of a parliament.', 'parliament'),
-('friendship group', 'Interparliamentary friendship group', 'Friendship group', 'Friendship group with a parliament of a different country.', 'parliament'),
-('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament'),
-('other', 'Other group', 'Other', 'Other group.', 'parliament');
+insert into group_kind (code, "name", short_name, description, subkind_of, weight) values
+('parliament', 'Parliament', 'Parliament', 'Parliament at any administrative level.', null, 1.0),
+('political group', 'Political group', 'Group', 'Political group in a parliament.', 'parliament', 2.0),
+('committee', 'Parliamentary committee', 'Committee', 'Committee of a parliament.', 'parliament', 3.0),
+('subcommittee', 'Parliamentary subcommittee', 'Subcommittee', 'Subcommittee of a committee of a parliament.', 'committee', 3.5),
+('commission', 'Parliamentary commission', 'Commission', 'Commission of a parliament.', 'parliament', 4.0),
+('working group', 'Working group', 'Workgroup', 'Working or expert group.', 'parliament', 5.0),
+('friendship group', 'Interparliamentary friendship group', 'Friendship group', 'Friendship group with a parliament of a different country.', 'parliament', 6.0),
+('delegation', 'Parliamentary delegation', 'Delegation', 'Delegation of a parliament.', 'parliament', 7.0),
+('other', 'Other group', 'Other', 'Other group.', 'parliament', 10.0);
 
 insert into group_kind_attribute (group_kind_code, lang, "name", "value") values
 ('parliament', 'sk', 'name', 'Parlament'),

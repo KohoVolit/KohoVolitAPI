@@ -7,7 +7,8 @@ create table group_kind
 	"name" varchar not null,
 	short_name varchar,
 	description text,
-	subkind_of varchar references group_kind on delete cascade on update cascade
+	subkind_of varchar references group_kind on delete cascade on update cascade,
+	weight real
 );
 
 create table "group"

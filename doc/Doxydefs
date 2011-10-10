@@ -20,8 +20,8 @@
  *
  * Identifier of this project used for API requests is \c data.
  *
- * Database inspired special parameters \c \#limit and \c \#offset can be used among the parameters for all resources.
- * Their restrict the result to return at most \c \#limit records skipping the first \c \#offset records.
+ * Database inspired special parameters \c _limit and \c _offset can be used among the parameters for all resources.
+ * Their restrict the result to return at most \c _limit records skipping the first \c _offset records.
  * Note, that due to unsorted nature of the result, particular returned records are random when those parameters are used.
  */
 

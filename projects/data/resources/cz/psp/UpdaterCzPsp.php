@@ -193,8 +193,7 @@ class UpdaterCzPsp
 				'parliament_kind_code' => 'national-lower',
 				'country_code' => 'cz',
 				'weight' => 1.0,
-				'time_zone' => self::TIME_ZONE,
-				'address_representatives_function' => 'address_representatives_national_lower'
+				'time_zone' => self::TIME_ZONE
 			));
 
 			// english translation
@@ -203,6 +202,9 @@ class UpdaterCzPsp
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'CDP CR'),
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Lower house of the Czech republic parliament.')
 			));
+
+			// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
+			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $this->parliament_code, 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup_office')));
 		}
 
 		// update the timestamp the parliament has been last updated on
@@ -298,7 +300,7 @@ class UpdaterCzPsp
 			$res[$src_constituency['name']] = $this->updateConstituency($src_constituency);
 
 		// close all older constituencies
-		$open_constituencies = $this->api->read('Constituency', array('parliament_code' => $this->parliament_code, '#datetime' => $this->update_date));
+		$open_constituencies = $this->api->read('Constituency', array('parliament_code' => $this->parliament_code, '_datetime' => $this->update_date));
 		foreach ($open_constituencies as $open_constituency)
 			if (!array_key_exists($open_constituency['name'], $res))
 				$this->api->update('Constituency', array('id' => $open_constituency['id']), array('until' => $this->term_since));
@@ -334,7 +336,7 @@ class UpdaterCzPsp
 		else
 		{
 			// in case that another constituency with the same name for this parliament exists in database, close its validity
-			$other_constituency = $this->api->readOne('Constituency', array('name' => $src_constituency['name'], 'parliament_code' => $this->parliament_code, '#datetime' => $this->update_date));
+			$other_constituency = $this->api->readOne('Constituency', array('name' => $src_constituency['name'], 'parliament_code' => $this->parliament_code, '_datetime' => $this->update_date));
 			if ($other_constituency)
 				$this->api->update('Constituency', array('id' => $other_constituency['id']), array('until' => $this->term_since));
 
@@ -469,7 +471,7 @@ class UpdaterCzPsp
 		$this->log->write("Updating MP's attribute '$attr_name'.", Log::DEBUG);
 
 		$src_value = !empty($src_mp[$attr_name]) ? (is_null($implode_separator) ? $src_mp[$attr_name] : implode($implode_separator, $src_mp[$attr_name])) : null;
-		$attr_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $this->parliament_code, '#datetime' => $this->update_date));
+		$attr_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $this->parliament_code, '_datetime' => $this->update_date));
 		if ($attr_in_db)
 			$db_value = $attr_in_db['value'];
 
@@ -530,7 +532,7 @@ class UpdaterCzPsp
 		$this->log->write("Updating MP's offices.", Log::DEBUG);
 
 		$src_offices = isset($src_mp['office']) ? $src_mp['office'] : array();
-		$db_offices = $this->api->read('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, '#datetime' => $this->update_date));
+		$db_offices = $this->api->read('Office', array('mp_id' => $mp_id, 'parliament_code' => $this->parliament_code, '_datetime' => $this->update_date));
 
 		// insert all scraped offices that are not present in the database yet
 		foreach ($src_offices as $src_office)
