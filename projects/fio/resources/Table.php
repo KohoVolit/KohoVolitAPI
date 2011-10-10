@@ -1,8 +1,12 @@
 <?php
 /**
-* \ingroup fio
+* \file Table.php
 *
 * Generates table of last transactions in a particular account in Fio bank
+*/
+
+/**
+* class Table
 */
 class Table {
   /// API client reference used for all API calls
@@ -24,7 +28,27 @@ class Table {
     return self::createTable($params);
   }
   /**
+  * Generates table of last transactions in a particular account in Fio bank
+  * 
+  * \param $params array of parameters
+  * - table_css: css for table
+  * - thead_css: css for thead
+  * - tbody_css: css for tbody
+  * - row_css: css for rows (tbody)
+  * - hrow_css: css for rows (thead)
+  * - column_css: css for columns (tbody)
+  * - hcolumn_css: css for columns (thead)
+  * - other_css: any other css (e.g. .column-2{text-align:right} )
+  * - account: account number
+  * - header: rows marked by '|', column by ','; may be either a value from scraper's info
+  * 	part or text
+  * - columns: similar as header, values may be from scraper's rows part
+  * - rows: max number of rows (default not limited)
   *
+  * \see Scraper::scrapeAccount($params) parameters for other parameters (as since, way, etc.)
+  * 
+  * example:
+  * http://api.kohovolit.eu/fio/Table?account=2300049454&format=html&header=Trasparentn%C3%AD%20%C3%BA%C4%8Det%20K%C4%8D%7CStav:,value_until,K%C4%8D%7C%3Ca%20href=%27https%3A%2F%2Fwww.fio.cz%2Fscgi-bin%2Fhermes%2Fdz-transparent.cgi%3FID_ucet%3D2300049454%27%3E2300049454/2100%3C/a%3E|Na%C5%A1i%20posledn%C3%AD%20dono%C5%99i:&columns=user_identification,ammount%28%28round%29%29,K%C4%8D&rows=5&way=1&min=50&table_css=border-collapse:collapse;width:200px;height:200px;background-color:%23ffffff;font-family:sans-serif&since=1.1.2011&tbody_css=font-size:10px&thead_css=font-size:14px&row-even_css=background-color:%23D5E2EC&other_css=.column-2{text-align:right}
   */
   public function createTable($params) {
     //get the account info
@@ -53,6 +77,7 @@ class Table {
     $table->find('style',0)->innertext = $css;
     //table cells
     //example: columns=user_identification,ammount&rows=5
+    $col_ar = array();
     if(isset($params['columns'])) {
       $col_ar = explode(',',$params['columns']);
       if (isset($params['rows']) and is_numeric($params['rows'])) $max_row = floor($params['rows']);
