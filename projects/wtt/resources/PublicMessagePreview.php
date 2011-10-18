@@ -11,7 +11,7 @@ class PublicMessagePreview
 	 * Lists previews of sent public messages in descending order by the date and time they were sent.
 	 *
 	 * \param $params An array of pairs <em>parameter => value</em> specifying the messages to select. Available parameters are:
-	 *	- \c parliament_code specifies to select only the messages addressed (also) to a member of this parliament
+	 *	- \c parliament specifies to select only the messages addressed (also) to a member of this parliament(s). It contains parliament codes separated by | character. 
 	 *	- \c mp_id specifies to select only the messages addressed to this MP
 	 *	- \c since specifies to select only the messages sent since (including) this date and time
 	 *	- \c until specifies to select only the messages sent until (excluding) this date and time.
@@ -64,12 +64,12 @@ class PublicMessagePreview
 			"			true\n"
 		);
 
-		// filter messages for only the ones addressed to a particular parliament or MP
+		// filter messages for only the ones addressed to a particular parliaments or MP
 		$n = 0;
-		if (isset($params['parliament_code']))
+		if (isset($params['parliament']))
 		{
-			$query->appendQuery('			and r.parliament_code = $' . ++$n . "\n");
-			$query->appendParam($params['parliament_code']);
+			$query->appendQuery('			and r.parliament_code = any($' . ++$n . ")\n");
+			$query->appendParam(Db::arrayOfStringsArgument(explode('|', $params['parliament'])));
 		}
 		if (isset($params['mp_id']))
 		{
