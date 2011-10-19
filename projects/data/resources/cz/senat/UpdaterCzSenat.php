@@ -958,9 +958,9 @@ class UpdaterCzSenat
 		}
 
 		// prepare start date of this term and start date of the following term
-		$this->term_since = $term_to_update['since'] . NOON;
+		$this->term_since = $term_to_update['since'] . self::NOON;
 		$index = array_search($term_to_update, $term_list);
-		$this->next_term_since = isset($term_list[$index+1]) ? $term_list[$index+1]['since'] . NOON : 'infinity';
+		$this->next_term_since = isset($term_list[$index+1]) ? $term_list[$index+1]['since'] . self::NOON : 'infinity';
 
 		// set the effective date which the update process actually runs to
 		$this->update_date = (isset($params['date'])) ? $this->date->format('Y-m-d H:i:s') . ' ' . self::TIME_ZONE : 'now';
