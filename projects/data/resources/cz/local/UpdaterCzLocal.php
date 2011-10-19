@@ -478,10 +478,10 @@ class UpdaterCzLocal
 					'weight' => ($src_parliament['parliament_code'] == 'cz/starostove') ? 4.0 : 5.0,
 					'time_zone' => self::TIME_ZONE
 				));
-			}
 
-			// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
-			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $src_parliament['parliament_code'], 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup')));
+				// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
+				$this->api->create('ParliamentAttribute', array(array('parliament_code' => $src_parliament['parliament_code'], 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup')));
+			}
 
 			// update the timestamp the parliament has been last updated on
 			$this->api->update('Parliament', array('code' => $src_parliament['parliament_code']), array('last_updated_on' => 'now'));
