@@ -42,7 +42,7 @@ class UpdaterCzSenat
 	public function __construct($params)
 	{
 		$this->parliament_code = $params['parliament'];
-		$this->ac = new ApiDirect('data', array('parliament' => $this->parliament_code));
+		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
 
