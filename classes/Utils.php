@@ -18,6 +18,8 @@ class Utils
 		else
 			$date = null;
 		$date = preg_replace('#-0(\d{2})#', '-\1', $date);
+		if (empty(trim($date))
+			$date = null;
 		return $date;
 	}
 
