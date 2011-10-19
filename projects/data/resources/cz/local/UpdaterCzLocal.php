@@ -148,15 +148,15 @@ class UpdaterCzLocal
 		// if the membership exists today, update it
 		// if not -> if the membership exists with equal 'since', update it, otherwise insert it
 		// (should catch some changes in 'since')
-		$membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], '_datetime' => $this->update_date));
+		$membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], '_datetime' => $this->update_date));
 		if ($membership) {
 			// update
-			$this->api->update('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], '_datetime' => $this->update_date), $data);
+			$this->api->update('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], '_datetime' => $this->update_date), $data);
 		} else {
-			$membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], 'since' => $data['since']));
+			$membership = $this->api->read('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'since' => $data['since']));
 			if ($membership) {
 				// update
-				$this->api->update('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'constituency_id' => $data['constituency_id'], 'since' =>$data['since']), $data);
+				$this->api->update('MpInGroup', array('mp_id' => $data['mp_id'], 'group_id' => $data['group_id'], 'role_code' => $data['role_code'], 'since' =>$data['since']), $data);
 			} else {
 				// insert
 				$this->api->create('MpInGroup', $data);
