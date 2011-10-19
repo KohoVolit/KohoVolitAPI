@@ -114,6 +114,9 @@ class UpdaterCzLocal
 			$data['constituency_id'] = null;
 			$this->updateMembership($data, $term_id);
 		}
+
+		$this->log->write('Completed.');
+		return array('update' => 'OK');
 	}
 
 	/**

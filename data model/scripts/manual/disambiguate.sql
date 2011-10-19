@@ -43,8 +43,16 @@ select set_mp_disambiguation('cz/psp', '5775', 'PSP ČR 2009-2010');
 
 select set_mp_disambiguation('cz/psp', '5273', 'PSP ČR 2002-');
 
+
 -- parliament cz/senat
 select set_mp_disambiguation('cz/senat', '14', 'Senát ČR 2006-2012');
 
+
+-- parliament cz/local
+select set_mp_disambiguation('cz/psp', '268', 'PSP ČR 1996-1998');
+select set_mp_disambiguation('cz/brno', 'cz_brno_2010-2014_37', 'MZ Brno 2010-');
+
+select set_mp_disambiguation('cz/psp', '5951', 'PSP ČR 2010-');
+select set_mp_disambiguation('cz/starostove', 'cz_starostove_2010-2014_72', 'Konice, starosta 2010-');
 
 drop function set_mp_disambiguation(parliament_code varchar, mp_source_code varchar, mp_disambiguation varchar);

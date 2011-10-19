@@ -2,7 +2,7 @@
 -- group attributes insertions
 
 create or replace function insert_political_group_attribute(parliament_code varchar, group_short_name varchar, attr_name varchar, attr_value varchar)
-returns integer as $$
+returns void as $$
 insert into group_attribute(group_id, "name", "value", parl) values (
 	(select g.id from "group" as g join term as t on t.id = g.term_id and t.since <= 'now' and t.until > 'now' where g.group_kind_code = 'political group' and g.parliament_code = $1 and g.short_name = $2),
 	$3, $4, $1)
