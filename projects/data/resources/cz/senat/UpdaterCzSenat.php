@@ -232,9 +232,9 @@ class UpdaterCzSenat
 		          case 'Brno':
 	                $subs = explode('-', $uzemi['name']);
 	                $subs2 = explode (' a ', $subs[1]);
-	                //correct for 'Brno-jih'
+	                //correct for 'Brno-jih', 'Brno-střed', 'Brno-sever'
 	                if ($subs[1] == mb_convert_case($subs[1], MB_CASE_LOWER, 'UTF-8'))
-	                  $subs2 = array($subs);
+	                  $subs2 = array($uzemi['name']);
 
 	                foreach ((array) $subs2 as $sub) {
 	                  $data['sublocality'] = $sub;

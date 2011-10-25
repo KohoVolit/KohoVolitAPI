@@ -78,6 +78,7 @@ public static function parse_csv($file, $options = null) {
         if (empty($line)) continue;
         $fields = preg_split($expr,trim($line)); // added
         $fields = preg_replace("/^\"(.*)\"$/s","$1",$fields); //added
+        $fields = preg_replace('/("")/','"',$fields); //added ms
         //$fields = explode($delimiter, $line);
         $_res = $to_object ? new stdClass : array();
         foreach ($field_names as $key => $f) {

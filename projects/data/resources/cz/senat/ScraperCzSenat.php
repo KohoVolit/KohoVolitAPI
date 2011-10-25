@@ -599,7 +599,7 @@ class ScraperCzSenat
 	$text_part = ScraperUtils::getFirstString($html,'<h4>Části územního členění příslušné obvodu:</h4>','</ul>');
 	$towns = ScraperUtils::returnSubstrings($text_part,'<li>','</li>');
 	foreach ((array) $towns as $town) {
-	  $result['constituency']['part'][] = $town;
+	  $result['constituency']['part'][] = strip_tags($town);
 	}
 	return $result;
   }
