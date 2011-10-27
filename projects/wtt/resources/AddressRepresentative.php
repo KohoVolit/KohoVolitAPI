@@ -228,6 +228,19 @@ class AddressRepresentative
 			}
 		}
 
+		// if parliaments to search in are specified explicitly, reorder the result according to the parliament order in the specification
+		if (isset($params['parliament']))
+		{
+			$parliaments_order = explode('|', $params['parliament']);
+			foreach ($result as $code => $parliament)
+			{
+				$order = array_search($code, $parliaments_order);
+				$result[$order] = $parliament;
+				unset($result[$code]);
+			}
+			ksort($result);
+		}
+
 		// reindex the arrays from names to integer numbers to be covertable to XML format
 		foreach ($result as &$parliament)
 		{
