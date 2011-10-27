@@ -226,6 +226,11 @@ class AddressRepresentative
 				else
 					$result[$parliament_code]['constituency'][$constituency_name]['mp'][] = $ri;
 			}
+
+			// sort political groups by size (by number of found members)
+			foreach ($result[$parliament_code]['constituency'] as &$c)
+				if (isset($c['group']))
+					uasort($c['group'], 'cmp_by_group_size_name');
 		}
 
 		// if parliaments to search in are specified explicitly, reorder the result according to the parliament order in the specification
@@ -251,6 +256,13 @@ class AddressRepresentative
 
 		return array('parliament' => array_values($result));
 	}
+}
+
+function cmp_by_group_size_name($a, $b)
+{
+	$ca = count($a['mp']);
+	$cb = count($b['mp']);
+	return ($ca > $cb) ? -1 : (($ca < $cb) ? 1 : strcoll($a['name'], $b['name']));
 }
 
 ?>
