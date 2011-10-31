@@ -12,7 +12,7 @@ class ScraperSkNrsr
 	 *
 	 * \return An array of data parsed from the remote resource.
 	 */
-	 
+
 	public static function scrape($params)
 	{
 		$remote_resource = $params['remote_resource'];
@@ -29,7 +29,7 @@ class ScraperSkNrsr
 				throw new Exception("Scraping of the remote resource <em>$remote_resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
 	}
-	
+
 	/**
 	* geocode address using google services
 	*
@@ -61,7 +61,7 @@ class ScraperSkNrsr
 			$ok = false;
 		return array('coordinates' => array('lat' => $lat, 'lng' => $lng,'ok' => $ok));
 	}
-	
+
 	/**
 	* Gets current membership in groups - political groups (clubs) or committees
 	*/
@@ -90,13 +90,13 @@ class ScraperSkNrsr
 		    $d['label'] = $key;
 		    $d['value'] = $item;
 		    $dd[self::friendly_url($key,'sk_SK.utf-8')] = $d;
-		  }	  
+		  }
 		  $data['membership'][] = $dd;
 		}
-	  
+
 	  return $data;
 	}
-		
+
 	/**
 	* Gets info about current pol. groups
 	*/
@@ -128,13 +128,13 @@ class ScraperSkNrsr
 		    $d['label'] = $key;
 		    $d['value'] = $item;
 		    $dd[self::friendly_url($key,'sk_SK.utf-8')] = $d;
-		  }	  
+		  }
 		  $data['group'][] = $dd;
 		}
-	  
+
 	  return $data;
 	}
-	
+
 	/**
 	* Gets list of current MPs from ScraperWiki
 	*/
@@ -143,19 +143,19 @@ class ScraperSkNrsr
 		$html0 = self::download("https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=jsondict&name=sk_parliament_clubs_current&query=select%20*%20from%20swvariables%20where%20name%3D'current_term'");
 		$data0 = json_decode($html0);
 		$current_term = $data0[0]->value_blob;
-		
+
 	  	$html = self::download("https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=jsondict&name=sk_mps_list&query=select%20*%20from%20swdata%20where%20term%3D'".$current_term."'");
 		$json_data = json_decode($html);
 		foreach($json_data as $row) {
 		  $d = array();
 		  foreach ($row as $key => $item) {
 		    $d[$key] = $item;
-		  }	  
+		  }
 		  $data['mp'][] = $d;
 		}
 		return $data;
-	}	
-	
+	}
+
 	/**
 	* Gets list and info about MPs from ScraperWiki
 	*/
@@ -169,12 +169,12 @@ class ScraperSkNrsr
 		    $d['label'] = $key;
 		    $d['value'] = $item;
 		    $dd[self::friendly_url($key,'sk_SK.utf-8')] = $d;
-		  }	  
+		  }
 		  $data['mp'][] = $dd;
 		}
 		return $data;
 	}
-	
+
 	/**
 	 * ...
 	 */
@@ -189,7 +189,7 @@ class ScraperSkNrsr
 		);
 		return array('term' => $out);
 	}
-	
+
  	/**
 	 * Get current term from scraperwiki
 	 */
@@ -200,13 +200,13 @@ class ScraperSkNrsr
 		$out['id'] = $data[0]->value_blob;
 		return array('term' => $out);
 	}
-	
+
 	private static function download($url)
 	{
 		$page = file_get_contents($url);
 		return $page;
 	}
-	
+
 	/**
 	* creates "friendly url" version of text, translits string (gets rid of diacritics) and substitutes ' ' for '-', etc.
 	* @return friendly url version of text
@@ -226,5 +226,5 @@ class ScraperSkNrsr
 	setlocale(LC_ALL,$old_locale);
 	return $url;
 	}
- 
+
 }

@@ -165,6 +165,54 @@ as $$
 		acos(sin(radians(o.latitude)) * sin(radians($4)) + cos(radians(o.latitude)) * cos(radians($4)) * cos(radians($5 - o.longitude))) * 6371
 $$ language sql stable;
 
+-- returns information (with political group and location) about given MPs as representatives of a given parliament
+-- records are ordered by political group name and distance of the location
+-- only MPs from the nearest 3 locations are returned for each political group
+create or replace function wtt_repinfo_politgroup_location(
+	mp_id integer[],
+	parliament_code varchar,
+	lang varchar = null,
+	latitude double precision = null,
+	longitude double precision = null)
+returns table(
+	id integer, first_name varchar, middle_names varchar, last_name varchar, disambiguation varchar,
+	email varchar, image varchar, additional_info varchar,
+	political_group_name varchar, political_group_short_name varchar, political_group_logo varchar)
+as $$
+	select
+		id, first_name, middle_names, last_name, disambiguation, email, image, additional_info, political_group_name, political_group_short_name, political_group_logo
+	from
+	(
+		select
+			mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation,
+			ma_e."value" as email,
+			$2 || '/images/mp/' || ma_i."value" as image,
+			ma_loc."value" || ', ' || round(acos(sin(radians(cast(ma_lat."value" as double precision))) * sin(radians($4)) + cos(radians(cast(ma_lat."value" as double precision))) * cos(radians($4)) * cos(radians($5 - cast(ma_lng."value" as double precision)))) * 6371) || ' km' as additional_info,
+			coalesce(ga_n."value", g."name") as political_group_name,
+			coalesce(ga_sn."value", g.short_name) as political_group_short_name,
+			$2 || '/images/group/' || ga_i."value" as political_group_logo,
+			rank() over (partition by g.id order by acos(sin(radians(cast(ma_lat."value" as double precision))) * sin(radians($4)) + cos(radians(cast(ma_lat."value" as double precision))) * cos(radians($4)) * cos(radians($5 - cast(ma_lng."value" as double precision)))) * 6371) as rnk
+		from
+			mp
+			left join mp_attribute as ma_e on ma_e.mp_id = mp.id and ma_e."name" = 'email' and ma_e.parl = $2 and ma_e.since <= 'now' and ma_e.until > 'now'
+			left join mp_attribute as ma_i on ma_i.mp_id = mp.id and ma_i."name" = 'image' and ma_i.parl = $2 and ma_i.since <= 'now' and ma_i.until > 'now'
+			left join mp_in_group as mig on mig.mp_id = mp.id and mig.role_code = 'member' and mig.since <= 'now' and mig.until > 'now' and mig.group_id in (select id from "group" where group_kind_code = 'political group' and parliament_code = $2)
+			left join "group" as g on g.id = mig.group_id
+			left join group_attribute as ga_n on ga_n.group_id = g.id and ga_n."name" = 'name' and ga_n.lang = $3 and ga_n.since <= 'now' and ga_n.until > 'now'
+			left join group_attribute as ga_sn on ga_sn.group_id = g.id and ga_sn."name" = 'short_name' and ga_sn.lang = $3 and ga_sn.since <= 'now' and ga_sn.until > 'now'
+			left join group_attribute as ga_i on ga_i.group_id = g.id and ga_i."name" = 'logo' and ga_i.since <= 'now' and ga_i.until > 'now'
+			left join mp_attribute as ma_loc on ma_loc.mp_id = mp.id and ma_loc."name" = 'location' and ma_loc.parl = $2 and ma_loc.since <= 'now' and ma_loc.until > 'now'
+			left join mp_attribute as ma_lat on ma_lat.mp_id = mp.id and ma_lat."name" = 'latitude' and ma_lat.parl = $2 and ma_lat.since <= 'now' and ma_lat.until > 'now'
+			left join mp_attribute as ma_lng on ma_lng.mp_id = mp.id and ma_lng."name" = 'longitude' and ma_lng.parl = $2 and ma_lng.since <= 'now' and ma_lng.until > 'now'
+		where
+			 mp.id = any ($1)
+		order by
+			political_group_name,
+			rnk
+	) as all_mps
+	where rnk <= 3
+$$ language sql stable;
+
 -- returns groups of a given parlament (all or only direct subgroups of a given group kind)
 -- records are ordered by group kind weight
 create or replace function parliament_group(

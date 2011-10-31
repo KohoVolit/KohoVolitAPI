@@ -10,7 +10,7 @@ create table message
 	sender_address varchar,
 	sender_email varchar not null,
 	is_public varchar not null check (is_public in ('yes', 'no')),
-	"state" varchar not null default 'created' check ("state" in ('created', 'waiting for approval', 'refused', 'sent')),
+	"state" varchar not null default 'created' check ("state" in ('created', 'waiting for approval', 'refused', 'sent', 'blocked')),
 	written_on timestamp not null default current_timestamp,
 	sent_on timestamp,
 	confirmation_code varchar not null unique,
@@ -29,7 +29,7 @@ create table response
 	received_on timestamp,
 	received_privately varchar check (received_privately in ('yes', 'no')),
 	reply_code varchar not null unique,
-	survey_code varchar,	
+	survey_code varchar,
 	primary key (message_id, mp_id, parliament_code)
 );
 

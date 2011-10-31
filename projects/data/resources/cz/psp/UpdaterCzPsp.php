@@ -475,7 +475,7 @@ class UpdaterCzPsp
 		if ($attr_in_db)
 			$db_value = $attr_in_db['value'];
 
-		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && $src_value == $db_value) return;
+		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && (string)$src_value == (string)$db_value) return;
 
 		// close the current record
 		if (isset($db_value))
