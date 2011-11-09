@@ -5,15 +5,15 @@ create or replace function parliament_kind_attribute_temporal_check()
 returns trigger as $$
 begin
 	if tg_op = 'INSERT' then
-		perform * from parliament_kind_attribute where (parliament_kind_code, "name", lang) = (new.parliament_kind_code, new."name", new.lang) and until > new.since and since < new.until limit 1;
+		perform * from parliament_kind_attribute where (parliament_kind_code, "name", lang, cntry) = (new.parliament_kind_code, new."name", new.lang, new.cntry) and until > new.since and since < new.until limit 1;
 	else  -- tg_op = 'UPDATE'
-		perform * from parliament_kind_attribute where (parliament_kind_code, "name", lang) = (new.parliament_kind_code, new."name", new.lang) and until > new.since and since < new.until
-			and (parliament_kind_code, "name", lang, since) != (old.parliament_kind_code, old."name", old.lang, old.since)
+		perform * from parliament_kind_attribute where (parliament_kind_code, "name", lang, cntry) = (new.parliament_kind_code, new."name", new.lang, new.cntry) and until > new.since and since < new.until
+			and (parliament_kind_code, "name", lang, cntry, since) != (old.parliament_kind_code, old."name", old.lang, old.cntry, old.since)
 			limit 1;
 	end if;
 	if found then
-		raise exception 'Time period in the row (parliament_kind_code=''%'', name=''%'', value=''%'', lang=''%'', since=''%'', until=''%'') being inserted (or updated) into PARLIAMENT_KIND_ATTRIBUTE overlaps with a period of another value of the attribute.',
-			new.parliament_kind_code, new."name", new."value", new.lang, new.since, new.until;
+		raise exception 'Time period in the row (parliament_kind_code=''%'', name=''%'', value=''%'', lang=''%'', cntry="%", since=''%'', until=''%'') being inserted (or updated) into PARLIAMENT_KIND_ATTRIBUTE overlaps with a period of another value of the attribute.',
+			new.parliament_kind_code, new."name", new."value", new.lang, new.cntry, new.since, new.until;
 	end if;
 	return new;
 end; $$ language plpgsql;

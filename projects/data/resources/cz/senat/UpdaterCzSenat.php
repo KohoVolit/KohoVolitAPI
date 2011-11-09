@@ -983,19 +983,18 @@ class UpdaterCzSenat
 		{
 			$this->api->create('Parliament', array(
 				'code' => $this->parliament_code,
-				'name' => 'Senát Parlamentu České republiky',
-				'short_name' => 'Senát ČR',
+				'name' => 'Senát',
+				'short_name' => 'Senát',
 				'description' => 'Horní komora parlamentu České republiky.',
 				'parliament_kind_code' => 'national-upper',
 				'country_code' => 'cz',
-				'weight' => 2.0,
 				'time_zone' => self::TIME_ZONE
 			));
 
 			// english translation
 			$this->api->create('ParliamentAttribute', array(
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'Senate of Parliament of the Czech republic'),
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'Senate CR'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'Senate'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'Senate'),
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Upper house of the Czech republic parliament.')
 			));
 

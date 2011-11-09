@@ -18,13 +18,14 @@ class AddressRepresentative
 	 *   - \c lang specifying the language to return names in. It contains a language code.
 	 * Any of the listed fields can be ommitted.
 	 * If the parliament restriction is ommited, the search performs for all parliaments.
-	 * If the language specification is ommited or names are not available in the given language, they are returned in default language of the parliament.
+	 * If the language specification is ommited or names are not available in the given language, they are returned in default language of the parliament
+	 * (additonal attributes are returned empty).
 	 *
 	 * \return An array of MPs structured by parliament, constituency and political group.
 	 *
 	 * \ex
 	 * \code
-	 * read(array('latitude' => 50.183384, 'longitude' => 12.549942, 'country' => 'Česká republika', 'administrative_area_level_1' => 'Karlovarský', 'administrative_area_level_2' => 'Sokolov'))
+	 * read(array('latitude' => 50.183384, 'longitude' => 12.549942, 'country' => 'Česká republika', 'administrative_area_level_1' => 'Karlovarský', 'administrative_area_level_2' => 'Sokolov', lang => 'cs'))
 	 * \endcode returns
 	 * \code
 	 * Array
@@ -34,10 +35,13 @@ class AddressRepresentative
 	 *             [0] => Array
 	 *                 (
 	 *                     [code] => cz/psp
-	 *                     [name] => Poslanecká sněmovna Parlamentu České republiky
-	 *                     [short_name] => PSP ČR
+	 *                     [name] => Poslanecká sněmovna
+	 *                     [short_name] => Sněmovna
 	 *                     [description] => Dolní komora parlamentu České republiky.
 	 *                     [time_zone] => Europe/Prague
+	 *                     [kind] => national-lower
+	 *                     [competence] => Projednává a schvaluje návrhy zákonů, státní rozpočet, změny ústavy. Ratifikuje mezinárodní smlouvy. Volí prezidenta. Může vyslovit nedůvěru vládě.
+	 *                     [weight] => 2.1
 	 *                     [constituency] => Array
 	 *                         (
 	 *                             [0] => Array
@@ -106,10 +110,13 @@ class AddressRepresentative
 	 *             [1] => Array
 	 *                 (
 	 *                     [code] => cz/senat
-	 *                     [name] => Senát Parlamentu České republiky
-	 *                     [short_name] => Senát ČR
+	 *                     [name] => Senát
+	 *                     [short_name] => Senát
 	 *                     [description] => Horní komora parlamentu České republiky.
 	 *                     [time_zone] => Europe/Prague
+	 *                     [kind] => national-upper
+	 *                     [competence] => Projednává a schvaluje návrhy zákonů, změny ústavy a mezinárodní smlouvy přijaté Sněmovnou. Volí prezidenta.
+	 *                     [weight] => 2.2
 	 *                     [constituency] => Array
 	 *                         (
 	 *                             [0] => Array
@@ -183,11 +190,8 @@ class AddressRepresentative
 		}
 
 		// get details of all parliaments where a representative has been found
-		$query->setQuery('select * from parliament_details($1, $2)');
-		$query->clearParams();
-		$query->appendParam(Db::arrayOfStringsArgument(array_keys($parliaments)));
-		$query->appendParam(isset($params['lang']) ? $params['lang'] : null);
-		$parliament_details = $query->execute();
+		$api_wtt = new ApiDirect('wtt');
+		$parliament_details = $api_wtt->read('ParliamentDetails', array('parliament' => implode('|', array_keys($parliaments)), 'lang' => isset($params['lang']) ? $params['lang'] : null));
 
 		// get info about the MPs using a particular function for each individual parliament and make a structured result
 		$result = array();

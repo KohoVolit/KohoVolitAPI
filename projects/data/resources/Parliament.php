@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table PARLIAMENT that holds parliaments.
  *
- * Columns of table PARLIAMENT are: <code>code, name, short_name, description, parliament_kind_code, country_code, weight, time_zone, last_updated_on</code>.
+ * Columns of table PARLIAMENT are: <code>code, name, short_name, description, parliament_kind_code, country_code, time_zone, last_updated_on</code>.
  *
  * All columns are allowed to write to.
  *
@@ -23,7 +23,7 @@ class Parliament
 	{
 		$this->entity = new Entity(array(
 			'name' => 'parliament',
-			'columns' => array('code', 'name', 'short_name', 'description', 'parliament_kind_code', 'country_code', 'weight', 'time_zone', 'last_updated_on'),
+			'columns' => array('code', 'name', 'short_name', 'description', 'parliament_kind_code', 'country_code', 'time_zone', 'last_updated_on'),
 			'pkey_columns' => array('code')
 		));
 	}
@@ -50,7 +50,6 @@ class Parliament
 	 *             [description] => Dolní komora parlamentu České republiky.
 	 *             [parliament_kind_code] => national-lower
 	 *             [country_code] => cz
-	 *             [weight] => 1.0
 	 *             [time_zone] => Europe/Prague
 	 *             [last_updated_on] => 2011-06-24 00:30:09.234649
 	 *         )
@@ -73,7 +72,7 @@ class Parliament
 	 *
 	 * \ex
 	 * \code
-	 * create(array('code' => 'cz/senat', 'name' => 'Senát Parlamentu České republiky', 'short_name' => 'Senát ČR', 'parliament_kind_code' => 'national-upper', 'country_code' => 'cz', 'weight' => 2.0, 'time_zone' => 'Europe/Prague'))
+	 * create(array('code' => 'cz/senat', 'name' => 'Senát Parlamentu České republiky', 'short_name' => 'Senát ČR', 'parliament_kind_code' => 'national-upper', 'country_code' => 'cz', 'time_zone' => 'Europe/Prague'))
 	 * \endcode creates a new parliament and returns
 	 * \code
 	 * Array

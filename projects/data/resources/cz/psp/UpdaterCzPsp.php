@@ -187,19 +187,18 @@ class UpdaterCzPsp
 		{
 			$this->api->create('Parliament', array(
 				'code' => $this->parliament_code,
-				'name' => 'Poslanecká sněmovna Parlamentu České republiky',
-				'short_name' => 'PSP ČR',
+				'name' => 'Poslanecká sněmovna',
+				'short_name' => 'Sněmovna',
 				'description' => 'Dolní komora parlamentu České republiky.',
 				'parliament_kind_code' => 'national-lower',
 				'country_code' => 'cz',
-				'weight' => 1.0,
 				'time_zone' => self::TIME_ZONE
 			));
 
 			// english translation
 			$this->api->create('ParliamentAttribute', array(
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'Chamber of Deputies of Parliament of the Czech republic'),
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'CDP CR'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'Chamber of Deputies'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'Deputies'),
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Lower house of the Czech republic parliament.')
 			));
 

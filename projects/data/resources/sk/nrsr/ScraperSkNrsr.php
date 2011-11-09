@@ -36,7 +36,7 @@ class ScraperSkNrsr
 	* see http://code.google.com/apis/maps/documentation/geocoding/index.html
 	* using settings: region=sk, language=sk, sensor=false
 	*
-	* @param address
+	* @param params
 	*
 	* @return array('coordinates' => array(lat, lng, ok))
 	*

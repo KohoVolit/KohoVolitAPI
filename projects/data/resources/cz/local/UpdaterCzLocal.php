@@ -463,10 +463,8 @@ class UpdaterCzLocal
 		{
 			$this->log->write("Updating parliament '{$src_parliament['parliament_code']}'.", Log::DEBUG);
 
-			if ($src_parliament['parliament_code'] == 'cz/starostove')
-				$description = 'Starostové';
-			else
-				$description = 'Zastupitelstvo ' . $src_parliament['parliament_name'];
+			$description = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'Starostové obcí s rozšířenou působností.' : 'Zastupitelstvo ' . $src_parliament['parliament_name'];
+			$kind = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'mayors' : 'local';
 
 			// if parliament does not exist yet, insert it
 			$parliament = $this->api->readOne('Parliament', array('code' => $src_parliament['parliament_code']));
@@ -476,9 +474,8 @@ class UpdaterCzLocal
 					'code' => $src_parliament['parliament_code'],
 					'name' => $src_parliament['parliament_name'],
 					'description' => $description,
-					'parliament_kind_code' => 'local',
+					'parliament_kind_code' => $kind,
 					'country_code' => 'cz',
-					'weight' => ($src_parliament['parliament_code'] == 'cz/starostove') ? 4.0 : 5.0,
 					'time_zone' => self::TIME_ZONE
 				));
 
@@ -493,11 +490,11 @@ class UpdaterCzLocal
 			$this->log->write("Updating term '{$src_parliament['term']}'.", Log::DEBUG);
 			$term_since = ($src_parliament['since'] == '-infinity') ? $src_parliament['since'] : $src_parliament['since'] . self::NOON;
 			$term_until = ($src_parliament['until'] == 'infinity') ? $src_parliament['until'] : $src_parliament['until'] . self::NOON;
-			$term = $this->api->readOne('Term', array('name' => $src_parliament['term'], 'parliament_kind_code' => 'local', 'country_code' => 'cz'));
+			$term = $this->api->readOne('Term', array('name' => $src_parliament['term'], 'parliament_kind_code' => $kind, 'country_code' => 'cz'));
 			if (!$term) {
 				$term = $this->api->create('Term', array(
 					'name' => $src_parliament['term'],
-					'parliament_kind_code' => 'local',
+					'parliament_kind_code' => $kind,
 					'country_code' => 'cz',
 					'since' => $term_since,
 					'until' => $term_until

@@ -26,29 +26,33 @@ as $$
 		and ($9 is null or street_number in ('*', $9))
 $$ language sql stable;
 
--- returns details of the given parliaments
+-- returns details of the given parliaments or of all parliaments if they are not specified
 create or replace function parliament_details(
-	parliament_code varchar[],
+	parliament_code varchar[] = null,
 	lang varchar = null)
-returns table(code varchar, "name" varchar, short_name varchar, description varchar, weight real, time_zone varchar, wtt_repinfo_function varchar)
+returns table(code varchar, "name" varchar, short_name varchar, description varchar, time_zone varchar, wtt_repinfo_function varchar, kind varchar, competence varchar, weight real)
 as $$
 	select
 		p.code,
 		coalesce(pa_n."value", p."name"),
 		coalesce(pa_sn."value", p.short_name),
 		coalesce(pa_d."value", p.description),
-		p.weight,
 		p.time_zone,
-		pa_wrf."value"
+		pa_wrf."value",
+		pk.code,
+		pka_c."value",
+		pk.weight
 	from
 		parliament as p
+		join parliament_kind as pk on pk.code = p.parliament_kind_code
 		left join parliament_attribute as pa_n on pa_n.parliament_code = p.code and pa_n."name" = 'name' and pa_n.lang = $2 and pa_n.since <= 'now' and pa_n.until > 'now'
 		left join parliament_attribute as pa_sn on pa_sn.parliament_code = p.code and pa_sn."name" = 'short_name' and pa_sn.lang = $2 and pa_sn.since <= 'now' and pa_sn.until > 'now'
 		left join parliament_attribute as pa_d on pa_d.parliament_code = p.code and pa_d."name" = 'description' and pa_d.lang = $2 and pa_d.since <= 'now' and pa_d.until > 'now'
 		left join parliament_attribute as pa_wrf on pa_wrf.parliament_code = p.code and pa_wrf."name" = 'wtt_repinfo_function'
+		left join parliament_kind_attribute as pka_c on pka_c.parliament_kind_code = pk.code and pka_c."name" = 'competence' and pka_c.lang = $2 and pka_c.cntry = p.country_code and pka_c.since <= 'now' and pka_c.until > 'now'
 	where
-		p.code = any ($1)
-	order by p.weight, p.code
+		$1 is null or p.code = any ($1)
+	order by pk.weight, p.code
 $$ language sql stable;
 
 -- returns id-s of all MPs that are representatives for the given address and parliament(s); returns also parliament and constituency details translated to given language
@@ -80,13 +84,14 @@ as $$
 		(select distinct constituency_id from area_match($3, $4, $5, $6, $7, $8, $9, $10, $11)) as a
 		join constituency as c on c.id = a.constituency_id and ($1 is null or c.parliament_code = any ($1))
 		join parliament as p on p.code = c.parliament_code
+		join parliament_kind as pk on pk.code = p.parliament_kind_code
 		join mp_in_group as mig on mig.constituency_id = c.id and mig.role_code = 'member' and mig.since <= 'now' and mig.until > 'now'
 		join "group" as g on g.id = mig.group_id and g.group_kind_code = 'parliament'
 		join term as t on t.id = g.term_id and t.since <= 'now' and t.until > 'now'
 		left join constituency_attribute as ca_n on ca_n.constituency_id = c.id and ca_n."name" = 'name' and ca_n.lang = $2 and ca_n.since <= 'now' and ca_n.until > 'now'
 		left join constituency_attribute as ca_sn on ca_sn.constituency_id = c.id and ca_sn."name" = 'short_name' and ca_sn.lang = $2 and ca_sn.since <= 'now' and ca_sn.until > 'now'
 		left join constituency_attribute as ca_d on ca_d.constituency_id = c.id and ca_d."name" = 'description' and ca_d.lang = $2 and ca_d.since <= 'now' and ca_d.until > 'now'
-	order by p.weight, constituency_name
+	order by pk.weight, p."name", constituency_name
 $$ language sql stable;
 
 -- returns information (with political group) about given MPs as representatives of a given parliament

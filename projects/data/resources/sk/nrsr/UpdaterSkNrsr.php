@@ -655,9 +655,9 @@ class UpdaterSkNrsr
 		{
 			$this->api->create('Parliament', array(
 				'code' => $this->parliament_code,
-				'name' => 'Národná rada Slovenskej republiky',
+				'name' => 'Národná rada',
 				'short_name' => 'NRSR',
-				'description' => 'Parlament Slovenské republiky',
+				'description' => 'Parlament Slovenské republiky.',
 				'parliament_kind_code' => 'national',
 				'country_code' => 'sk',
 				//'default_language' => 'sk'
@@ -665,9 +665,9 @@ class UpdaterSkNrsr
 
 			// english translation
 			$this->api->create('ParliamentAttribute', array(
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'National Council of the Slovak Republic'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'National Council'),
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'NC SR'),
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Slovak parliament.')
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Parliament of Slovak republic.')
 			));
 
 			// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
