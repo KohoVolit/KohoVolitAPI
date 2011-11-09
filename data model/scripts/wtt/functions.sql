@@ -239,7 +239,7 @@ select
 from
 	parliament as p
 	join "group" as g on g.parliament_code = p.code and g.group_kind_code != 'parliament'
-	join term as t on t.id = g.term_id and t.parliament_kind_code = p.parliament_kind_code and since <= 'now' and until > 'now'
+	join term as t on t.id = g.term_id and since <= 'now' and until > 'now'
 	join group_kind as gk on gk.code = g.group_kind_code and ($3 is null or gk.subkind_of = $3)
 	left join group_attribute as ga_n on ga_n.group_id = g.id and ga_n."name" = 'name' and ga_n.lang = $2 and ga_n.since <= 'now' and ga_n.until > 'now'
 	left join group_attribute as ga_sn on ga_sn.group_id = g.id and ga_sn."name" = 'short_name' and ga_sn.lang = $2 and ga_sn.since <= 'now' and ga_sn.until > 'now'

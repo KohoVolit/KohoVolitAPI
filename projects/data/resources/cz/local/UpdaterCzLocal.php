@@ -98,7 +98,8 @@ class UpdaterCzLocal
 
 			// update groups (political groups = kluby/strany)
 			$term_id = $this->parliaments[$src_mp['parliament_code']]['term_id'];
-			$group_id = $this->updateGroup($src_mp, $term_id);
+			if ($src_mp['parliament_code'] != 'cz/starostove')		// ignore political group 'starosta' that is erroneously filled for all members of this parliament
+				$group_id = $this->updateGroup($src_mp, $term_id);
 
 			// update memberships in groups(=parliament) and 'political groups'
 			$data = array(
@@ -110,6 +111,9 @@ class UpdaterCzLocal
 				'until' => $src_mp['until']
 			);
 			$this->updateMembership($data, $term_id);
+
+			if ($src_mp['parliament_code'] == 'cz/starostove') continue;		// ignore political group 'starosta' that is erroneously filled for all members of this parliament
+
 			$data['group_id'] = $group_id;
 			$data['constituency_id'] = null;
 			$this->updateMembership($data, $term_id);
@@ -479,8 +483,18 @@ class UpdaterCzLocal
 					'time_zone' => self::TIME_ZONE
 				));
 
+				// english translation
+				if ($src_parliament['parliament_code'] == 'cz/starostove')
+				{
+					$this->api->create('ParliamentAttribute', array(
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'name', 'value' => 'Mayors'),
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'short_name', 'value' => 'Mayors'),
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'description', 'value' => 'Mayors of towns and cities.')
+					));
+
 				// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
-				$this->api->create('ParliamentAttribute', array(array('parliament_code' => $src_parliament['parliament_code'], 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup')));
+				$this->api->create('ParliamentAttribute', array('parliament_code' => $src_parliament['parliament_code'], 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup'));
+				}
 			}
 
 			// update the timestamp the parliament has been last updated on
@@ -490,11 +504,11 @@ class UpdaterCzLocal
 			$this->log->write("Updating term '{$src_parliament['term']}'.", Log::DEBUG);
 			$term_since = ($src_parliament['since'] == '-infinity') ? $src_parliament['since'] : $src_parliament['since'] . self::NOON;
 			$term_until = ($src_parliament['until'] == 'infinity') ? $src_parliament['until'] : $src_parliament['until'] . self::NOON;
-			$term = $this->api->readOne('Term', array('name' => $src_parliament['term'], 'parliament_kind_code' => $kind, 'country_code' => 'cz'));
+			$term = $this->api->readOne('Term', array('name' => $src_parliament['term'], 'parliament_kind_code' => 'local', 'country_code' => 'cz'));
 			if (!$term) {
 				$term = $this->api->create('Term', array(
 					'name' => $src_parliament['term'],
-					'parliament_kind_code' => $kind,
+					'parliament_kind_code' => 'local',
 					'country_code' => 'cz',
 					'since' => $term_since,
 					'until' => $term_until

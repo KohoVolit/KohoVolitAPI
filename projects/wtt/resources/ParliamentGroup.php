@@ -68,6 +68,7 @@ class ParliamentGroup
 		$groups = $query->execute();
 
 		// make a hierarchical representation of the list structured by group kind
+		$result = array();
 		foreach ($groups as $group)
 		{
 			$group_kind_code = $group['group_kind_code'];

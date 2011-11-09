@@ -660,7 +660,7 @@ class UpdaterSkNrsr
 				'description' => 'Parlament Slovenské republiky.',
 				'parliament_kind_code' => 'national',
 				'country_code' => 'sk',
-				//'default_language' => 'sk'
+				'time_zone' => 'Europe/Bratislava'
 			));
 
 			// english translation
