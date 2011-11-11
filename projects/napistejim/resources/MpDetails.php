@@ -1,7 +1,7 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Provides detailed information about given MPs to be used as addressees.
  */

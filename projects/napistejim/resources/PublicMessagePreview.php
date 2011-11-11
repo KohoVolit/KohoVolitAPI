@@ -1,7 +1,7 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Lists previews of sent public messages.
  */

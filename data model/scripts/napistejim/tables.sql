@@ -1,5 +1,5 @@
--- KohoVolit.eu Generaci�n Cuarta
--- tables of package WTT
+-- KohoVolit.eu Generación Cuarta
+-- tables of package NapišteJim
 
 create table message
 (

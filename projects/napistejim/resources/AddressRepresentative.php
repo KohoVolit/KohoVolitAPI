@@ -1,7 +1,7 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Searches for MPs that are representatives for a given address in a given parliament(s).
  */
@@ -190,8 +190,8 @@ class AddressRepresentative
 		}
 
 		// get details of all parliaments where a representative has been found
-		$api_wtt = new ApiDirect('wtt');
-		$parliament_details = $api_wtt->read('ParliamentDetails', array('parliament' => implode('|', array_keys($parliaments)), 'lang' => isset($params['lang']) ? $params['lang'] : null));
+		$api_napistejim = new ApiDirect('napistejim');
+		$parliament_details = $api_napistejim->read('ParliamentDetails', array('parliament' => implode('|', array_keys($parliaments)), 'lang' => isset($params['lang']) ? $params['lang'] : null));
 
 		// get info about the MPs using a particular function for each individual parliament and make a structured result
 		$result = array();
@@ -199,9 +199,9 @@ class AddressRepresentative
 		{
 			$parliament_code = $pd['code'];
 			$result[$parliament_code] = $pd;
-			unset($result[$parliament_code]['wtt_repinfo_function']);
-			if (empty($pd['wtt_repinfo_function'])) continue;
-			$query->setQuery('select * from ' . $pd['wtt_repinfo_function'] . '($1, $2, $3, $4, $5)');
+			unset($result[$parliament_code]['napistejim_repinfo_function']);
+			if (empty($pd['napistejim_repinfo_function'])) continue;
+			$query->setQuery('select * from ' . $pd['napistejim_repinfo_function'] . '($1, $2, $3, $4, $5)');
 			$query->clearParams();
 			$query->appendParam(Db::arrayOfIntegersArgument($parliaments[$parliament_code]['mp_ids']));
 			$query->appendParam($parliament_code);

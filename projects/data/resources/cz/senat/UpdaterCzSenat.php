@@ -999,7 +999,7 @@ class UpdaterCzSenat
 			));
 
 			// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
-			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $this->parliament_code, 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup')));
+			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $this->parliament_code, 'name' => 'napistejim_repinfo_function', 'value' => 'napistejim_repinfo_politgroup')));
 		}
 
 		// update the timestamp the parliament has been last updated on

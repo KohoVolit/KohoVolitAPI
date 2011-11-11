@@ -1,5 +1,5 @@
--- KohoVolit.eu Generaci�n Cuarta
--- functions of package WTT
+-- KohoVolit.eu Generación Cuarta
+-- functions of package NapišteJim
 
 -- returns all areas matching the given address
 create or replace function area_match(
@@ -30,7 +30,7 @@ $$ language sql stable;
 create or replace function parliament_details(
 	parliament_code varchar[] = null,
 	lang varchar = null)
-returns table(code varchar, "name" varchar, short_name varchar, description varchar, time_zone varchar, wtt_repinfo_function varchar, kind varchar, competence varchar, weight real)
+returns table(code varchar, "name" varchar, short_name varchar, description varchar, time_zone varchar, napistejim_repinfo_function varchar, kind varchar, competence varchar, weight real)
 as $$
 	select
 		p.code,
@@ -48,7 +48,7 @@ as $$
 		left join parliament_attribute as pa_n on pa_n.parliament_code = p.code and pa_n."name" = 'name' and pa_n.lang = $2 and pa_n.since <= 'now' and pa_n.until > 'now'
 		left join parliament_attribute as pa_sn on pa_sn.parliament_code = p.code and pa_sn."name" = 'short_name' and pa_sn.lang = $2 and pa_sn.since <= 'now' and pa_sn.until > 'now'
 		left join parliament_attribute as pa_d on pa_d.parliament_code = p.code and pa_d."name" = 'description' and pa_d.lang = $2 and pa_d.since <= 'now' and pa_d.until > 'now'
-		left join parliament_attribute as pa_wrf on pa_wrf.parliament_code = p.code and pa_wrf."name" = 'wtt_repinfo_function'
+		left join parliament_attribute as pa_wrf on pa_wrf.parliament_code = p.code and pa_wrf."name" = 'napistejim_repinfo_function'
 		left join parliament_kind_attribute as pka_c on pka_c.parliament_kind_code = pk.code and pka_c."name" = 'competence' and pka_c.lang = $2 and pka_c.cntry = p.country_code and pka_c.since <= 'now' and pka_c.until > 'now'
 	where
 		$1 is null or p.code = any ($1)
@@ -96,7 +96,7 @@ $$ language sql stable;
 
 -- returns information (with political group) about given MPs as representatives of a given parliament
 -- records are ordered by political group name and distance of the office
-create or replace function wtt_repinfo_politgroup(
+create or replace function napistejim_repinfo_politgroup(
 	mp_id integer[],
 	parliament_code varchar,
 	lang varchar = null,
@@ -132,7 +132,7 @@ $$ language sql stable;
 
 -- returns information (with political group and office) about given MPs as representatives of a given parliament
 -- records are ordered by political group name and distance of the office
-create or replace function wtt_repinfo_politgroup_office(
+create or replace function napistejim_repinfo_politgroup_office(
 	mp_id integer[],
 	parliament_code varchar,
 	lang varchar = null,
@@ -173,7 +173,7 @@ $$ language sql stable;
 -- returns information (with political group and location) about given MPs as representatives of a given parliament
 -- records are ordered by political group name and distance of the location
 -- only MPs from the nearest 3 locations are returned for each political group
-create or replace function wtt_repinfo_politgroup_location(
+create or replace function napistejim_repinfo_politgroup_location(
 	mp_id integer[],
 	parliament_code varchar,
 	lang varchar = null,

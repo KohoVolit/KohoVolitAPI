@@ -1,7 +1,7 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Lists groups of MPs that exist in a given parliament (ie. political groups, commitees, commissions, etc.).
  */

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Provides detailed information about given parliaments.
  */
@@ -33,7 +33,7 @@ class ParliamentDetails
 	 *             [short_name] => PSP ČR
 	 *             [description] => Dolní komora parlamentu České republiky.
 	 *             [time_zone] => Europe/Prague
-	 *             [wtt_repinfo_function] => wtt_repinfo_politgroup_office
+	 *             [napistejim_repinfo_function] => napistejim_repinfo_politgroup_office
 	 *             [kind] => national-lower
 	 *             [kind_description] => Lower house of the national level parliament - chamber of deputies.
 	 *             [weight] => 2.1
@@ -46,7 +46,7 @@ class ParliamentDetails
 	 *             [short_name] =>
 	 *             [description] => Zastupitelstvo Brno
 	 *             [time_zone] => TIME_ZONE
-	 *             [wtt_repinfo_function] => wtt_repinfo_politgroup
+	 *             [napistejim_repinfo_function] => napistejim_repinfo_politgroup
 	 *             [kind] => local
 	 *             [kind_description] => Parliament at a city level.
 	 *             [weight] => 4.1

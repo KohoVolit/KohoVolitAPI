@@ -1,7 +1,7 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Finds MPs that are elected in a given constituency and/or that are members of all given groups at the given moment.
  */
