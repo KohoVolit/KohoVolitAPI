@@ -5,7 +5,7 @@
  *
  * Lists all messages sent to a given MP.
  */
-class MessageToMp
+class MessagesToMp
 {
 	/**
 	 * Returns all messages sent to a given MP.
@@ -18,7 +18,7 @@ class MessageToMp
 	 *
 	 * \ex
 	 * \code
-	 * read(array('parliament_code' => 'cz/senat', 'since' => '2011-09-01 10:00:00'))
+	 * read(array('id' => 809, 'parliament_code' => 'cz/senat'))
 	 * \endcode returns something like
 	 * \code
 	 * Array
@@ -49,12 +49,12 @@ class MessageToMp
 			"	m.id, m.subject, m.\"body\", m.is_public, m.sender_name, sender_address, mp.id as mp_id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation\n" .
 			"from\n" .
 			"	message as m\n" .
-			"	join response as r on r.message_id = m.id\n" .
-			"	join mp on mp.id = r.mp_id\n" .
+			"	join message_to_mp as mtm on mtm.message_id = m.id\n" .
+			"	join mp on mp.id = mtm.mp_id\n" .
 			"where\n" .
 			"	m.\"state\" = 'sent'\n" .
-			"	and r.mp_id = $1\n" .
-			"	and r.parliament_code = $2"
+			"	and mtm.mp_id = $1\n" .
+			"	and mtm.parliament_code = $2"
 		);
 		$query->appendParam($params['mp_id']);
 		$query->appendParam($params['parliament_code']);

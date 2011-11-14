@@ -18,19 +18,25 @@ create table message
 --	unique (subject, "body", sender_email)
 );
 
-create table response
+create table message_to_mp
 (
 	message_id integer references message on delete cascade on update cascade,
 	mp_id integer references mp on delete cascade on update cascade,
-	parliament_code varchar references parliament on delete set null on update cascade,
-	subject varchar,
-	"body" text,
-	full_email_data text,
-	received_on timestamp,
-	received_privately varchar check (received_privately in ('yes', 'no')),
+	parliament_code varchar references parliament on delete restrict on update cascade,
 	reply_code varchar not null unique,
 	survey_code varchar,
+	private_reply_received varchar check (private_reply_received in ('yes', 'no', 'unknown')),
 	primary key (message_id, mp_id, parliament_code)
+);
+
+create table reply
+(
+	reply_code varchar references message_to_mp(reply_code) on delete restrict on update cascade,
+	subject varchar,
+	"body" text,
+	full_email_data text not null,
+	received_on timestamp not null default current_timestamp,
+	primary key (reply_code, received_on)
 );
 
 create table area
@@ -51,15 +57,15 @@ create table area
 -- indexes (except PRIMARY KEY and UNIQUE constraints, for which the indexes have been created automatically)
 create index message_sender_email on message(sender_email);
 create index message_sent_on on message(sent_on);
-create index response_message_id on response(message_id);
-create index response_mp_id on response(mp_id);
+create index message_to_mp_mp_id on message_to_mp(mp_id);
+create index message_to_mp_reply_code on message_to_mp(reply_code);
 
 -- privileges on objects
 grant select
-	on table message, response, area
+	on table message, message_to_mp, reply, area
 	to kv_user, kv_editor, kv_admin;
 grant insert, update, delete, truncate
-	on table message, response, area
+	on table message, message_to_mp, reply, area
 	to kv_admin;
 grant usage
 	on sequence message_id_seq

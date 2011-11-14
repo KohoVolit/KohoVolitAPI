@@ -5,7 +5,7 @@
  *
  * Finds MPs that are elected in a given constituency and/or that are members of all given groups at the given moment.
  */
-class FindMp
+class FindMps
 {
 	/**
 	 * Searches for MPs that are elected in a given constituency and/or that are members of all given groups at the given moment.

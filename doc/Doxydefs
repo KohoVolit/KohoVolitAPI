@@ -27,9 +27,9 @@
 
  
  /**
- * \defgroup napistejim NapiöteJim application
+ * \defgroup napistejim Napi≈°teJim application
  *
- * Represents API of the NapiöteJim (Write to Them) application.
+ * Represents API of the Napi≈°teJim (Write to Them) application.
  *
  * Resources of this project API provides database searches and views to the data. As such their provide only read access to the data.
  *

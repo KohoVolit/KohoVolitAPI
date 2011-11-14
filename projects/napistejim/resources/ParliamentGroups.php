@@ -5,7 +5,7 @@
  *
  * Lists groups of MPs that exist in a given parliament (ie. political groups, commitees, commissions, etc.).
  */
-class ParliamentGroup
+class ParliamentGroups
 {
 	/**
 	 * Returns groups that exist in a given parliament except the group of kind 'parliament'.

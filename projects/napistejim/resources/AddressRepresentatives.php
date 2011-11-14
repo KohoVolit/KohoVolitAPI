@@ -5,7 +5,7 @@
  *
  * Searches for MPs that are representatives for a given address in a given parliament(s).
  */
-class AddressRepresentative
+class AddressRepresentatives
 {
 	/**
 	 * Search for all MPs that are representatives for the address (given in Google Maps API structure) in a given parliament(s).
