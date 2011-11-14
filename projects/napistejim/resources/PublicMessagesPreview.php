@@ -82,7 +82,7 @@ class PublicMessagesPreview
 			"		group by\n" .
 			"			message_id\n" .
 			"	) as r\n" .
-			"	on mtm.message_id = m.id\n" .
+			"	on r.message_id = m.id\n" .
 			"where\n" .
 			"	\"state\" = 'sent'\n" .
 			"	and is_public = 'yes'\n"
