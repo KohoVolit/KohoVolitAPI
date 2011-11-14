@@ -255,7 +255,8 @@ class AddressRepresentatives
 		{
 			$parliament['constituency'] = array_values($parliament['constituency']);
 			foreach ($parliament['constituency'] as &$constituency)
-				$constituency['group'] = array_values($constituency['group']);
+				if (isset($constituency['group']))
+					$constituency['group'] = array_values($constituency['group']);
 		}
 
 		return array('parliament' => array_values($result));
