@@ -34,7 +34,7 @@ create table reply
 	reply_code varchar references message_to_mp(reply_code) on delete restrict on update cascade,
 	subject varchar,
 	"body" text,
-	full_email_data text not null,
+	full_email_data text,
 	received_on timestamp not null default current_timestamp,
 	primary key (reply_code, received_on)
 );
