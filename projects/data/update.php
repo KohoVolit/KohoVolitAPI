@@ -1,7 +1,7 @@
 <?php
 
-require '/home/shared/dev.napistejim.cz/config/settings.php';
-require '/home/shared/dev.napistejim.cz/setup.php';
+require '/home/shared/api.kohovolit.eu/config/settings.php';
+require '/home/shared/api.kohovolit.eu/setup.php';
 
 $report = '';
 
