@@ -34,7 +34,6 @@ class UpdaterCzLocal
 	{
 		$this->api = new ApiDirect('data');
 		$this->log = new Log(API_LOGS_DIR . '/update/cz/local/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
-		$this->log->setMinLogLevel(Log::DEBUG);
 	}
 
 	/**
@@ -120,7 +119,7 @@ class UpdaterCzLocal
 		}
 
 		$this->log->write('Completed.');
-		return array('update' => 'OK');
+		return array('log' => $this->log->getFilename());
 	}
 
 	/**

@@ -21,7 +21,8 @@ class Log
 		self::FATAL_ERROR => 'FATAL ERROR'
 	);
 	
-	/// handle of the file where to write messages to
+	/// name and handle of the file where to write messages to
+	private $filename;
 	private $file;
 	
 	/// only messages of this level and above will be actually written to the log file
@@ -33,13 +34,14 @@ class Log
 	public function __construct($filename, $mode = 'a')
 	{
 		$this->minLogLevel = self::NOTICE;
+		$this->filename = $filename;
 	
 		// check if the given path exists and if not, create it
 		$p = strrpos($filename, '/');
 		$path = is_int($p) ? substr($filename, 0, $p) : '';
 		$name = is_int($p) ? substr($filename, $p + 1) : $filename;
 		if (!empty($path) && !file_exists($path))
-			mkdir($path, 0775, true);
+			mkdir($path, 0755, true);
 	
 		$this->file = fopen($filename, $mode);
 		if ($this->file === false)
@@ -55,6 +57,14 @@ class Log
 	public function __destruct()
 	{
 		fclose($this->file);
+	}
+
+	/**
+	 * ...
+	 */
+	public function getFilename()
+	{
+		return $this->filename;
 	}
 
 	/**

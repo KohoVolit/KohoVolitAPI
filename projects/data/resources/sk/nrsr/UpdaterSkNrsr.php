@@ -184,7 +184,7 @@ class UpdaterSkNrsr
 		$this->closeMemberships($marked);
 
 		$this->log->write('Completed.');
-		return array('update' => 'OK');
+		return array('log' => $this->log->getFilename());
 	}
 
 	/**
