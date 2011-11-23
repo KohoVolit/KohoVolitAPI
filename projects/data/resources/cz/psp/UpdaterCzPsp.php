@@ -50,7 +50,6 @@ class UpdaterCzPsp
 		$this->parliament_code = $params['parliament'];
 		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
-		$this->log->setMinLogLevel(Log::DEBUG);
 	}
 
 	/**
@@ -169,7 +168,7 @@ class UpdaterCzPsp
 		$this->updateParentship();
 
 		$this->log->write('Completed.');
-		return array('update' => 'OK');
+		return array('log' => $this->log->getFilename());
 	}
 
 	/**
@@ -187,24 +186,23 @@ class UpdaterCzPsp
 		{
 			$this->api->create('Parliament', array(
 				'code' => $this->parliament_code,
-				'name' => 'Poslanecká sněmovna Parlamentu České republiky',
-				'short_name' => 'PSP ČR',
+				'name' => 'Poslanecká sněmovna',
+				'short_name' => 'Sněmovna',
 				'description' => 'Dolní komora parlamentu České republiky.',
 				'parliament_kind_code' => 'national-lower',
 				'country_code' => 'cz',
-				'weight' => 1.0,
 				'time_zone' => self::TIME_ZONE
 			));
 
 			// english translation
 			$this->api->create('ParliamentAttribute', array(
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'Chamber of Deputies of Parliament of the Czech republic'),
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'CDP CR'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'Chamber of Deputies'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'Deputies'),
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Lower house of the Czech republic parliament.')
 			));
 
 			// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
-			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $this->parliament_code, 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup_office')));
+			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $this->parliament_code, 'name' => 'napistejim_repinfo_function', 'value' => 'napistejim_repinfo_politgroup_office')));
 		}
 
 		// update the timestamp the parliament has been last updated on
@@ -475,7 +473,7 @@ class UpdaterCzPsp
 		if ($attr_in_db)
 			$db_value = $attr_in_db['value'];
 
-		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && $src_value == $db_value) return;
+		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && (string)$src_value == (string)$db_value) return;
 
 		// close the current record
 		if (isset($db_value))

@@ -12,7 +12,7 @@ class ScraperCzLocal
 	 *
 	 * \return An array of data parsed from the remote resource.
 	 */
-	 
+
 	public static function scrape($params)
 	{
 		$remote_resource = $params['remote_resource'];
@@ -44,7 +44,7 @@ class ScraperCzLocal
 			throw new Exception('The file from scraperwiki.com was not downloaded well (file too short)', 503);
 		return $page;
 	}
-	
+
 	/**
 	* get list of parliaments (cities) from google docs
 	* @return array of parliaments
@@ -55,7 +55,7 @@ class ScraperCzLocal
 	  $array = self::parse_csv($csv,array('header_replace' => true));
 	  return array('parliament' => $array);
 	}
-	
+
 /**
 * parse csv file
 * the first row is considered a header!

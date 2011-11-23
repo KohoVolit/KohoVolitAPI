@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table PARLIAMENT_KIND_ATTRIBUTE that holds parliament kinds' additional attributes.
  *
- * Columns of table PARLIAMENT_KIND_ATTRIBUTE are: <code>parliament_kind_code, name, value, lang, since, until</code>.
+ * Columns of table PARLIAMENT_KIND_ATTRIBUTE are: <code>parliament_kind_code, name, value, lang, cntry, since, until</code>.
  *
  * All columns are allowed to write to.
  *
@@ -23,7 +23,7 @@ class ParliamentKindAttribute
 	{
 		$this->attribute = new Attribute(array(
 			'name' => 'parliament_kind_attribute',
-			'columns' => array('parliament_kind_code')
+			'columns' => array('parliament_kind_code', 'cntry')
 		));
 	}
 
@@ -52,6 +52,7 @@ class ParliamentKindAttribute
 	 *             [since] => -infinity
 	 *             [until] => infinity
 	 *             [parliament_kind_code] => regional
+	 *             [cntry] => -
 	 *         ) 
 	 * 
 	 * )
@@ -80,6 +81,7 @@ class ParliamentKindAttribute
 	 *     [parliament_kind_code] => regional
 	 *     [name] => name
 	 *     [lang] => cs
+	 *     [cntry] => -
 	 *     [since] => -infinity
 	 * )
 	 * \endcode

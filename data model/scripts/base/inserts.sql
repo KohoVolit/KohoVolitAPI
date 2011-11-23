@@ -3,12 +3,13 @@
 
 insert into "language" (code, "name", short_name, description, locale) values
 ('-', 'any language', 'any', 'This language is referenced as a foreign key by language neutral attributes.', 'C'),
-('en', 'in English', 'English', null, 'en_US.UTF-8'),
-('sk', 'po slovensky', 'slovenčina', null, 'sk_SK.UTF-8'),
-('cs', 'česky', 'čeština', null, 'cs_CZ.UTF-8');
+('en', 'in English', 'English', null, 'en_US.utf-8'),
+('sk', 'po slovensky', 'slovenčina', null, 'sk_SK.utf-8'),
+('cs', 'česky', 'čeština', null, 'cs_CZ.utf-8');
 
 
 insert into country (code, "name", short_name, description) values
+('-', 'any country', 'any', 'This country is referenced as a foreign key by attributes that are country independent.'),
 ('eu', 'European Union', 'EU', null),
 ('sk', 'Slovak republic', 'Slovakia', null),
 ('cz', 'Czech republic', 'Czechia', null);

@@ -6,7 +6,8 @@ create table parliament_kind
 	code varchar primary key,
 	"name" varchar not null,
 	short_name varchar,
-	description text
+	description text,
+	weight real
 );
 
 create table parliament
@@ -17,7 +18,6 @@ create table parliament
 	description text,
 	parliament_kind_code varchar references parliament_kind on delete restrict on update cascade,
 	country_code varchar references country on delete restrict on update cascade,
-	weight real,
 	time_zone varchar,
 	last_updated_on timestamp
 );
@@ -53,7 +53,8 @@ create table constituency
 create table parliament_kind_attribute
 (
 	parliament_kind_code varchar references parliament_kind on delete cascade on update cascade,
-	primary key (parliament_kind_code, "name", lang, since),
+	cntry varchar references country on delete restrict on update cascade default '-',
+	primary key (parliament_kind_code, "name", lang, cntry, since),
 	foreign key (lang) references "language" on delete restrict on update cascade
 ) inherits ("attribute");
 

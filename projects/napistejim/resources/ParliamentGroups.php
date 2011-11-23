@@ -1,11 +1,11 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Lists groups of MPs that exist in a given parliament (ie. political groups, commitees, commissions, etc.).
  */
-class ParliamentGroup
+class ParliamentGroups
 {
 	/**
 	 * Returns groups that exist in a given parliament except the group of kind 'parliament'.
@@ -68,6 +68,7 @@ class ParliamentGroup
 		$groups = $query->execute();
 
 		// make a hierarchical representation of the list structured by group kind
+		$result = array();
 		foreach ($groups as $group)
 		{
 			$group_kind_code = $group['group_kind_code'];

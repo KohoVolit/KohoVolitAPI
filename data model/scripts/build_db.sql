@@ -17,5 +17,5 @@ comment on database kohovolit is 'Project KohoVolit.';
 \i group/tables.sql
 \i group/triggers.sql
 \i group/inserts.sql
-\i wtt/tables.sql
-\i wtt/functions.sql
+\i napistejim/tables.sql
+\i napistejim/functions.sql

@@ -1,11 +1,11 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Lists previews of sent public messages.
  */
-class PublicMessagePreview
+class PublicMessagesPreview
 {
 	/**
 	 * Lists previews of sent public messages in descending order by the date and time they were sent.
@@ -34,7 +34,7 @@ class PublicMessagePreview
 	 *             [sent_on] => 2011-09-06 09:09:35.00988
 	 *             [age_days] => 2.29212016417748
 	 *             [recipients] => Gajdůšková A.
-	 *             [response_exists] => yes
+	 *             [reply_exists] => yes
 	 *         )
 
 	 * )
@@ -49,17 +49,18 @@ class PublicMessagePreview
 			"	substr(\"body\", 1, 200) || case when length(\"body\") > 200 then '...' else '' end as \"body\",\n" .
 			"	sender_name, sent_on,\n" .
 			"	(extract('epoch' from now()) - extract('epoch' from sent_on)) / 86400 as age_days,\n" .
-			"	recipients, response_exists\n" .
+			"	recipients, reply_exists\n" .
 			"from\n" .
 			"	message as m\n" .
 			"	join (\n" .
 			"		select\n" .
 			"			message_id,\n" .
 			"			string_agg(mp.last_name || ' ' || substr(mp.first_name, 1, 1) || '.' || case when length(mp.middle_names) > 0 then substr(mp.middle_names, 1, 1) || '. ' else '' end, ', ' order by mp_id) as recipients,\n" .
-			"			string_agg(case when received_on is not null then 'yes' else 'no' end, ', ' order by mp_id) as response_exists\n" .
+			"			string_agg(case when rc.reply_code is not null then 'yes' else 'no' end, ', ' order by mp_id) as reply_exists\n" .
 			"		from\n" .
-			"			response as r\n" .
-			"			join mp on mp.id = r.mp_id\n" .
+			"			message_to_mp as mtm\n" .
+			"			join mp on mp.id = mtm.mp_id\n" .
+			"			left join (select distinct reply_code from reply) as rc on rc.reply_code = mtm.reply_code\n" .
 			"		where\n" .
 			"			true\n"
 		);
@@ -68,7 +69,7 @@ class PublicMessagePreview
 		$n = 0;
 		if (isset($params['parliament']))
 		{
-			$query->appendQuery('			and r.parliament_code = any($' . ++$n . ")\n");
+			$query->appendQuery('			and mtm.parliament_code = any($' . ++$n . ")\n");
 			$query->appendParam(Db::arrayOfStringsArgument(explode('|', $params['parliament'])));
 		}
 		if (isset($params['mp_id']))

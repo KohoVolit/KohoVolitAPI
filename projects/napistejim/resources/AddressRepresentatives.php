@@ -1,11 +1,11 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Searches for MPs that are representatives for a given address in a given parliament(s).
  */
-class AddressRepresentative
+class AddressRepresentatives
 {
 	/**
 	 * Search for all MPs that are representatives for the address (given in Google Maps API structure) in a given parliament(s).
@@ -18,13 +18,14 @@ class AddressRepresentative
 	 *   - \c lang specifying the language to return names in. It contains a language code.
 	 * Any of the listed fields can be ommitted.
 	 * If the parliament restriction is ommited, the search performs for all parliaments.
-	 * If the language specification is ommited or names are not available in the given language, they are returned in default language of the parliament.
+	 * If the language specification is ommited or names are not available in the given language, they are returned in default language of the parliament
+	 * (additonal attributes are returned empty).
 	 *
 	 * \return An array of MPs structured by parliament, constituency and political group.
 	 *
 	 * \ex
 	 * \code
-	 * read(array('latitude' => 50.183384, 'longitude' => 12.549942, 'country' => 'Česká republika', 'administrative_area_level_1' => 'Karlovarský', 'administrative_area_level_2' => 'Sokolov'))
+	 * read(array('latitude' => 50.183384, 'longitude' => 12.549942, 'country' => 'Česká republika', 'administrative_area_level_1' => 'Karlovarský', 'administrative_area_level_2' => 'Sokolov', lang => 'cs'))
 	 * \endcode returns
 	 * \code
 	 * Array
@@ -34,10 +35,13 @@ class AddressRepresentative
 	 *             [0] => Array
 	 *                 (
 	 *                     [code] => cz/psp
-	 *                     [name] => Poslanecká sněmovna Parlamentu České republiky
-	 *                     [short_name] => PSP ČR
+	 *                     [name] => Poslanecká sněmovna
+	 *                     [short_name] => Sněmovna
 	 *                     [description] => Dolní komora parlamentu České republiky.
 	 *                     [time_zone] => Europe/Prague
+	 *                     [kind] => national-lower
+	 *                     [competence] => Projednává a schvaluje návrhy zákonů, státní rozpočet, změny ústavy. Ratifikuje mezinárodní smlouvy. Volí prezidenta. Může vyslovit nedůvěru vládě.
+	 *                     [weight] => 2.1
 	 *                     [constituency] => Array
 	 *                         (
 	 *                             [0] => Array
@@ -106,10 +110,13 @@ class AddressRepresentative
 	 *             [1] => Array
 	 *                 (
 	 *                     [code] => cz/senat
-	 *                     [name] => Senát Parlamentu České republiky
-	 *                     [short_name] => Senát ČR
+	 *                     [name] => Senát
+	 *                     [short_name] => Senát
 	 *                     [description] => Horní komora parlamentu České republiky.
 	 *                     [time_zone] => Europe/Prague
+	 *                     [kind] => national-upper
+	 *                     [competence] => Projednává a schvaluje návrhy zákonů, změny ústavy a mezinárodní smlouvy přijaté Sněmovnou. Volí prezidenta.
+	 *                     [weight] => 2.2
 	 *                     [constituency] => Array
 	 *                         (
 	 *                             [0] => Array
@@ -183,11 +190,8 @@ class AddressRepresentative
 		}
 
 		// get details of all parliaments where a representative has been found
-		$query->setQuery('select * from parliament_details($1, $2)');
-		$query->clearParams();
-		$query->appendParam(Db::arrayOfStringsArgument(array_keys($parliaments)));
-		$query->appendParam(isset($params['lang']) ? $params['lang'] : null);
-		$parliament_details = $query->execute();
+		$api_napistejim = new ApiDirect('napistejim');
+		$parliament_details = $api_napistejim->read('ParliamentDetails', array('parliament' => implode('|', array_keys($parliaments)), 'lang' => isset($params['lang']) ? $params['lang'] : null));
 
 		// get info about the MPs using a particular function for each individual parliament and make a structured result
 		$result = array();
@@ -195,9 +199,9 @@ class AddressRepresentative
 		{
 			$parliament_code = $pd['code'];
 			$result[$parliament_code] = $pd;
-			unset($result[$parliament_code]['wtt_repinfo_function']);
-			if (empty($pd['wtt_repinfo_function'])) continue;
-			$query->setQuery('select * from ' . $pd['wtt_repinfo_function'] . '($1, $2, $3, $4, $5)');
+			unset($result[$parliament_code]['napistejim_repinfo_function']);
+			if (empty($pd['napistejim_repinfo_function'])) continue;
+			$query->setQuery('select * from ' . $pd['napistejim_repinfo_function'] . '($1, $2, $3, $4, $5)');
 			$query->clearParams();
 			$query->appendParam(Db::arrayOfIntegersArgument($parliaments[$parliament_code]['mp_ids']));
 			$query->appendParam($parliament_code);
@@ -251,7 +255,8 @@ class AddressRepresentative
 		{
 			$parliament['constituency'] = array_values($parliament['constituency']);
 			foreach ($parliament['constituency'] as &$constituency)
-				$constituency['group'] = array_values($constituency['group']);
+				if (isset($constituency['group']))
+					$constituency['group'] = array_values($constituency['group']);
 		}
 
 		return array('parliament' => array_values($result));

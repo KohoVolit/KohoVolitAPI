@@ -27,12 +27,12 @@
 
  
  /**
- * \defgroup wtt WriteToThem application
+ * \defgroup napistejim NapišteJim application
  *
- * Represents API of the WriteToThem application.
+ * Represents API of the NapišteJim (Write to Them) application.
  *
  * Resources of this project API provides database searches and views to the data. As such their provide only read access to the data.
  *
- * Identifier of this project used for API requests is \c wtt.
+ * Identifier of this project used for API requests is \c napistejim.
  */
  

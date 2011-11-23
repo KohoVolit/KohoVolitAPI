@@ -34,7 +34,6 @@ class UpdaterCzLocal
 	{
 		$this->api = new ApiDirect('data');
 		$this->log = new Log(API_LOGS_DIR . '/update/cz/local/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
-		$this->log->setMinLogLevel(Log::DEBUG);
 	}
 
 	/**
@@ -98,7 +97,8 @@ class UpdaterCzLocal
 
 			// update groups (political groups = kluby/strany)
 			$term_id = $this->parliaments[$src_mp['parliament_code']]['term_id'];
-			$group_id = $this->updateGroup($src_mp, $term_id);
+			if ($src_mp['parliament_code'] != 'cz/starostove')		// ignore political group 'starosta' that is erroneously filled for all members of this parliament
+				$group_id = $this->updateGroup($src_mp, $term_id);
 
 			// update memberships in groups(=parliament) and 'political groups'
 			$data = array(
@@ -110,13 +110,16 @@ class UpdaterCzLocal
 				'until' => $src_mp['until']
 			);
 			$this->updateMembership($data, $term_id);
+
+			if ($src_mp['parliament_code'] == 'cz/starostove') continue;		// ignore political group 'starosta' that is erroneously filled for all members of this parliament
+
 			$data['group_id'] = $group_id;
 			$data['constituency_id'] = null;
 			$this->updateMembership($data, $term_id);
 		}
 
 		$this->log->write('Completed.');
-		return array('update' => 'OK');
+		return array('log' => $this->log->getFilename());
 	}
 
 	/**
@@ -299,7 +302,7 @@ class UpdaterCzLocal
 		if ($value_in_db)
 			$db_value = $value_in_db['value'];
 
-		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && $src_value == $db_value) return;
+		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && (string)$src_value == (string)$db_value) return;
 
 		// close the current record
 		if (isset($db_value))
@@ -463,10 +466,8 @@ class UpdaterCzLocal
 		{
 			$this->log->write("Updating parliament '{$src_parliament['parliament_code']}'.", Log::DEBUG);
 
-			if ($src_parliament['parliament_code'] == 'cz/starostove')
-				$description = 'Starostové';
-			else
-				$description = 'Zastupitelstvo ' . $src_parliament['parliament_name'];
+			$description = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'Starostové obcí s rozšířenou působností.' : 'Zastupitelstvo ' . $src_parliament['parliament_name'];
+			$kind = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'mayors' : 'local';
 
 			// if parliament does not exist yet, insert it
 			$parliament = $this->api->readOne('Parliament', array('code' => $src_parliament['parliament_code']));
@@ -476,14 +477,23 @@ class UpdaterCzLocal
 					'code' => $src_parliament['parliament_code'],
 					'name' => $src_parliament['parliament_name'],
 					'description' => $description,
-					'parliament_kind_code' => 'local',
+					'parliament_kind_code' => $kind,
 					'country_code' => 'cz',
-					'weight' => ($src_parliament['parliament_code'] == 'cz/starostove') ? 4.0 : 5.0,
 					'time_zone' => self::TIME_ZONE
 				));
 
+				// english translation
+				if ($src_parliament['parliament_code'] == 'cz/starostove')
+				{
+					$this->api->create('ParliamentAttribute', array(
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'name', 'value' => 'Mayors'),
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'short_name', 'value' => 'Mayors'),
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'description', 'value' => 'Mayors of towns and cities.')
+					));
+
 				// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
-				$this->api->create('ParliamentAttribute', array(array('parliament_code' => $src_parliament['parliament_code'], 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup')));
+				$this->api->create('ParliamentAttribute', array('parliament_code' => $src_parliament['parliament_code'], 'name' => 'napistejim_repinfo_function', 'value' => 'napistejim_repinfo_politgroup'));
+				}
 			}
 
 			// update the timestamp the parliament has been last updated on

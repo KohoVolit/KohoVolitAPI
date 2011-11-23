@@ -44,7 +44,6 @@ class UpdaterCzSenat
 		$this->parliament_code = $params['parliament'];
 		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
-		$this->log->setMinLogLevel(Log::DEBUG);
 
 		date_default_timezone_set(self::TIME_ZONE);
 
@@ -177,7 +176,7 @@ class UpdaterCzSenat
 		  $this->updateAreas();
 
 		$this->log->write('Completed.');
-		return array('update' => 'OK');
+		return array('log' => $this->log->getFilename());
 	}
 
 	/**
@@ -797,7 +796,7 @@ class UpdaterCzSenat
 		if ($value_in_db)
 			$db_value = $value_in_db['value'];
 
-		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && $src_value == $db_value) return;
+		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && (string)$src_value == (string)$db_value) return;
 
 		// close the current record
 		if (isset($db_value))
@@ -983,24 +982,23 @@ class UpdaterCzSenat
 		{
 			$this->api->create('Parliament', array(
 				'code' => $this->parliament_code,
-				'name' => 'Senát Parlamentu České republiky',
-				'short_name' => 'Senát ČR',
+				'name' => 'Senát',
+				'short_name' => 'Senát',
 				'description' => 'Horní komora parlamentu České republiky.',
 				'parliament_kind_code' => 'national-upper',
 				'country_code' => 'cz',
-				'weight' => 2.0,
 				'time_zone' => self::TIME_ZONE
 			));
 
 			// english translation
 			$this->api->create('ParliamentAttribute', array(
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'Senate of Parliament of the Czech republic'),
-				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'Senate CR'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'name', 'value' => 'Senate'),
+				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'short_name', 'value' => 'Senate'),
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Upper house of the Czech republic parliament.')
 			));
 
 			// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
-			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $this->parliament_code, 'name' => 'wtt_repinfo_function', 'value' => 'wtt_repinfo_politgroup')));
+			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $this->parliament_code, 'name' => 'napistejim_repinfo_function', 'value' => 'napistejim_repinfo_politgroup')));
 		}
 
 		// update the timestamp the parliament has been last updated on

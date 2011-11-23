@@ -1,7 +1,7 @@
 <?php
 
 /**
- * \ingroup wtt
+ * \ingroup napistejim
  *
  * Provides detailed information about given MPs to be used as addressees.
  */
@@ -26,9 +26,9 @@ class MpDetails
 	 *         (
 	 *             [id] => 717
 	 *             [first_name] => Jan
-	 *             [middle_names] => 
+	 *             [middle_names] =>
 	 *             [last_name] => Pajer
-	 *             [disambiguation] => 
+	 *             [disambiguation] =>
 	 *             [parliament_code] => cz/psp
 	 *             [parliament_name] => Poslanecká sněmovna Parlamentu České republiky
 	 *             [source_code] => 5953
@@ -41,9 +41,9 @@ class MpDetails
 	 *         (
 	 *             [id] => 823
 	 *             [first_name] => Petr
-	 *             [middle_names] => 
+	 *             [middle_names] =>
 	 *             [last_name] => Vícha
-	 *             [disambiguation] => 
+	 *             [disambiguation] =>
 	 *             [parliament_code] => cz/senat
 	 *             [parliament_name] => Senát Parlamentu České republiky
 	 *             [source_code] => 206
