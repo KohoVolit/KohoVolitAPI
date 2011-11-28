@@ -1,7 +1,5 @@
 <?php
 
-$private_resources = array('Message');
-
 function api_fio_autoload($class_name)
 {
     if (file_exists(API_ROOT . "/projects/fio/classes/$class_name.php"))
