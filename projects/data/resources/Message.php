@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table MESSAGE that holds messages sent to MPs.
  *
- * Columns of table MESSAGE are: <code>id, subject, body, sender_name, sender_address, sender_email, is_public, state, written_on, sent_on, confirmation_code, approval_code</code>.
+ * Columns of table MESSAGE are: <code>id, subject, body, sender_name, sender_address, sender_email, is_public, state, written_on, sent_on, confirmation_code, approval_code, text_data, sender_data</code>.
  *
  * Column <code>id</code> is a read-only column automaticaly generated on create.
  *
@@ -25,7 +25,7 @@ class Message
 	{
 		$this->entity = new Entity(array(
 			'name' => 'message',
-			'columns' => array('id', 'subject', 'body', 'sender_name', 'sender_address', 'sender_email', 'is_public', 'state', 'written_on', 'sent_on', 'confirmation_code', 'approval_code'),
+			'columns' => array('id', 'subject', 'body', 'sender_name', 'sender_address', 'sender_email', 'is_public', 'state', 'written_on', 'sent_on', 'confirmation_code', 'approval_code', 'text_data', 'sender_data'),
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id')
 		));
@@ -59,6 +59,8 @@ class Message
 	 *             [sent_on] => 2011-05-26 13:09:32
 	 *             [confirmation_code] => abcdefghij
 	 *             [approval_code] => 
+	 *             [text_data] => 'dear':4A 'law':2B 'mr':5A 'my':1B 'proposal':3B
+	 *             [sender_data] => 'bag':3B 'baggins':2A 'bilbo':1A 'end':4B 'hobbiton':5B
 	 *         )
 	 *
 	 * )

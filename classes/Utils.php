@@ -5,6 +5,12 @@
  */
 class Utils
 {
+	// remove accents
+	public static function unaccent($text)
+	{
+		return preg_replace('/[\'^"~]/', '', iconv('UTF-8', 'ASCII//TRANSLIT', $text));
+	}
+
 	/**
 	 * konvertuje zapis datumu v danom jazyku (DD.MM.YYYY pre 'cs' a 'sk' a MM/DD/YYYY pre 'en') na ISO format YYYY-MM-DD, pripadne medzery ignoruje, upraveno ms: muze obsahovat &nbsp;
 	 */

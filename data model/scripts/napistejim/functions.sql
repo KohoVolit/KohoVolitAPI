@@ -251,3 +251,20 @@ where
 order by
 	gk.weight, gk.code, group_name
 $$ language sql stable;
+
+-- returns all replies to a given message together with names of their authors - MPs
+-- records are ordered by MP's id and time when the reply has been received
+create or replace function replies_to_message(message_id integer)
+returns table(message_id integer, mp_id integer, first_name varchar, middle_names varchar, last_name varchar, disambiguation varchar, sex char, parliament_code varchar, subject varchar, "body" varchar, received_on timestamp)
+as $$
+	select
+		message_id, mp_id, first_name, middle_names, last_name, disambiguation, sex, parliament_code, r.subject, r."body", received_on
+	from
+		message_to_mp as mtm
+		left join reply as r on r.reply_code = mtm.reply_code
+		join mp on mp.id = mtm.mp_id
+	where
+		mtm.message_id = $1
+	order by
+		mp_id, received_on
+$$ language sql stable;

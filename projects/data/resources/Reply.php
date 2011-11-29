@@ -10,6 +10,8 @@
  * All columns are allowed to write to.
  *
  * Primary key consists of columns <code>message_id, mp_id, parliament_code</code>.
+ *
+ * \note Replies are not accessible through API from remote due to privacy and security reasons. 
  */
 class Reply
 {

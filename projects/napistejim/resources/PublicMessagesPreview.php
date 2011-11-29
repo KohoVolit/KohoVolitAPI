@@ -11,10 +11,13 @@ class PublicMessagesPreview
 	 * Lists previews of sent public messages in descending order by the date and time they were sent.
 	 *
 	 * \param $params An array of pairs <em>parameter => value</em> specifying the messages to select. Available parameters are:
-	 *	- \c parliament specifies to select only the messages addressed (also) to a member of this parliament(s). It contains parliament codes separated by | character. 
+	 *	- \c parliament specifies to select only the messages addressed (also) to a member of this parliament(s). It contains parliament codes separated by | character.
 	 *	- \c mp_id specifies to select only the messages addressed to this MP
 	 *	- \c since specifies to select only the messages sent since (including) this date and time
-	 *	- \c until specifies to select only the messages sent until (excluding) this date and time.
+	 *	- \c until specifies to select only the messages sent until (excluding) this date and time
+	 *	- \c text specifies to apply fulltext search of \c text in messages and replies (in both subject and title)
+	 *	- \c sender specifies to apply fulltext search of \c sender in message senders
+	 *	- \c _limit, \c _offset restrict the result to return at most \c _limit records skipping the first \c _offset records.
 	 *
 	 * \return Basic information on sent public messages.
 	 *
@@ -56,11 +59,11 @@ class PublicMessagesPreview
 			"		select\n" .
 			"			message_id,\n" .
 			"			string_agg(mp.last_name || ' ' || substr(mp.first_name, 1, 1) || '.' || case when length(mp.middle_names) > 0 then substr(mp.middle_names, 1, 1) || '. ' else '' end, ', ' order by mp_id) as recipients,\n" .
-			"			string_agg(case when rc.reply_code is not null then 'yes' else 'no' end, ', ' order by mp_id) as reply_exists\n" .
+			"			string_agg(case when r.reply_code is not null then 'yes' else 'no' end, ', ' order by mp_id) as reply_exists\n" .
 			"		from\n" .
 			"			message_to_mp as mtm\n" .
 			"			join mp on mp.id = mtm.mp_id\n" .
-			"			left join (select distinct reply_code from reply) as rc on rc.reply_code = mtm.reply_code\n" .
+			"			left join (select distinct reply_code from reply) as r on r.reply_code = mtm.reply_code\n" .
 			"		where\n" .
 			"			true\n"
 		);
@@ -81,8 +84,8 @@ class PublicMessagesPreview
 		$query->appendQuery(
 			"		group by\n" .
 			"			message_id\n" .
-			"	) as r\n" .
-			"	on r.message_id = m.id\n" .
+			"	) as replies\n" .
+			"	on replies.message_id = m.id\n" .
 			"where\n" .
 			"	\"state\" = 'sent'\n" .
 			"	and is_public = 'yes'\n"
@@ -100,9 +103,42 @@ class PublicMessagesPreview
 			$query->appendParam($params['until']);
 		}
 
-		$query->appendQuery("order by\n	sent_on desc");
+		// filter messages by fulltext search
+		if (isset($params['text']))
+		{
+			$query->appendQuery("	and text_data @@ to_tsquery('simple', $" . ++$n . ")\n");
+			$query->appendParam(self::makeTsQuery($params['text']));
+		}
+		if (isset($params['sender']))
+		{
+			$query->appendQuery("	and sender_data @@ to_tsquery('simple', $" . ++$n . ")\n");
+			$query->appendParam(self::makeTsQuery($params['sender']));
+		}
+
+		$query->appendQuery("order by\n	sent_on desc\n");
+
+		// restrict the output by _limit and _offset
+		if (isset($params['_limit']))
+		{
+			$query->appendQuery('limit $' . ++$n . ' ');
+			$query->appendParam($params['_limit']);
+		}
+		if (isset($params['_offset']))
+		{
+			$query->appendQuery('offset $' . ++$n);
+			$query->appendParam($params['_offset']);
+		}
 
 		return $query->execute();
+	}
+
+	private static function makeTsQuery($text)
+	{
+		$res = strtolower(Utils::unaccent($text));
+		$res = preg_replace('/\W+/', ' ', $res);
+		$res = preg_replace('/(\S)\s/', '$1:* ', $res);
+		$res = preg_replace('/(\S)\s+(\S)/', '$1 & $2', $res);
+		return $res;
 	}
 }
 

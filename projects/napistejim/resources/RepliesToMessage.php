@@ -55,18 +55,7 @@ class RepliesToMessage
 	public function read($params)
 	{
 		$query = new Query();
-		$query->setQuery(
-			"select\n" .
-			"	message_id, mp_id, first_name, middle_names, last_name, disambiguation, sex, parliament_code, subject, \"body\", received_on\n" .
-			"from\n" .
-			"	message_to_mp as mtm\n" .
-			"	left join reply as r on r.reply_code = mtm.reply_code\n" .
-			"	join mp on mp.id = mtm.mp_id\n" .
-			"where\n" .
-			"	mtm.message_id = $1\n" .
-			"order by\n" .
-			"	mp_id, received_on"
-		);
+		$query->setQuery('select * from replies_to_message($1)');
 		$query->appendParam($params['message_id']);
 		$replies = $query->execute();
 
