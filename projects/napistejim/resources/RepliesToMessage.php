@@ -13,7 +13,7 @@ class RepliesToMessage
 	 * \param $params An array of pairs <em>parameter => value</em> specifying the message to get replies to. Available parameters are:
 	 * - \c message_id specifying id of the message
 	 *
-	 * \return Details of the selected replies and of their authors - MPs.
+	 * \return Details of the replies and of their authors. Authors are ordered by date of their (first) reply.
 	 *
 	 * \ex
 	 * \code
@@ -33,7 +33,10 @@ class RepliesToMessage
 	 *                     [last_name] => Skalický
 	 *                     [disambiguation] => PSP ČR 2010-
 	 *                     [sex] => m
+	 *                     [mp_image] => 5292_6.jpg
+	 *                     [political_group] => ČSSD
 	 *                     [parliament_code] => cz/psp
+	 *                     [parliament_name] => Sněmovna
 	 *                     [reply] => Array
 	 *                         (
 	 *                             [0] => Array
@@ -67,11 +70,30 @@ class RepliesToMessage
 			{
 				$mp = $r;
 				unset($mp['message_id'], $mp['subject'], $mp['body'], $mp['received_on']);
+				if (!empty($mp['mp_image']))
+					$mp['mp_image'] = $mp['parliament_code'] . '/images/mp/' . $mp['mp_image'];
 				$result[$mp['mp_id']] = $mp;
 			}
 			$result[$r['mp_id']]['reply'][] = array('subject' => $r['subject'], 'body' => $r['body'], 'received_on' => $r['received_on']);
 		}
+
+		// sort MPs by date of their (first) reply
+		usort($result, array('RepliesToMessage', 'cmpByFirstReply'));
+
 		return array('message_id' => $params['message_id'], 'mp' => array_values($result));
+	}
+
+	private static function cmpByFirstReply($a, $b)
+	{
+		$alr = end($a['reply']);
+		$blr = end($b['reply']);
+		$alrd = $alr['received_on'];
+		$blrd = $blr['received_on'];
+		if (empty($alrd)) return 1;
+		if (empty($blrd)) return -1;
+		if ($alrd < $blrd) return -1;
+		if ($alrd > $blrd) return 1;
+		return 0;
 	}
 }
 

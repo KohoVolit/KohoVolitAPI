@@ -434,7 +434,7 @@ class ScraperCzPsp
 		$page = file_get_contents($url);
 		if (strlen($page) < 1000)
 			throw new Exception('The file from psp.cz was not downloaded well. Is not around 3 in the morning CET? The psp.cz is being mainteined at that time... (file too short)', 503);
-		return iconv("cp1250", "UTF-8//TRANSLIT", $page);
+		return iconv("cp1250", "UTF-8//TRANSLIT//IGNORE", $page);
 	}
 
 	private static function appendHtml($params, &$out, $html)

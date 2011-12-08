@@ -5,9 +5,10 @@
  *
  * Provides an interface to database table MP that holds information about MPs (members of parliament).
  *
- * Columns of table MP are: <code>id, first_name, middle_names, last_name, disambiguation, sex, pre_title, post_title, born_on, died_on, last_updated_on</code>.
+ * Columns of table MP are: <code>id, first_name, middle_names, last_name, disambiguation, sex, pre_title, post_title, born_on, died_on, last_updated_on, name_data</code>.
  *
- * Column <code>id</code> is a read-only column automaticaly generated on create.
+ * Columns <code>id, name_data</code> are read-only. The \c id is automaticaly generated on create,
+ * the latter is derived from other columns on create and on each update automatically.
  *
  * Primary key is column <code>id</code>.
  */
@@ -23,9 +24,9 @@ class Mp
 	{
 		$this->entity = new Entity(array(
 			'name' => 'mp',
-			'columns' => array('id', 'first_name', 'middle_names', 'last_name', 'disambiguation', 'sex', 'pre_title', 'post_title', 'born_on', 'died_on', 'last_updated_on'),
+			'columns' => array('id', 'first_name', 'middle_names', 'last_name', 'disambiguation', 'sex', 'pre_title', 'post_title', 'born_on', 'died_on', 'last_updated_on', 'name_data'),
 			'pkey_columns' => array('id'),
-			'readonly_columns' => array('id')
+			'readonly_columns' => array('id', 'name_data')
 		));
 	}
 
@@ -47,30 +48,32 @@ class Mp
 	 *         (
 	 *             [id] => 11
 	 *             [first_name] => Marek
-	 *             [middle_names] => 
+	 *             [middle_names] =>
 	 *             [last_name] => Benda
-	 *             [disambiguation] => 
+	 *             [disambiguation] =>
 	 *             [sex] => m
-	 *             [pre_title] => 
-	 *             [post_title] => 
+	 *             [pre_title] =>
+	 *             [post_title] =>
 	 *             [born_on] => 1968-11-10
-	 *             [died_on] => 
+	 *             [died_on] =>
 	 *             [last_updated_on] => 2011-08-04 12:21:42.015
+	 *             [name_data] => 'benda':2A 'marek':1B
 	 *         )
 	 *
 	 *     [1] => Array
 	 *         (
 	 *             [id] => 177
 	 *             [first_name] => Marek
-	 *             [middle_names] => 
+	 *             [middle_names] =>
 	 *             [last_name] => Šnajdr
-	 *             [disambiguation] => 
+	 *             [disambiguation] =>
 	 *             [sex] => m
 	 *             [pre_title] => Bc.
-	 *             [post_title] => 
+	 *             [post_title] =>
 	 *             [born_on] => 1975-01-06
-	 *             [died_on] => 
+	 *             [died_on] =>
 	 *             [last_updated_on] => 2011-08-04 12:28:38.39
+	 *             [name_data] => 'marek':1B 'snajdr':2A
 	 *         )
 	 *
 	 * )
@@ -114,7 +117,9 @@ class Mp
 	 */
 	public function create($data)
 	{
-		return $this->entity->create($data);
+		$created = $this->entity->create($data);
+		self::updateFulltextData($created);
+		return $created;
 	}
 
 	/**
@@ -129,7 +134,10 @@ class Mp
 	 */
 	public function update($params, $data)
 	{
-		return $this->entity->update($params, $data);
+		$updated = $this->entity->update($params, $data);
+		if (0 < count(array_intersect(array_keys($data), array('first_name', 'middle_names', 'last_name', 'disambiguation'))))
+			self::updateFulltextData($updated);
+		return $updated;
 	}
 
 	/**
@@ -142,6 +150,47 @@ class Mp
 	public function delete($params)
 	{
 		return $this->entity->delete($params);
+	}
+
+	/**
+	 * Updates derived column needed for fulltext search for the given MPs.
+	 *
+	 * \param $mps An array of MPs where each MP is an array of MP attributes where only the \c id attribute is really used.
+	 */
+	private static function updateFulltextData($mps)
+	{
+		$query = new Query('kv_admin');
+		foreach ($mps as $m)
+		{
+			// get names of MP
+			$query->clearParams();
+			$query->setQuery('select * from mp where id = $1');
+			$query->appendParam($m['id']);
+			$mp = $query->execute();
+			$mp = $mp[0];
+
+			// normalize names for fulltext search (remove accents and convert to lowercase)
+			$first_name = strtolower(Utils::unaccent($mp['first_name']));
+			$middle_names = strtolower(Utils::unaccent($mp['middle_names']));
+			$last_name = strtolower(Utils::unaccent($mp['last_name']));
+			$disambiguation = strtolower(Utils::unaccent($mp['disambiguation']));
+
+			// set the column with search data to weighted concatenation of the normalized names
+			$query->setQuery(
+				"update mp set\n" .
+				"	name_data =\n" .
+				"		setweight(to_tsvector('simple', $2), 'B') ||\n" .
+				"		setweight(to_tsvector('simple', $3), 'C') ||\n" .
+				"		setweight(to_tsvector('simple', $4), 'A') ||\n" .
+				"		setweight(to_tsvector('simple', $5), 'D')\n" .
+				"where id = $1\n" .
+				"returning id");
+			$query->appendParam($first_name);
+			$query->appendParam($middle_names);
+			$query->appendParam($last_name);
+			$query->appendParam($disambiguation);
+			$query->execute();
+		}
 	}
 }
 

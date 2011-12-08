@@ -8,7 +8,24 @@ class Utils
 	// remove accents
 	public static function unaccent($text)
 	{
-		return preg_replace('/[\'^"~]/', '', iconv('UTF-8', 'ASCII//TRANSLIT', $text));
+		return preg_replace('/[\'^"~]/', '', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text));
+	}
+
+	/**
+	 * Adjusts the given text for input by PostgreSQL to_tsquery() function.
+	 *
+	 * \param $text The text to adjust.
+	 *
+	 * All accents and punctuation are removed and the text is converted to lowercase.
+	 * The individual lexemes are adjusted to be searched as prefixes and combined by logical AND.
+	 */
+	public static function makeTsQuery($text)
+	{
+		$res = strtolower(self::unaccent($text));
+		$res = preg_replace('/\W+/', ' ', $res);
+		$res = preg_replace('/(\S)\s/', '$1:* ', $res . ' ');
+		$res = preg_replace('/(\S)\s+(\S)/', '$1 & $2', $res);
+		return $res;
 	}
 
 	/**

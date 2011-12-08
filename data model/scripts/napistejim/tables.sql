@@ -15,6 +15,7 @@ create table message
 	sent_on timestamp,
 	confirmation_code varchar not null unique,
 	approval_code varchar,
+	last_reply_on timestamp,
 	text_data tsvector not null,
 	sender_data tsvector not null
 );
@@ -58,6 +59,7 @@ create table area
 -- indexes (except PRIMARY KEY and UNIQUE constraints, for which the indexes have been created automatically)
 create index message_sender_email on message(sender_email);
 create index message_sent_on on message(sent_on);
+create index message_last_reply_on on message(last_reply_on);
 create index message_text_data on message using gin(text_data);
 create index message_sender_data on message using gin(sender_data);
 create index message_to_mp_mp_id on message_to_mp(mp_id);

@@ -373,7 +373,7 @@ class ScraperCzSenat
   {
     $id = $params['id'];
     $url = 'http://www.senat.cz/xqw/xervlet/pssenat/hlasy?G='.$id;
-	$html = str_replace('&nbsp;',' ',iconv("cp1250", "UTF-8//TRANSLIT", self::download($url, 1)));
+	$html = str_replace('&nbsp;',' ',iconv("cp1250", "UTF-8//TRANSLIT//IGNORE", self::download($url, 1)));
 	if (strlen($html) > 0) {
 		$result['division']['source_code'] = $id;
 		$head = explode(',',ScraperUtils::getFirstString($html,'<h1 class="h1-back-dok">','</h1>'));

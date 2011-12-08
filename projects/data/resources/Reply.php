@@ -11,7 +11,7 @@
  *
  * Primary key consists of columns <code>message_id, mp_id, parliament_code</code>.
  *
- * \note Replies are not accessible through API from remote due to privacy and security reasons. 
+ * \note Replies are not accessible through API from remote due to privacy and security reasons.
  */
 class Reply
 {
@@ -81,7 +81,9 @@ class Reply
 	 */
 	public function create($data)
 	{
-		return $this->entity->create($data, 'reply');
+		$created = $this->entity->create($data, 'reply');
+		self::updateMessageFulltextData($created);
+		return $created;
 	}
 
 	/**
@@ -94,7 +96,10 @@ class Reply
 	 */
 	public function update($params, $data)
 	{
-		return $this->entity->update($params, $data, 'reply');
+		$updated  = $this->entity->update($params, $data, 'reply');
+		if (array_key_exists('subject', $data) || array_key_exists('body', $data))
+			self::updateMessageFulltextData($updated);
+		return $updated;
 	}
 
 	/**
@@ -107,6 +112,30 @@ class Reply
 	public function delete($params)
 	{
 		return $this->entity->delete($params, 'reply');
+	}
+
+	/**
+	 * Updates data needed for fulltext search in the messages (and their replies) respective to the given replies.
+	 *
+	 * \param $replies An array of replies where each reply is an array of reply attributes where only the \c reply_code attribute is really used.
+	 */
+	private static function updateMessageFulltextData($replies)
+	{
+		// prepare reply codes of all created/updated replies
+		$reply_codes = array();
+		foreach ($replies as $reply)
+			$reply_codes[] = $reply['reply_code'];
+
+		// get the respective messages
+		$query = new Query();
+		$query->setQuery('select id, subject from message_to_mp as mtm join message as m on m.id = mtm.message_id where mtm.reply_code = any ($1)');
+		$query->appendParam(Db::arrayOfStringsArgument($reply_codes));
+		$messages = $query->execute();
+
+		// pretend update of subject for all those messages to update their fulltext data
+		$api = new ApiDirect('data');
+		foreach ($messages as $message)
+			$api->update('Message', array('id' => $message['id']), array('subject' => $message['subject']));
 	}
 }
 

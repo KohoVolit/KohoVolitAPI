@@ -252,17 +252,38 @@ order by
 	gk.weight, gk.code, group_name
 $$ language sql stable;
 
--- returns all replies to a given message together with names of their authors - MPs
+-- returns all replies to a given message together with some attributes of their authors - MPs
 -- records are ordered by MP's id and time when the reply has been received
-create or replace function replies_to_message(message_id integer)
-returns table(message_id integer, mp_id integer, first_name varchar, middle_names varchar, last_name varchar, disambiguation varchar, sex char, parliament_code varchar, subject varchar, "body" varchar, received_on timestamp)
+create or replace function replies_to_message(message_id integer, lang varchar = null)
+returns table(
+	message_id integer,
+	mp_id integer, first_name varchar, middle_names varchar, last_name varchar, disambiguation varchar, sex char,
+	mp_image varchar,
+	political_group varchar,
+	parliament_code varchar, parliament_name varchar,
+	subject varchar, "body" varchar, received_on timestamp
+)
 as $$
 	select
-		message_id, mp_id, first_name, middle_names, last_name, disambiguation, sex, parliament_code, r.subject, r."body", received_on
+		message_id,
+		mtm.mp_id, first_name, middle_names, last_name, disambiguation, sex,
+		ma."value" as image,
+		coalesce(coalesce(ga_sn."value", g.short_name), coalesce(ga_n."value", g."name")),
+		mtm.parliament_code, coalesce(coalesce(pa_sn."value", p.short_name), coalesce(pa_n."value", p."name")),
+		r.subject, r."body", received_on
 	from
 		message_to_mp as mtm
 		left join reply as r on r.reply_code = mtm.reply_code
 		join mp on mp.id = mtm.mp_id
+		join parliament as p on p.code = mtm.parliament_code
+		left join mp_attribute as ma on ma.mp_id = mp.id and ma."name" = 'image' and ma.parl = mtm.parliament_code and ma.since <= 'now' and ma.until > 'now'
+		left join mp_in_group as mig on mig.mp_id = mp.id and mig.role_code = 'member' and mig.since <= 'now' and mig.until > 'now'
+			and mig.group_id in (select id from "group" where group_kind_code = 'political group' and parliament_code = mtm.parliament_code)
+		left join "group" as g on g.id = mig.group_id
+		left join group_attribute as ga_n on ga_n.group_id = g.id and ga_n."name" = 'name' and ga_n.lang = $2 and ga_n.since <= 'now' and ga_n.until > 'now'
+		left join group_attribute as ga_sn on ga_sn.group_id = g.id and ga_sn."name" = 'short_name' and ga_sn.lang = $2 and ga_sn.since <= 'now' and ga_sn.until > 'now'
+		left join parliament_attribute as pa_n on pa_n.parliament_code = p.code and pa_n."name" = 'name' and pa_n.lang = $2 and pa_n.since <= 'now' and pa_n.until > 'now'
+		left join parliament_attribute as pa_sn on pa_sn.parliament_code = p.code and pa_sn."name" = 'short_name' and pa_sn.lang = $2 and pa_sn.since <= 'now' and pa_sn.until > 'now'
 	where
 		mtm.message_id = $1
 	order by

@@ -7,7 +7,8 @@
  *
  * Columns of table MESSAGE are: <code>id, subject, body, sender_name, sender_address, sender_email, is_public, state, written_on, sent_on, confirmation_code, approval_code, text_data, sender_data</code>.
  *
- * Column <code>id</code> is a read-only column automaticaly generated on create.
+ * Columns <code>id, text_data, sender_data</code> are read-only. The \c id is automaticaly generated on create,
+ * the latter two are derived from other columns on create and on each update automatically.
  *
  * Primary key is column <code>id</code>.
  *
@@ -27,7 +28,7 @@ class Message
 			'name' => 'message',
 			'columns' => array('id', 'subject', 'body', 'sender_name', 'sender_address', 'sender_email', 'is_public', 'state', 'written_on', 'sent_on', 'confirmation_code', 'approval_code', 'text_data', 'sender_data'),
 			'pkey_columns' => array('id'),
-			'readonly_columns' => array('id')
+			'readonly_columns' => array('id', 'text_data', 'sender_data')
 		));
 	}
 
@@ -58,7 +59,7 @@ class Message
 	 *             [written_on] => 2011-05-26 13:06:04
 	 *             [sent_on] => 2011-05-26 13:09:32
 	 *             [confirmation_code] => abcdefghij
-	 *             [approval_code] => 
+	 *             [approval_code] =>
 	 *             [text_data] => 'dear':4A 'law':2B 'mr':5A 'my':1B 'proposal':3B
 	 *             [sender_data] => 'bag':3B 'baggins':2A 'bilbo':1A 'end':4B 'hobbiton':5B
 	 *         )
@@ -92,20 +93,25 @@ class Message
 	 */
 	public function create($data)
 	{
-		return $this->entity->create($data);
+		$created = $this->entity->create($data);
+		self::updateFulltextData($created);
+		return $created;
 	}
 
 	/**
 	 * Update the given values of the  messages that satisfy given parameters.
 	 *
-	 * \param $params An array of pairs <em>column => value</em> specifying the messages to update. Only the  messages that satisfy all prescribed column values are updated.
+	 * \param $params An array of pairs <em>column => value</em> specifying the messages to update. Only the messages that satisfy all prescribed column values are updated.
 	 * \param $data An array of pairs <em>column => value</em> to set for each updated message.
 	 *
 	 * \return An array of primary key values of the updated messages.
 	 */
 	public function update($params, $data)
 	{
-		return $this->entity->update($params, $data);
+		$updated = $this->entity->update($params, $data);
+		if (0 < count(array_intersect(array_keys($data), array('subject', 'body', 'sender_name', 'sender_address'))))
+			self::updateFulltextData($updated);
+		return $updated;
 	}
 
 	/**
@@ -118,6 +124,55 @@ class Message
 	public function delete($params)
 	{
 		return $this->entity->delete($params);
+	}
+
+	/**
+	 * Updates derived columns needed for fulltext search for the given messages.
+	 *
+	 * \param $messages An array of messages where each message is an array of message attributes where only the \c id attribute is really used.
+	 */
+	private static function updateFulltextData($messages)
+	{
+		$query = new Query('kv_admin');
+		foreach ($messages as $m)
+		{
+			// get texts of the message and of all its replies
+			$query->clearParams();
+			$query->setQuery('select * from message where id = $1');
+			$query->appendParam($m['id']);
+			$message = $query->execute();
+			$message = $message[0];
+			$query->setQuery('select * from replies_to_message($1)');
+			$replies = $query->execute();
+
+			// normalize texts for fulltext search (remove accents and convert to lowercase)
+			$message_subject = strtolower(Utils::unaccent($message['subject']));
+			$message_body = strtolower(Utils::unaccent($message['body']));
+			$replies_text = '';
+			foreach ((array)$replies as $reply)
+				$replies_text .= strtolower(Utils::unaccent($reply['subject'] . ' ' . $reply['body'] . ' '));
+			$sender_name = strtolower(Utils::unaccent($message['sender_name']));
+			$sender_address = strtolower(Utils::unaccent($message['sender_address']));
+
+			// set columns with search data to weighted concatenation of the normalized texts
+			$query->setQuery(
+				"update message set\n" .
+				"	text_data =\n" .
+				"		setweight(to_tsvector('simple', $2), 'A') ||\n" .
+				"		setweight(to_tsvector('simple', $3), 'B') ||\n" .
+				"		setweight(to_tsvector('simple', $4), 'C'),\n" .
+				"	sender_data =\n" .
+				"		setweight(to_tsvector('simple', $5), 'A') ||\n" .
+				"		setweight(to_tsvector('simple', $6), 'B')\n" .
+				"where id = $1\n" .
+				"returning id");
+			$query->appendParam($message_subject);
+			$query->appendParam($message_body);
+			$query->appendParam($replies_text);
+			$query->appendParam($sender_name);
+			$query->appendParam($sender_address);
+			$query->execute();
+		}
 	}
 }
 

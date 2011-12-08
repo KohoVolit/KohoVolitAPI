@@ -143,7 +143,7 @@
       $options = array(
        array(CURLOPT_USERAGENT,'Greetings to FIO (-:'), //'Googlebot/2.1 (+http://www.google.com/bot.html)'
     );
-	  $html = str_replace('&nbsp;',' ',iconv("cp1250", "UTF-8//TRANSLIT", ScraperUtils::grabber($url,$options)));
+	  $html = str_replace('&nbsp;',' ',iconv("cp1250", "UTF-8//TRANSLIT//IGNORE", ScraperUtils::grabber($url,$options)));
 	
 	  //get dom
       $dom = new simple_html_dom();

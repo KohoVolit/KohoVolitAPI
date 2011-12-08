@@ -665,7 +665,7 @@ class UpdaterCzPsp
 			return $role['code'];
 
 		// if role has not been found, insert it
-		$role_code = preg_replace('/[\'^"]/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $src_role['male_name'])));		// code = lowercase male name without accents
+		$role_code = preg_replace('/[\'^"]/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $src_role['male_name'])));		// code = lowercase male name without accents
 		$data = array('code' => $role_code, 'male_name' => $src_role['male_name'], 'female_name' => $src_role['female_name'], 'description' => "Appears in parliament {$this->parliament_code}.");
 		$role_pkey = $this->api->create('Role', $data);
 		return $role_pkey['code'];

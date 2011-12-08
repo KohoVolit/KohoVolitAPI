@@ -519,7 +519,7 @@ class UpdaterCzSenat
 	{
 		$this->log->write("Updating role '{$src_role['male_name']}'.", Log::DEBUG);
 
-		$src_role_code = preg_replace('/[\'^"]/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', strip_tags($src_role['male_name'])))); // code = lowercase male name without accents
+		$src_role_code = preg_replace('/[\'^"]/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', strip_tags($src_role['male_name'])))); // code = lowercase male name without accents
 
 		// search czech translations of common roles for the given male name (this is the case of generic roles like 'chairman')
 		/*$role = $this->api->readOne('RoleAttribute', array('name' => 'male_name', 'value' => $src_role['male_name'], 'lang' => 'cs'));
