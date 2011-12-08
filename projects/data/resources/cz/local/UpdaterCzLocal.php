@@ -54,6 +54,8 @@ class UpdaterCzLocal
 
 		//update parliaments and terms
 		$this->parliaments = $this->updateParliamentsAndTermsAndGroups($params);
+		//treat conflict MPs
+		//$this->log->write(print_r($params,1));
 		$this->conflict_mps = $this->parseConflictMps($params);
 
 		// read list of all MPs in the term of office to update data for
@@ -457,8 +459,10 @@ class UpdaterCzLocal
 	 *
 	 * @return array of parliaments and terms
 	 */
-	private function updateParliamentsAndTermsAndGroups($params)
+	private function updateParliamentsAndTermsAndGroups(&$params)
 	{
+		//conflict mps
+		$conflict_mps = '';
 		//read list of parliaments
 		$src_parliaments = $this->api->read('Scraper', array('parliament' => 'cz/local', 'remote_resource' => 'parliament_list'));
 
@@ -467,7 +471,7 @@ class UpdaterCzLocal
 			$this->log->write("Updating parliament '{$src_parliament['parliament_code']}'.", Log::DEBUG);
 
 			$description = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'Starostové obcí s rozšířenou působností.' : 'Zastupitelstvo ' . $src_parliament['parliament_name'];
-			$kind = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'mayors' : 'local';
+			$kind = $src_parliament['parliament_kind_code'];
 
 			// if parliament does not exist yet, insert it
 			$parliament = $this->api->readOne('Parliament', array('code' => $src_parliament['parliament_code']));
@@ -503,11 +507,11 @@ class UpdaterCzLocal
 			$this->log->write("Updating term '{$src_parliament['term']}'.", Log::DEBUG);
 			$term_since = ($src_parliament['since'] == '-infinity') ? $src_parliament['since'] : $src_parliament['since'] . self::NOON;
 			$term_until = ($src_parliament['until'] == 'infinity') ? $src_parliament['until'] : $src_parliament['until'] . self::NOON;
-			$term = $this->api->readOne('Term', array('name' => $src_parliament['term'], 'parliament_kind_code' => 'local', 'country_code' => 'cz'));
+			$term = $this->api->readOne('Term', array('name' => $src_parliament['term'], 'parliament_kind_code' => $kind, 'country_code' => 'cz'));
 			if (!$term) {
 				$term = $this->api->create('Term', array(
 					'name' => $src_parliament['term'],
-					'parliament_kind_code' => 'local',
+					'parliament_kind_code' => $kind,
 					'country_code' => 'cz',
 					'since' => $term_since,
 					'until' => $term_until
@@ -543,7 +547,17 @@ class UpdaterCzLocal
 				  'next_term_since' => 'infinity',
 				  'src_parliament' => $src_parliament
 			);
+			
+			//conflict mps (if set)
+			if ($src_parliament['conflict_mps'] != '') {
+			  $tmp_mps = explode(',',$src_parliament['conflict_mps']);
+			  foreach($tmp_mps as $tmp_mp) {
+			    $tmp_m = explode('->',$tmp_mp);
+			    $conflict_mps .= str_replace('/','_',$src_parliament['parliament_code']).'_'.str_replace(' ','',$src_parliament['term']).'_'.$tmp_m[0] . '->' . (isset($tmp_m[1]) ? $tmp_m[1] : '') . ',';
+			  }
+			}
 		}
+		$params['conflict_mps'] .= rtrim($conflict_mps,',');
 
 		// set the effective date which the update process actually runs to
 		$this->update_date = 'now';
