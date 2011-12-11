@@ -88,22 +88,24 @@ class UpdaterSkStarostovia
 	  foreach ($towns['list'] as $mp) {
 	    $mp_id = self::updateMp($mp);
 	    //$this->marked[$mp_id] == true;
-	    //self::updateMembership($mp_id,$mp);
+	    if ($mp_id)
+	      self::updateMembership($mp_id,$mp);
 	  
 	  }
 	  
 	  //close unmarked memberships
-	  //self::closeMemberships();
+	  self::closeMemberships();
 	}
 	/**
 	* Update or insert membership
 	*
-	* \param mp_id
+	* \param $mp_id
+	* \param $town scraped info about one town
 	*/
-	/*private function updateMembership($mp_id,$town) {
-	  $constit = $this->api->readOne('Constituency',array('parliament_code' => 'sk/starostovia', 'name' => "{$town->name} ({$town->id})"));
+	private function updateMembership($mp_id,$town) {
+	  $constit = $this->api->readOne('Constituency',array('parliament_code' => 'sk/starostovia', 'name' => "{$town->Name} ({$town->Id})"));
+
 	  $membership = array(
-	    array(
 	      'mp_id' => $mp_id,
 	      'group_id' => $this->group_id, 
 	      'role_code' => 'member',
@@ -120,23 +122,23 @@ class UpdaterSkStarostovia
 	    $this->log->write('Inserted a new membership: ' . $mp_id.','.$this->group_id);
 	  }
 	  $this->marked[$mp_id][$this->group_id]['member'] = true;
-	}*/
+	}
 	
 	/**
 	* close all memberships that are no longer valid
 	*/
-	/*private function closeMemberships() {
+	private function closeMemberships() {
 	  //get all mps with open membership in 'Senát'
 	    //get group's id
 	  $parl_id = $this->group_id;
 
 	    //get all mps in the group
-	  $mps_db = $this->api->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', '_datetime' => $this->update_date));
+	  $mps_db = $this->api->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', '_datetime' => 'now'));
 
 	  //loop through all mps
 	  foreach((array) $mps_db as $row) {
 	    //get all memberships of MP
-	    $membs = $this->api->read('MpInGroup', array('mp_id' => $row['mp_id'], '_datetime' => $this->update_date));
+	    $membs = $this->api->read('MpInGroup', array('mp_id' => $row['mp_id'], '_datetime' => 'now'));
 	    //loop through all mp's memberships
 	    foreach((array) $membs as $memb) {
 
@@ -151,12 +153,12 @@ class UpdaterSkStarostovia
 
 	      //otherwise close the membership
 	      $this->log->write("Closing membership (mp_id={$memb['mp_id']}, group_id={$memb['group_id']}, role_code='{$memb['role_code']}', since={$memb['since']}).", Log::DEBUG);
-	      $this->api->update('MpInGroup', array('mp_id' => $memb['mp_id'], 'group_id' => $memb['group_id'], 'role_code' => $memb['role_code'], 'since' => $memb['since']), array('until' => $this->update_date));
+	      $this->api->update('MpInGroup', array('mp_id' => $memb['mp_id'], 'group_id' => $memb['group_id'], 'role_code' => $memb['role_code'], 'since' => $memb['since']), array('until' => 'now'));
 	    }
 
 	  }
 
-	}*/
+	}
 	
 	/**
 	 * Update personal information about an MP. If MP is not present in database, insert him.
@@ -166,16 +168,27 @@ class UpdaterSkStarostovia
 	 * \returns id of the updated or inserted MP.
 	 */  
 	private function updateMp($src_mp) {
- 
+	  //errors - for some of the same town names the same names of mayors
+
+	  $errors = array(502065,528137,504254,501069,511269,527165,509604,524239,542806,525596,507881,
+527254,512222,518361,519189,523445,512265,518123,518522,521400,509671,508624,
+514004,581747,557714,510513,517658,528773,507393,517682,518506,525855,523593,528455,
+519430,528811,581704,528471,510572,524701,512435,515167,510815,517046,522741,558087,
+519545,507369,509876,515302,521884,517879,517143,514306,505340,512508,510955,515345,
+526118,521906,508969,557765,504769,529061,515485,520721,527777,504793,521949,502707,
+515507,557820,518727,516368,523054,555746,516511,555509,524115,526631,523348);
+
+	
+ 	  if (in_array($src_mp->Id,$errors)) return null;
+	
 	  $names = explode(' ',$src_mp->Mayor);
 	  $src_code = implode('-',array($src_mp->Id,$names[0],end($names))); //524158-František-Štofko
 
 	  if (end($names) != '') {
 		  // if MP is already in the database, update his data
 			$mps_attr_db = $this->api->read('MpAttribute',array('name' => 'source_code', 'value' => $src_code, 'parl' => 'sk/starostovia'));
-
-			 if ($mp_attr_db) {
-			  $ok = false;
+			 $ok = false;
+			 if ($mps_attr_db) {
 			  foreach ($mps_attr_db as $mp_attr_db) {
 	  	        $mp_db = $this->api->readOne('Mp',array('id' => $mp_attr_db['mp_id'], 'last_name' => end($names), 'first_name' => $names[0]));
 	  	        if ($mp_db) {
@@ -185,7 +198,6 @@ class UpdaterSkStarostovia
 	  	        }
 	  	      }
 			 }
-	
 	    
 			// if MP is not in the database, insert him and his source code for this parliament
 			if (!$ok) {
@@ -196,25 +208,32 @@ class UpdaterSkStarostovia
 			  else {
 				// if there is a person in the database with the same name as the MP and conflict resolution is not set for him on input, report a warning and skip this MP
 				if (!isset($this->conflict_mps[$src_code])) {
-					$pmp_code = $this->conflict_mps[$src_code];
-					$p = strrpos($pmp_code, '/');
-					$parliament_code = substr($pmp_code, 0, $p);
-					$mp_src_code = substr($pmp_code, $p + 1);
-					$mp_id_attr = $this->api->readOne('MpAttribute', array('name' => 'source_code', 'value' => $mp_src_code, 'parl' => $parliament_code));
-					if ($mp_id_attr)
-						$mp_id = $mp_id_attr['mp_id'];
-					else
-					{
-						$this->log->write("Wrong parliament code and source code '$pmp_code' of an MP existing in the database specified in the \$conflict_mps parameter. MP {$src_mp['first_name']} {$src_mp['last_name']} (source id/code = {$src_code}) skipped.", Log::ERROR);
-						return null;
+				    $last_name = end($names);
+					$this->log->write("MP {$names[0]} {$last_name} already exists in database! MP (source id = {$src_code}) skipped. Rerun the update process with the parameters specifying how to resolve the conflict for this MP.", Log::WARNING);
+					return null;
+				} else {
+				  // if conflict_mps indicates that this MP is already in the database, update his data and insert his source code for this parliament
+					if (!empty($this->conflict_mps[$src_code])) {
+				
+						$pmp_ar = explode('/',$this->conflict_mps[$src_code]);
+						$mp_src_code = array_pop($pmp_ar);
+						$parliament_code = implode('/',$pmp_ar);
+						
+						$mp_id_attr = $this->api->readOne('MpAttribute', array('name' => 'source_code', 'value' => $mp_src_code, 'parl' => $parliament_code));
+						if ($mp_id_attr)
+							$mp_id = $mp_id_attr['mp_id'];
+						else
+						{
+							$this->log->write("Wrong parliament code and source code '$this->conflict_mps[$src_code]' of an MP existing in the database specified in the \$conflict_mps parameter. MP {$src_mp->Mayor} (source id/code = {$src_code}) skipped.", Log::ERROR);
+							return null;
+						}
+						$action = self::MP_UPDATE;
+						if ($parliament_code != 'sk/starostovia')
+							$action |= self::MP_INSERT_SOURCE_CODE;
 					}
-					$action = self::MP_UPDATE;
-					if ($parliament_code != $src_mp['parliament_code'])
-						$action |= self::MP_INSERT_SOURCE_CODE;
-				}
-				else
-					// if null is given instead of an existing MP in database, insert MP as a new one, insert his source code for this parliament and generate a value for his disambigation column
-					$action = self::MP_INSERT | self::MP_INSERT_SOURCE_CODE | self::MP_DISAMBIGUATE;
+					else
+						// if null is given instead of an existing MP in database, insert MP as a new one, insert his source code for this parliament and generate a value for his disambigation column
+						$action = self::MP_INSERT | self::MP_INSERT_SOURCE_CODE | self::MP_DISAMBIGUATE;
 			  }
 			}
 			
@@ -225,17 +244,14 @@ class UpdaterSkStarostovia
 			$data['first_name'] = $names[0];
 			$data['last_name'] = end($names);
 			$data['last_updated_on'] = 'now';
-$this->log->write('zz:' . print_r($data,1));
 			// perform appropriate actions to update or insert MP
 			if ($action & self::MP_INSERT)
 			{
 				if ($action & self::MP_DISAMBIGUATE)
 				  if (!isset($data['disambiguation']) || empty($data['disambiguation']))
 					$data['disambiguation'] = $src_code;
-				$this->log->write('xx:' . print_r($data,1));
 				$mp_pkey = $this->api->create('Mp', $data);
-			$this->log->write('ww:' . print_r($data,1));
-			die();
+
 				$mp_id = $mp_pkey['id'];
 
 				if ($action & self::MP_DISAMBIGUATE && $data['disambiguation'] == $src_code)
@@ -248,9 +264,10 @@ $this->log->write('zz:' . print_r($data,1));
 			if ($action & self::MP_UPDATE)
 				$this->api->update('Mp', array('id' => $mp_id), $data);
 
-			return $mp_id;
+		}
+		return $mp_id;
 			
-		} else return null;
+	} else return null;
 	
 	}
 	
