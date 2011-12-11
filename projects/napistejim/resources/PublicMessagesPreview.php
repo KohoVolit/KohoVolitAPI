@@ -65,11 +65,14 @@ class PublicMessagesPreview
 		$query = new Query();
 		$query->setQuery(
 			"select\n" .
-			"	m.id, m.subject, m.sender_name, m.sent_on, mp_id, first_name, middle_names, last_name, disambiguation, first_reply_on, last_reply_on\n" .
+			"	m.id, m.subject, m.sender_name, m.sent_on,\n" .
+			"	substring(m.\"body\" from 1 for 160) || case when length(m.\"body\") > 160 then '...' else '' end as \"body\",\n" .
+			"	mp_id, first_name, middle_names, last_name, disambiguation, first_reply_on, last_reply_on, rs.\"body\" as reply_body\n" .
 			"from\n" .
 			"	(\n" .
 			"		select\n" .
-			"			message_id, mp_id, min(r.received_on) as first_reply_on\n" .
+			"			message_id, mp_id, min(r.received_on) as first_reply_on,\n" . 
+			"			min(substring(r.\"body\" from 1 for 160) || case when length(r.\"body\") > 160 then '...' else '' end) as \"body\"\n" .
 			"		from\n" .
 			"			message_to_mp as mtm\n" .
 			"			left join reply as r on r.reply_code = mtm.reply_code\n" .
@@ -180,11 +183,12 @@ class PublicMessagesPreview
 				$messages[$message_id] = array(
 					'id' => $message_id,
 					'subject' => $mm['subject'],
+					'body' => $mm['body'],
 					'sender_name' => $mm['sender_name'],
 					'sent_on' => $mm['sent_on'],
 					'last_reply_on' => $mm['last_reply_on']
 				);
-			unset($mm['id'], $mm['subject'], $mm['sender_name'], $mm['sent_on'], $mm['last_reply_on']);
+			unset($mm['id'], $mm['subject'], $mm['body'], $mm['sender_name'], $mm['sent_on'], $mm['last_reply_on']);
 			$messages[$message_id]['recipients'][] = $mm;
 		}
 
