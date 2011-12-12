@@ -159,6 +159,9 @@ class Mp
 	 */
 	private static function updateFulltextData($mps)
 	{
+		if (!is_array(reset($mps)))
+			$mps = array($mps);
+
 		$query = new Query('kv_admin');
 		foreach ($mps as $m)
 		{

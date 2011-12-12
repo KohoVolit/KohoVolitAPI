@@ -133,6 +133,9 @@ class Message
 	 */
 	private static function updateFulltextData($messages)
 	{
+		if (!is_array(reset($messages)))
+			$messages = array($messages);
+
 		$query = new Query('kv_admin');
 		foreach ($messages as $m)
 		{
