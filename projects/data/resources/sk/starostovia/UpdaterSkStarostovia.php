@@ -88,14 +88,49 @@ class UpdaterSkStarostovia
 	  foreach ($towns['list'] as $mp) {
 	    $mp_id = self::updateMp($mp);
 	    //$this->marked[$mp_id] == true;
-	    if ($mp_id)
+	    if ($mp_id) {
+	      //update emails
+	      if ($mp->Mail != '') {
+	        $attr_mp = array('email' => $mp->Mail, 'parliament_code' => 'sk/starostovia');
+	        self::updateMpAttribute($attr_mp,$mp_id,'email',null);
+	      }
 	      self::updateMembership($mp_id,$mp);
-	  
+	    }
 	  }
 	  
 	  //close unmarked memberships
 	  self::closeMemberships();
 	}
+	
+	
+	 /**
+	 * Update value of an attribute of an MP. If its value has changed, close the current record and insert a new one.
+	 *
+	 * \param $src_mp array of key => value pairs with properties of a scraped MP
+	 * \param $mp_id \e id of that MP in database
+	 * \param $attr_name name of the attribute
+	 * \param $implode_separator in case that <em>$src_mp[$attr_name]</em> is an array, use this parameter to set a string used for implosion of the array to a string value.
+	 */
+	private function updateMpAttribute($src_mp, $mp_id, $attr_name, $implode_separator = null)
+	{
+		$this->log->write("Updating MP's attribute '$attr_name'.", Log::DEBUG);
+
+		$src_value = !empty($src_mp[$attr_name]) ? (is_null($implode_separator) ? $src_mp[$attr_name] : implode($implode_separator, $src_mp[$attr_name])) : null;
+		$value_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $src_mp['parliament_code'], '_datetime' => 'now'));
+		if ($value_in_db)
+			$db_value = $value_in_db['value'];
+
+		if (!isset($src_value) && !isset($db_value) || isset($src_value) && isset($db_value) && (string)$src_value == (string)$db_value) return;
+
+		// close the current record
+		if (isset($db_value))
+			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $src_mp['parliament_code'], 'since' =>  $value_in_db['since']), array('until' => 'now'));
+
+		// and insert a new one
+		if (isset($src_value))
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'value' => $src_value, 'parl' => $src_mp['parliament_code'], 'since' => 'now'));
+	}
+	
 	/**
 	* Update or insert membership
 	*
