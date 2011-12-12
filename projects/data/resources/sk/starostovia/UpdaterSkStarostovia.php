@@ -303,7 +303,7 @@ class UpdaterSkStarostovia
 		    $ar['neighborhood'] = $area->{'neighborhood-long_name'};
 		  if ($area->{'route-long_name'} != '')
 		    $ar['route'] = $area->{'route-long_name'};
-		  if ($area->{'street_number-long_name'} != '')
+		  if (isset($area->{'street_number-long_name'}) and ($area->{'street_number-long_name'}) != '')
 		    $ar['street_number'] = $area->{'street_number-long_name'};
 	      
 	      //there are several errors:
@@ -423,7 +423,8 @@ class UpdaterSkStarostovia
 	      $this->api->update('Term',array('name' => $term['name'], 'since' => $term['since']),$term);
 	    } else { //insert
 	      $this->log->write('Inserting new term: ' . $term['name']);
-	      $term_id = $this->api->create('Term',$term);
+	      $term_id_db = $this->api->create('Term',$term);
+	      $term_id = $term_id_db['id'];
 	    }
 	  }
 	  
@@ -466,7 +467,8 @@ class UpdaterSkStarostovia
 	    $this->group_id = $group_db['id'];
 	  } else { //insert
 	    $this->log->write('Inserting a new group: ' . $group['name']);
-	    $this->group_id = $this->api->create('Group',$group);
+	    $g = $this->api->create('Group',$group);
+	    $this->group_id = $g['id'];
 	  }
 	  
 	  
