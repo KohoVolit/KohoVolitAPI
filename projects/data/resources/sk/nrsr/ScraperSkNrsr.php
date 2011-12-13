@@ -170,6 +170,7 @@ class ScraperSkNrsr
 		    $d['value'] = $item;
 		    $dd[self::friendly_url($key,'sk_SK.utf-8')] = $d;
 		  }
+		  $dd['image-url'] = array('label' => 'URL obrázku', 'value' => 'http://www.nrsr.sk/web/dynamic/PoslanecPhoto.aspx?PoslanecID=' . $dd['id']['value']);
 		  $data['mp'][] = $dd;
 		}
 		return $data;

@@ -8,13 +8,20 @@ class UpdaterSkNrsr
 	/// API client reference used for all API calls
 	private $api;
 
+	/// time and time zone used when storing dates into 'timestamp with time zone' fields
+	const TIME_ZONE = 'Europe/Bratislava';
+	const NOON = ' 12:00 Europe/Bratislava';
+
 	/// id and source code (ie. id on the official website) of the term of office to update the data for
 	private $term_id;
 	private $term_src_code;
 
+	/// start date of the term of office to update the data for and start date of the next term
+	private $term_since;
+	private $next_term_since;
+
 	/// effective date which the update process actually runs to
-	private $date; //class DateTime
-	private $update_date; //formatted date/time
+	private $update_date;
 
 	/// code of this updated parliament
 	private $parliament_code;
@@ -40,12 +47,7 @@ class UpdaterSkNrsr
 		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		$this->log->setMinLogLevel(Log::DEBUG);
-
-		//convert $param['date'] into DateTime object, default = today
-		if (isset($params['date']))
-	  		$this->date = new DateTime($params['date']);
-		else
-	  		$this->date = new DateTime();
+		date_default_timezone_set(self::TIME_ZONE);
 	}
 
 	 /**
@@ -73,40 +75,41 @@ class UpdaterSkNrsr
 		$constituency_id = $this->updateConstituency();
 
 		//update group_kinds and groups
-		$src_groups['political_group'] = $this->api->read('Scraper', array('remote_resource' => 'current_group_list','group_kind'=>'political_group'));
-		$src_groups['committee'] = $this->api->read('Scraper', array('remote_resource' => 'current_group_list','group_kind'=>'committee'));
 		$src_groups['parliament']['group'][0] = array(
-		  'name' => array('value' => 'Národná rada Slovenskej republiky'),
-		  'short_name' => array('value' => 'Národná rada'),
+		  'name' => array('value' => 'Národná rada'),
+		  'short_name' => array('value' => 'NRSR'),
 		);
+		$src_groups['political_group'] = $this->api->read('Scraper', array('remote_resource' => 'current_group_list', 'group_kind' => 'political_group'));
+		$src_groups['committee'] = $this->api->read('Scraper', array('remote_resource' => 'current_group_list', 'group_kind' => 'committee'));
 		$this->updateGroups($src_groups);
 
 		// read list of all MPs in the term of office to update data for
 		$src_mps = $this->api->read('Scraper', array('remote_resource' => 'mp_list'));
 		//insert or update all MPs (all terms) + update/insert membership in current term
 		foreach ((array) $src_mps['mp'] as $src_mp) {
-		  $mp_id = $this->updateMp($src_mp);
-		  if (is_null($mp_id)) continue;		// skip conflicting MPs with no given conflict resolution
-		  // update other MP attributes and offices, mps
+			$mp_id = $this->updateMp($src_mp);
+			if (is_null($mp_id)) continue;		// skip conflicting MPs with no given conflict resolution
 
-		  $my_src_mp = array(
-		      'ethnicity' => $src_mp['narodnost']['value'],
-	          'location' => $src_mp['bydlisko']['value'],
-	          'email' => $src_mp['e-mail']['value']
-		  );
-		  $this->updateMpAttribute($my_src_mp, $mp_id, 'ethnicity');
-		  $this->updateMpAttribute($my_src_mp, $mp_id, 'location');
-		  $this->updateMpAttribute($my_src_mp, $mp_id, 'email');
-		  if ($src_mp['kraj']['value'] != '') {
-		  	  $my_src_mp['region'] = $src_mp['kraj']['value'];
-		  	  $this->updateMpAttribute($my_src_mp, $mp_id, 'region');
-		  }
-		  if ($src_mp['www']['value'] != '') {
-		  	  $my_src_mp['website'] = $src_mp['www']['value'];
-		  	  $this->updateMpAttribute($my_src_mp, $mp_id, 'website');
-		  }
-		  //geocode
-		  $geo = $this->api->read('Scraper', array('remote_resource' => 'geocode', 'address' => $src_mp['bydlisko']['value']));
+			// update other MP attributes and offices, mps
+			$my_src_mp = array(
+				'ethnicity' => $src_mp['narodnost']['value'],
+				'location' => $src_mp['bydlisko']['value'],
+				'email' => $src_mp['e-mail']['value']
+			);
+			$this->updateMpAttribute($my_src_mp, $mp_id, 'ethnicity');
+			$this->updateMpAttribute($my_src_mp, $mp_id, 'location');
+			$this->updateMpAttribute($my_src_mp, $mp_id, 'email');
+			$this->updateMpImage($src_mp, $mp_id);
+			if ($src_mp['kraj']['value'] != '') {
+				$my_src_mp['region'] = $src_mp['kraj']['value'];
+				$this->updateMpAttribute($my_src_mp, $mp_id, 'region');
+			}
+			if ($src_mp['www']['value'] != '') {
+				$my_src_mp['website'] = $src_mp['www']['value'];
+				$this->updateMpAttribute($my_src_mp, $mp_id, 'website');
+			}
+			//geocode
+			$geo = $this->api->read('Scraper', array('remote_resource' => 'geocode', 'address' => $src_mp['bydlisko']['value']));
 			if ($geo['coordinates']['ok'])
 			{
 				$my_src_mp['latitude'] = $geo['coordinates']['lat'];
@@ -117,11 +120,11 @@ class UpdaterSkNrsr
 		}
 
 		//update/insert roles, memberships
-				//prepare variable to mark (still valid) memberships
+		//prepare variable to mark (still valid) memberships
 		$marked = array();
 
-		$src_memberships_all['political group'] = $this->api->read('Scraper', array('remote_resource' => 'current_group_membership','group_kind'=>'political_group'));
-		$src_memberships_all['committee'] = $this->api->read('Scraper', array('remote_resource' => 'current_group_membership','group_kind'=>'committee'));
+		$src_memberships_all['political group'] = $this->api->read('Scraper', array('remote_resource' => 'current_group_membership', 'group_kind'=>'political_group'));
+		$src_memberships_all['committee'] = $this->api->read('Scraper', array('remote_resource' => 'current_group_membership', 'group_kind'=>'committee'));
 		foreach ($src_memberships_all as $group_kind_code => $src_memberships) {
 		  foreach((array) $src_memberships['membership'] as $src_membership) {
 			//get mp_id
@@ -142,14 +145,14 @@ class UpdaterSkNrsr
 		    //parliament - everybody is a member of parliament
 		    $group_id_ar = $this->api->readOne('Group',
 		    	array(
-		    		'name' => 'Národná rada Slovenskej republiky',
+		    		'group_kind_code' => 'parliament',
 		    		'parliament' => $this->parliament_code,
-		    		'term' => $this->term_id,
+		    		'term_id' => $this->term_id,
 		    	)
 		    );
 		    $parl_group_id = $group_id_ar['id'];
-		    $this->UpdateMembership($mp_id,$parl_group_id,'member',$constituency_id);
-		    	//mark the membership
+		    $this->UpdateMembership($mp_id, $parl_group_id, 'member', $constituency_id);
+		    //mark the membership
 		    $marked[$mp_id][$parl_group_id]['member'] = true;
 
 		    //group
@@ -160,7 +163,7 @@ class UpdaterSkNrsr
 		    		'value' => $src_membership['src_group_id']['value']
 		    	)
 		    );
-		    	//might be more groups with the same source code!
+		    //might be more groups with the same source code!
 		    if (count($group_attr_ar) > 0) {
 		      foreach ($group_attr_ar as $group_attr) {
 		        $group = $this->api->readOne('Group',
@@ -172,13 +175,12 @@ class UpdaterSkNrsr
 		        	$group_id = $group['id'];
 		      }
 		    }
-		    $this->UpdateMembership($mp_id,$group_id,'member',null);
+		    $this->UpdateMembership($mp_id, $group_id, 'member', null);
 		    if ($role_code != 'member')
-			    $this->UpdateMembership($mp_id,$group_id,$role_code,null);
+			    $this->UpdateMembership($mp_id, $group_id, $role_code, null);
 		    //mark the membership
 			$marked[$mp_id][$group_id][$role_code] = true;
 			$marked[$mp_id][$group_id]['member'] = true;
-
 		  }
 		}
 		$this->closeMemberships($marked);
@@ -195,16 +197,16 @@ class UpdaterSkNrsr
 	private function closeMemberships($marked) {
 	  //get all mps with open membership in 'NRSR'
 	    //get NRSR's id
-	  $parl_db = $this->api->readOne('Group', array('name' => 'Národná rada Slovenskej republiky', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
+	  $parl_db = $this->api->readOne('Group', array('group_kind_code' => 'parliament', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
 	  $parl_id = $parl_db['id'];
 
 	    //get all mps in NRSR
-	  $mps_db = $this->api->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', '#datetime' => $this->date->format('Y-m-d')));
+	  $mps_db = $this->api->read('MpInGroup', array('group_id' => $parl_id, 'role_code' => 'member', '_datetime' => $this->update_date));
 
 	  //loop through all mps
 	  foreach((array) $mps_db as $row) {
 	    //get all memberships of MP
-	    $membs = $this->api->read('MpInGroup', array('mp_id' => $row['mp_id'], '#datetime' => $this->date->format('Y-m-d')));
+	    $membs = $this->api->read('MpInGroup', array('mp_id' => $row['mp_id'], '_datetime' => $this->update_date));
 	    //loop through all mp's memberships
 	    foreach((array) $membs as $memb) {
 
@@ -219,30 +221,26 @@ class UpdaterSkNrsr
 
 	      //otherwise close the membership
 	      $this->log->write("Closing membership (mp_id={$memb['mp_id']}, group_id={$memb['group_id']}, role_code='{$memb['role_code']}', since={$memb['since']}).", Log::DEBUG);
-	      $this->api->update('MpInGroup', array('mp_id' => $memb['mp_id'], 'group_id' => $memb['group_id'], 'role_code' => $memb['role_code'], 'since' => $memb['since']), array('until' => $this->date->format('Y-m-d')));
+	      $this->api->update('MpInGroup', array('mp_id' => $memb['mp_id'], 'group_id' => $memb['group_id'], 'role_code' => $memb['role_code'], 'since' => $memb['since']), array('until' => $this->update_date));
 	    }
-
 	  }
-
 	}
 
 	/**
 	 * Update information about the membership of an MP in a group. If it is not present in database, insert it.
 	 * Membership is identified by the quadruple (\e mp_id, \e group_id, \e role_code, \e since).
 	 *
- 	 * \param $src_group array of key => value pairs with properties of a scraped group
 	 * \param $mp_id \e id of the MP in database
 	 * \param $group_id \e id of the group in database
 	 * \param $role_code \e code of the role in database that MP stands in the membership
 	 * \param $constituency_id \e id of the constituency in database applicable for the membership or null
-	 * \param $date \e date of the membership, object DateTime
 	 */
 	private function updateMembership($mp_id, $group_id, $role_code, $constituency_id)
 	{
 		$this->log->write("Updating membership (mp_id=$mp_id, group_id=$group_id, role_code='$role_code').", Log::DEBUG);
 
 		// if membership is already present in database, update its details
-		$memb = $this->api->readOne('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, '#datetime' => $this->date->format('Y-m-d')));
+		$memb = $this->api->readOne('MpInGroup', array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, '_datetime' => $this->update_date));
 		if ($memb)
 		{
 		  if ($constituency_id) {	//chybne, pokud $constituency_id je null
@@ -253,7 +251,7 @@ class UpdaterSkNrsr
 		// if it is not present, insert it
 		else
 		{
-			$data = array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'constituency_id' => $constituency_id, 'since' => $this->date->format('Y-m-d'));
+			$data = array('mp_id' => $mp_id, 'group_id' => $group_id, 'role_code' => $role_code, 'constituency_id' => $constituency_id, 'since' => $this->update_date);
 			$this->api->create('MpInGroup', $data);
 		}
 	}
@@ -302,7 +300,7 @@ class UpdaterSkNrsr
 		$this->log->write("Updating MP's attribute '$attr_name'.", Log::DEBUG);
 
 		$src_value = !empty($src_mp[$attr_name]) ? (is_null($implode_separator) ? $src_mp[$attr_name] : implode($implode_separator, $src_mp[$attr_name])) : null;
-		$value_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $this->parliament_code, '#datetime' => $this->update_date));
+		$value_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'parl' => $this->parliament_code, '_datetime' => $this->update_date));
 		if ($value_in_db)
 			$db_value = $value_in_db['value'];
 
@@ -314,9 +312,43 @@ class UpdaterSkNrsr
 
 		// and insert a new one
 		if (isset($src_value))
-			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'value' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'value' => $src_value, 'parl' => $this->parliament_code, 'since' => $this->update_date, 'until' => $this->next_term_since));
 	}
 
+	/**
+	 * Update information about image of an MP.
+	 *
+	 * Not a full update is implemented, only if an image for this term-of-office is not present in the database and it is detected on the source website, it is inserted into database.
+	 * Change of the image during the term is not detected, it would need to compare images by file content.
+	 *
+	 * \param $src_mp array of key => value pairs with properties of a scraped MP
+	 * \param $mp_id \e id of that MP in database
+	 */
+	private function updateMpImage($src_mp, $mp_id)
+	{
+		if (!isset($src_mp['image-url']['value'])) return;
+		$this->log->write("Updating MP's image.", Log::DEBUG);
+
+		// check for existing image in the database and if it is not present, insert its filename and download the image file
+		$image_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'parl' => $this->parliament_code, 'since' => $this->term_since));
+		if (!$image_in_db)
+		{
+			// close record for image from previous term-of-office
+			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'parl' => $this->parliament_code, 'until' => 'infinity'), array('until' => $this->term_since));
+
+			// insert current image
+			$db_image_filename = $src_mp['id']['value'] . '_' . $this->term_src_code . '.jpg';
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'value' => $db_image_filename, 'parl' => $this->parliament_code, 'since' => $this->term_since, 'until' => $this->next_term_since));
+
+			// if the directory for MP images does not exist, create it
+			$path = API_FILES_DIR . '/' . $this->parliament_code . '/images/mp';
+			if (!file_exists($path))
+				mkdir($path, 0775, true);
+
+			$image = file_get_contents($src_mp['image-url']['value']);
+			file_put_contents($path . '/' . $db_image_filename, $image);
+		}
+	}
 
 	/**
 	* Update or insert MPs (from all terms)
@@ -325,7 +357,7 @@ class UpdaterSkNrsr
 	*/
 	private function updateMp($src_mp) {
 
-		$this->log->write("Updating mp '{$src_mp['priezvisko']['value']} {$src_mp['meno']['value']} (source code {$src_mp['id']['value']})'", Log::DEBUG);
+		$this->log->write("Updating MP '{$src_mp['priezvisko']['value']} {$src_mp['meno']['value']} (source code {$src_mp['id']['value']})'", Log::DEBUG);
 
 		$src_code = $src_mp['id']['value'];
 
@@ -399,7 +431,7 @@ class UpdaterSkNrsr
 		  $data['born_on'] = $d->format('Y-m-d');
 		}
 		//date now
-		$data['last_updated_on'] = date('Y-m-d H:i:s.u');
+		$data['last_updated_on'] = $this->update_date;
 
 		// perform appropriate actions to update or insert MP
 		if ($action & self::MP_INSERT)
@@ -421,7 +453,6 @@ class UpdaterSkNrsr
 		return $mp_id;
 	}
 
-
 	/**
 	* Update groups. If  a group is not in db, insert it
 	* group_kinds are in the db already
@@ -441,7 +472,7 @@ class UpdaterSkNrsr
 
 	      //find parent group id
 	      if ($group_kind_code != 'parliament') {
-			  $parent_group = $this->api->readOne('Group', array('name' => 'Národná rada Slovenskej republiky', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
+			  $parent_group = $this->api->readOne('Group', array('group_kind_code' => 'parliament', 'term_id' => $this->term_id, 'parliament_code' => $this->parliament_code));
 			  if ($parent_group)
 				$parent_group_id = $parent_group['id'];
 			  else
@@ -556,9 +587,8 @@ class UpdaterSkNrsr
 		} else {
 		//insert the constituency (and its area) and return constituency id
 		  $data = array(
-		    'name' => 'Slovensko',
+		    'name' => 'Slovenská republika',
 		    'short_name' => 'Slovensko',
-		    'description' => 'Slovenská republika',
 		    'parliament_code' => $this->parliament_code,
 		  );
 		  $constituency_pkey = $this->api->create('Constituency', $data);
@@ -606,34 +636,39 @@ class UpdaterSkNrsr
 
 		// if there is no such term in the term list, terminate with error (class Log writing a message with level FATAL_ERROR throws an exception)
 		if (!isset($term_to_update))
-			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check " . API_DOMAIN . "/data/Scrape?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
+			$this->log->write("The term to update parliament {$this->parliament_code} for does not exist, check " . API_DOMAIN . "/data/Scraper?parliament={$this->parliament_code}&remote_resource=term_list", Log::FATAL_ERROR, 400);
 
 		// if the term is present in the database, update it and get its id
 		$src_code_in_db = $this->api->readOne('TermAttribute', array('name' => 'source_code', 'value' => $term_src_code, 'parl' => $this->parliament_code));
 		if ($src_code_in_db)
 		{
 			$term_id = $src_code_in_db['term_id'];
-			$data = array('name' => $term_to_update['name'], 'since' => $term_to_update['since']);
+			$data = array('name' => $term_to_update['name'], 'since' => $term_to_update['since'] . self::NOON);
 			if (isset($term_to_update['short_name']))
 				$data['short_name'] = $term_to_update['short_name'];
 			if (isset($term_to_update['until']))
-				$data['until'] = $term_to_update['until'];
+				$data['until'] = $term_to_update['until'] . self::NOON;
 			$this->api->update('Term', array('id' => $term_id), $data);
 		}
 		else
 		{
 			// if term is not in the database, insert it and get its id
-			$data = array('name' => $term_to_update['name'], 'country_code' => 'sk', 'parliament_kind_code' => 'national', 'since' => $term_to_update['since']);
-			if (isset($term_to_update['name']))
-				$data['short_name'] = $term_to_update['name'];
+			$data = array('name' => $term_to_update['name'], 'country_code' => 'sk', 'parliament_kind_code' => 'national', 'since' => $term_to_update['since'] . self::NOON);
+			if (isset($term_to_update['short_name']))
+				$data['short_name'] = $term_to_update['short_name'];
 			if (isset($term_to_update['until']))
-				$data['until'] = $term_to_update['until'];
+				$data['until'] = $term_to_update['until'] . self::NOON;
 			$term_pkey = $this->api->create('Term', $data);
 			$term_id = $term_pkey['id'];
 
 			// insert term's source code as an attribute
 			$this->api->create('TermAttribute', array('term_id' => $term_id, 'name' => 'source_code', 'value' => $term_src_code, 'parl' => $this->parliament_code));
 		}
+
+		// prepare start and end dates of this term and start date of the following term
+		$this->term_since = $term_to_update['since'] . self::NOON;
+		$index = array_search($term_to_update, $term_list);
+		$this->next_term_since = isset($term_list[$index+1]) ? $term_list[$index+1]['since'] . self::NOON : 'infinity';
 
 		// set the effective date which the update process actually runs to
 		$this->update_date = (isset($params['term'])) ? $this->term_since : 'now';
@@ -655,12 +690,12 @@ class UpdaterSkNrsr
 		{
 			$this->api->create('Parliament', array(
 				'code' => $this->parliament_code,
-				'name' => 'Národná rada',
-				'short_name' => 'NRSR',
-				'description' => 'Parlament Slovenské republiky.',
+				'name' => 'Národná rada Slovenskej republiky',
+				'short_name' => 'Národná rada',
+				'description' => 'Parlament Slovenskej republiky.',
 				'parliament_kind_code' => 'national',
 				'country_code' => 'sk',
-				'time_zone' => 'Europe/Bratislava'
+				'time_zone' => self::TIME_ZONE
 			));
 
 			// english translation

@@ -201,7 +201,7 @@ class UpdaterCzPsp
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Lower house of the Czech republic parliament.')
 			));
 
-			// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
+			// a function to show appropriate info about representatives of this parliament for use by NapisteJim application
 			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $this->parliament_code, 'name' => 'napistejim_repinfo_function', 'value' => 'napistejim_repinfo_politgroup_office')));
 		}
 

@@ -82,7 +82,8 @@ insert into "role" (code, male_name, female_name, description) values
 ('chairman of the bureau', 'chairman of the bureau', 'chairwoman of the bureau', null),
 ('treasurer', 'treasurer', 'treasurer', null),
 ('deputy-treasurer', 'deputy-treasurer', 'deputy-treasurer', null),
-('quaestor', 'quaestor', 'quaestor', null);
+('quaestor', 'quaestor', 'quaestor', null),
+('verifier', 'verifier', 'verifier', null);
 
 insert into role_attribute (role_code, lang, "name", "value") values
 ('member', 'sk', 'male_name', 'člen'),

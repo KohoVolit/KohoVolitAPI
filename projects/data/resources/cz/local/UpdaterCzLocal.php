@@ -488,16 +488,14 @@ class UpdaterCzLocal
 
 				// english translation
 				if ($src_parliament['parliament_code'] == 'cz/starostove')
-				{
 					$this->api->create('ParliamentAttribute', array(
 						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'name', 'value' => 'Mayors'),
 						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'short_name', 'value' => 'Mayors'),
 						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'description', 'value' => 'Mayors of towns and cities.')
 					));
 
-				// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
+				// a function to show appropriate info about representatives of this parliament for use by NapisteJim application
 				$this->api->create('ParliamentAttribute', array('parliament_code' => $src_parliament['parliament_code'], 'name' => 'napistejim_repinfo_function', 'value' => 'napistejim_repinfo_politgroup'));
-				}
 			}
 
 			// update the timestamp the parliament has been last updated on
@@ -547,7 +545,7 @@ class UpdaterCzLocal
 				  'next_term_since' => 'infinity',
 				  'src_parliament' => $src_parliament
 			);
-			
+
 			//conflict mps (if set)
 			if ($src_parliament['conflict_mps'] != '') {
 			  $tmp_mps = explode(',',$src_parliament['conflict_mps']);
