@@ -29,6 +29,7 @@ class MpDetails
 	 *             [middle_names] =>
 	 *             [last_name] => Pajer
 	 *             [disambiguation] =>
+	 *             [sex] => m
 	 *             [parliament_code] => cz/psp
 	 *             [parliament_name] => Poslanecká sněmovna Parlamentu České republiky
 	 *             [source_code] => 5953
@@ -44,6 +45,7 @@ class MpDetails
 	 *             [middle_names] =>
 	 *             [last_name] => Vícha
 	 *             [disambiguation] =>
+	 *             [sex] => m
 	 *             [parliament_code] => cz/senat
 	 *             [parliament_name] => Senát Parlamentu České republiky
 	 *             [source_code] => 206
@@ -65,7 +67,7 @@ class MpDetails
 		// get the MPs' details from database
 		$query = new Query();
 		$query->setQuery(
-			"select id, first_name, middle_names, last_name, disambiguation, mpa.\"name\" as attr_name, mpa.\"value\" as attr_value, p.code as parliament_code, p.\"name\" as parliament_name from mp\n" .
+			"select id, first_name, middle_names, last_name, disambiguation, sex, mpa.\"name\" as attr_name, mpa.\"value\" as attr_value, p.code as parliament_code, p.\"name\" as parliament_name from mp\n" .
 			"left join mp_attribute as mpa on mpa.mp_id = mp.id and mpa.since <= 'now' and mpa.until > 'now'\n" .
 			"left join parliament as p on p.code = mpa.parl\n" .
 			"where false\n"
