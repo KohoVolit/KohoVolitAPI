@@ -122,8 +122,11 @@ class MpStatistics
 				"	) as pg on pg.mp_id = mp.id\n"
 			);
 
-		// sort the result
-		$query->appendQuery("	order by received_public_messages desc, received_private_messages desc, replied_public_messages desc, sent_public_replies desc, mp.id\n");
+		// show only the ones with public messages and sort the result
+		$query->appendQuery(
+			"	where received_public_messages > 0\n" .
+			"	order by received_public_messages desc, received_private_messages desc, replied_public_messages desc, sent_public_replies desc, mp.id\n"
+		);
 
 		// restrict the output by _limit and _offset
 		if (isset($params['_limit']))

@@ -19,7 +19,7 @@ class PublicMessagesPreview
 	 *	- \c text specifies to apply fulltext search of \c text in messages and replies (in both subject and title)
 	 *	- \c sender specifies to apply fulltext search of \c sender in message senders
 	 *	- \c recipient specifies to apply fulltext search of \c recipient in message recipient names (MP full names)
-	 *	- \c order specifies sorting of the result, two values are accepted: \c replies to order by date of the latest reply and \c messages (or anything else) to order by by message date
+	 *	- \c order specifies sorting of the result, two values are accepted: \c replied to order by date of the latest reply and \c sent (or anything else) to order by sent date of the message
 	 *	- \c _limit, \c _offset restrict the result to return at most \c _limit records skipping the first \c _offset records.
 	 *
 	 * \return Basic information on sent public messages.
@@ -141,7 +141,7 @@ class PublicMessagesPreview
 		}
 
 		// sort the result
-		$order_by = (isset($params['order']) && $params['order'] == 'replies') ? 'last_reply_on' : 'sent_on';
+		$order_by = (isset($params['order']) && $params['order'] == 'replied') ? 'last_reply_on' : 'sent_on';
 		$query->appendQuery(
 			"				group by\n" .
 			"					$order_by, sent_on\n" .

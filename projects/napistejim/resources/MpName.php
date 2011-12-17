@@ -50,7 +50,7 @@ class MpName
 	{
 		$query = new Query();
 		$query->setQuery(
-			"select\n" .
+			"select distinct\n" .
 			"	mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation\n" .
 			"from\n" .
 			"	mp\n" .

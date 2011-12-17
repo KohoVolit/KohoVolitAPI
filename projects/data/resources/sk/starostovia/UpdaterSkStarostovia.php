@@ -439,7 +439,7 @@ class UpdaterSkStarostovia
 
 		foreach ($terms as $term) {
 			$term['country_code'] = 'sk';
-			$term['parliament_kind_code'] = 'local';
+			$term['parliament_kind_code'] = 'mayors';
 			$term_db = $this->api->readOne('Term', array('name' => $term['name'], 'country_code' => $term['country_code'], 'parliament_kind_code' => $term['parliament_kind_code']));
 			if ($term_db) { //update
 				$term_id = $term_db['id'];
