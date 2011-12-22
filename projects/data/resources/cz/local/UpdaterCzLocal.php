@@ -46,7 +46,7 @@ class UpdaterCzLocal
 	 * The mapping is expected as a string in the form <em>pair1,pair2,...</em> where each pair is either <em>mp_src_code->parliament_code/mp_src_code</em> or
 	 *<em>mp_src_code-></em>.
 	 *
-	 * \return Result of the update process.
+	 * \return Name of the log file with update report.
 	 */
 	public function update($params)
 	{

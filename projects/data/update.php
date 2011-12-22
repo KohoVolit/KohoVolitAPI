@@ -142,6 +142,9 @@ $report .= update(array('parliament' => 'sk/starostovia', 'area' => true, 'confl
 */
 $report .= update(array('parliament' => 'sk/starostovia', 'conflict_mps' => $sk_starostovia_conflicts));
 
+// manual corrections of the data for all parliaments
+$report .= update(array('parliament' => 'corrections'));
+
 if (!empty($report))
 	mail(API_ADMIN_EMAIL, 'Warnings or errors occured in data update', $report);
 
