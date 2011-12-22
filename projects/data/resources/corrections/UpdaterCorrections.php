@@ -35,10 +35,10 @@ class UpdaterCorrections
 		$rows = $this->api->read('Scraper', array('parliament' => 'corrections', 'remote_resource' => 'private_emails'));
 		$rows = $rows['private_emails'];
 		foreach ($rows as $row)
-			$this->updateMpAttribute('private_email', $row, true);
+			$this->updateMpAttribute('private_email', $row);
 
 		// close all private_email attribute records not present in the scraped corrections
-		$this->closeMissingCorrections('private_email', $rows, true);
+		$this->closeMissingCorrections('private_email', $rows);
 
 		$this->log->write('Completed.');
 		return array('log' => $this->log->getFilename());
