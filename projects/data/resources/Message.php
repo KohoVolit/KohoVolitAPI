@@ -5,7 +5,7 @@
  *
  * Provides an interface to database table MESSAGE that holds messages sent to MPs.
  *
- * Columns of table MESSAGE are: <code>id, subject, body, sender_name, sender_address, sender_email, is_public, state, written_on, sent_on, confirmation_code, approval_code, text_data, sender_data, remote_addr, typing_duration</code>.
+ * Columns of table MESSAGE are: <code>id, subject, body, sender_name, sender_address, sender_email, is_public, state, written_on, sent_on, confirmation_code, approval_code, text_data, sender_data, remote_addr, typing_duration, mp_parameter</code>.
  *
  * Columns <code>id, text_data, sender_data</code> are read-only. The \c id is automaticaly generated on create,
  * the latter two are derived from other columns on create and on each update automatically.
@@ -26,7 +26,7 @@ class Message
 	{
 		$this->entity = new Entity(array(
 			'name' => 'message',
-			'columns' => array('id', 'subject', 'body', 'sender_name', 'sender_address', 'sender_email', 'is_public', 'state', 'written_on', 'sent_on', 'confirmation_code', 'approval_code', 'text_data', 'sender_data', 'remote_addr', 'typing_duration'),
+			'columns' => array('id', 'subject', 'body', 'sender_name', 'sender_address', 'sender_email', 'is_public', 'state', 'written_on', 'sent_on', 'confirmation_code', 'approval_code', 'text_data', 'sender_data', 'remote_addr', 'typing_duration', 'mp_parameter'),
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id', 'text_data', 'sender_data')
 		));
@@ -64,6 +64,7 @@ class Message
 	 *             [sender_data] => 'bag':3B 'baggins':2A 'bilbo':1A 'end':4B 'hobbiton':5B
 	 *             [remote_addr] => 198.152.23.24
 	 *             [typing_duration] => 238
+	 *             [mp_parameter] => sk/nrsr/1234|sk/starostovia/4321
 	 *         )
 	 *
 	 * )
@@ -84,7 +85,7 @@ class Message
 	 *
 	 * \ex
 	 * \code
-	 * create(array('subject' => 'My law proposal', 'body' => 'Dear Mr. ...', 'sender_name' => 'Bilbo Baggins', 'sender_email' => 'bilbo@hobbiton.me', 'is_public' => 'yes', 'confirmation_code' => 'abcdefghij', 'remote_addr' => '198.152.23.24', 'typing_duration' => '238'))
+	 * create(array('subject' => 'My law proposal', 'body' => 'Dear Mr. ...', 'sender_name' => 'Bilbo Baggins', 'sender_email' => 'bilbo@hobbiton.me', 'is_public' => 'yes', 'confirmation_code' => 'abcdefghij', 'remote_addr' => '198.152.23.24', 'typing_duration' => '238', 'mp_parameter' => 'sk/nrsr/1234|sk/starostovia/4321'))
 	 * \endcode creates a new message and returns something like
 	 * \code
 	 * Array

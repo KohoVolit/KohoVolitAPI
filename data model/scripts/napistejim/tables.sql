@@ -19,7 +19,8 @@ create table message
 	text_data tsvector,
 	sender_data tsvector,
 	remote_addr inet,
-	typing_duration real
+	typing_duration real,
+	mp_parameter varchar
 );
 
 create table message_to_mp
