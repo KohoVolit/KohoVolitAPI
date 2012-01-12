@@ -77,8 +77,9 @@ class ScraperUtils
 				curl_setopt ($ch, $option[0], $option[1]);
 			}
 		}
-		return curl_exec($ch);
+		$out = curl_exec($ch);
 		curl_close ($ch);
+		return $out;
 	}
 }
 

@@ -167,11 +167,12 @@ class Utils
 			foreach ($field_names as $key => $f)
 			{
 				if (isset($options['header_replace']) && $options['header_replace'])
-					$f = str_replace(' ', '_', $f);
+					$f = str_replace(' ', '_', trim($f));
+				$val = isset($fields[$key]) ? $fields[$key] : null;
 				if ($to_object)
-					$_res->{$f} = $fields[$key];
+					$_res->{$f} = $val;
 				else
-					$_res[$f] = $fields[$key];
+					$_res[$f] = $val;
 			}
 			$res[] = $_res;
 		}

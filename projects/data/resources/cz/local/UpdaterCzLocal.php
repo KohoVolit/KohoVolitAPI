@@ -52,11 +52,10 @@ class UpdaterCzLocal
 	{
 		$this->log->write('Started with parameters: ' . print_r($params, true));
 
-		//update parliaments and terms
-		$this->parliaments = $this->updateParliamentsAndTermsAndGroups($params);
-		//treat conflict MPs
-		//$this->log->write(print_r($params,1));
 		$this->conflict_mps = $this->parseConflictMps($params);
+
+		//update parliaments and terms
+		$this->parliaments = $this->updateParliamentsAndTermsAndGroups();
 
 		// read list of all MPs in the term of office to update data for
 		$src_mps = $this->api->read('Scraper', array('parliament' => 'cz/local', 'remote_resource' => 'mp'));
@@ -459,10 +458,8 @@ class UpdaterCzLocal
 	 *
 	 * @return array of parliaments and terms
 	 */
-	private function updateParliamentsAndTermsAndGroups(&$params)
+	private function updateParliamentsAndTermsAndGroups()
 	{
-		//conflict mps
-		$conflict_mps = '';
 		//read list of parliaments
 		$src_parliaments = $this->api->read('Scraper', array('parliament' => 'cz/local', 'remote_resource' => 'parliament_list'));
 
@@ -546,16 +543,16 @@ class UpdaterCzLocal
 				  'src_parliament' => $src_parliament
 			);
 
-			//conflict mps (if set)
+			// collect conflict_mps from individual parliaments in the parliament list
 			if ($src_parliament['conflict_mps'] != '') {
-			  $tmp_mps = explode(',',$src_parliament['conflict_mps']);
+			  $tmp_mps = explode(',', $src_parliament['conflict_mps']);
 			  foreach($tmp_mps as $tmp_mp) {
-			    $tmp_m = explode('->',$tmp_mp);
-			    $conflict_mps .= str_replace('/','_',$src_parliament['parliament_code']).'_'.str_replace(' ','',$src_parliament['term']).'_'.$tmp_m[0] . '->' . (isset($tmp_m[1]) ? $tmp_m[1] : '') . ',';
+			    $tmp_m = explode('->', $tmp_mp);
+			    $this->conflict_mps[str_replace('/', '_', $src_parliament['parliament_code']) . '_' . str_replace(' ', '', $src_parliament['term']) . '_' . $tmp_m[0]] = isset($tmp_m[1]) ? $tmp_m[1] : '';
 			  }
 			}
 		}
-		$params['conflict_mps'] .= rtrim($conflict_mps,',');
+		$this->log->write("Parameter conflict_mps extended by individual parliaments' values : " . print_r($this->conflict_mps, true));
 
 		// set the effective date which the update process actually runs to
 		$this->update_date = 'now';
