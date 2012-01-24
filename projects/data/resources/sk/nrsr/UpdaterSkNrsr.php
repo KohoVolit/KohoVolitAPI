@@ -46,7 +46,6 @@ class UpdaterSkNrsr
 	    $this->parliament_code = $params['parliament'];
 		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
-		$this->log->setMinLogLevel(Log::DEBUG);
 		date_default_timezone_set(self::TIME_ZONE);
 	}
 

@@ -3,9 +3,9 @@
 /**
  * \ingroup data
  *
- * Provides an interface to database table MP that holds information about divisions in parliament.
+ * Provides an interface to database table DIVISION that holds information about divisions in parliament.
  *
- * Columns of table Division are: <code>id, parliament_code, date, division_kind_code, name</code>.
+ * Columns of table DIVISION are: <code>id, name, division_kind_code, divided_on, parliament_code</code>.
  *
  * Column <code>id</code> is a read-only column automaticaly generated on create.
  *
@@ -23,7 +23,7 @@ class Division
 	{
 		$this->entity = new Entity(array(
 			'name' => 'division',
-			'columns' => array('id', 'parliament_code', 'date', 'division_kind_code', 'name'),
+			'columns' => array('id', 'name', 'division_kind_code', 'voted_on', 'parliament_code'),
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id')
 		));
@@ -36,6 +36,24 @@ class Division
 	 *
 	 * \return An array of divisions that satisfy all prescribed column values.
 	 *
+	 * \ex
+	 * \code
+	 * read(array('voted_on' => '2010-03-24 12:34:56', 'parliament_code' => 'cz/senat'))
+	 * \endcode returns
+	 * \code
+	 * Array
+	 * (
+	 *     [0] => Array
+	 *         (
+	 *             [id] => 12345
+	 *             [name] => Procedural division
+	 *             [division_kind_code] => simple
+	 *             [voted_on] => 2010-03-24 12:34:56
+	 *             [parliament_code] => cz/senat
+	 *         )
+	 *
+	 * )
+	 * \endcode
 	 */
 	public function read($params)
 	{
