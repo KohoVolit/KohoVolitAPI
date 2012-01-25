@@ -185,7 +185,7 @@ class UpdaterCzLocal
 		// if group exists
 		$group_name = trim($mp['political_group:long_name']);
 		// correct for 'full name' (error in cz/starostove)
-		if (trim($mp['political_group:full_name'] != ''))
+		if (trim($mp['political_group:full_name']) != '')
 			$group_name = trim($mp['political_group:full_name']);
 
 		if (isset($group_name) and (!empty($group_name))) {
@@ -245,7 +245,7 @@ class UpdaterCzLocal
 			'administrative_area_level_2' => $area['administrative_area_level_2'],
 			'administrative_area_level_3' => '*',
 			'locality' => $area['locality'],
-			'sublocality' => (isset($area['sublocality']) && trim($area['sublocality'] != '')) ? $area['sublocality'] : '*',
+			'sublocality' => (isset($area['sublocality']) && trim($area['sublocality']) != '') ? $area['sublocality'] : '*',
 			'neighborhood' => '*',
 			'route' => '*',
 			'street_number' => '*',
@@ -416,19 +416,19 @@ class UpdaterCzLocal
 			$data['first_name'] = trim($src_mp['first_name']);
 		if (isset($src_mp['last_name']))
 			$data['last_name'] = trim($src_mp['last_name']);
-		if (isset($src_mp['middle_names']) && trim($src_mp['middle_names'] != ''))
+		if (isset($src_mp['middle_names']) && trim($src_mp['middle_names']) != '')
 			$data['middle_names'] = trim($src_mp['middle_names']);
-		if (isset($src_mp['sex']) && trim($src_mp['sex'] != ''))
+		if (isset($src_mp['sex']) && trim($src_mp['sex']) != '')
 			$data['sex'] = self::correctSex(trim($src_mp['sex']));
-		if (isset($src_mp['disambiguation']) && trim($src_mp['disambiguation'] != ''))
+		if (isset($src_mp['disambiguation']) && trim($src_mp['disambiguation']) != '')
 			$data['disambiguation'] = trim($src_mp['disambiguation']);
 		if (isset($src_mp['born_on']) && preg_match('/^\d\d\d\d-\d\d-\d\d$/', trim($src_mp['born_on'])) > 0)
 			$data['born_on'] = trim($src_mp['born_on']);
 		if (isset($src_mp['died_on']) && preg_match('/^\d\d\d\d-\d\d-\d\d$/', trim($src_mp['died_on'])) > 0)
 			$data['died_on'] = trim($src_mp['died_on']);
-		if (isset($src_mp['pre_title']))
+		if (isset($src_mp['pre_title']) && trim($src_mp['pre_title']) != '')
 			$data['pre_title'] = trim($src_mp['pre_title']);
-		if (isset($src_mp['post_title']))
+		if (isset($src_mp['post_title']) && trim($src_mp['post_title']) != '')
 			$data['post_title'] = trim($src_mp['post_title']);
 		$data['last_updated_on'] = $this->update_date;
 
