@@ -548,7 +548,7 @@ class UpdaterCzLocal
 			  $tmp_mps = explode(',', $src_parliament['conflict_mps']);
 			  foreach($tmp_mps as $tmp_mp) {
 			    $tmp_m = explode('->', $tmp_mp);
-			    $this->conflict_mps[str_replace('/', '_', $src_parliament['parliament_code']) . '_' . str_replace(' ', '', $src_parliament['term']) . '_' . trim($tmp_m[0])] = isset($tmp_m[1]) && ? trim($tmp_m[1]) : '';
+			    $this->conflict_mps[str_replace('/', '_', $src_parliament['parliament_code']) . '_' . str_replace(' ', '', $src_parliament['term']) . '_' . trim($tmp_m[0])] = isset($tmp_m[1]) ? trim($tmp_m[1]) : '';
 			  }
 			}
 		}
