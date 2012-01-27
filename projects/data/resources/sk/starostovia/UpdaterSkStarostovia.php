@@ -455,9 +455,9 @@ class UpdaterSkStarostovia
 		//parliament
 		$parliament = array(
 			'code' => 'sk/starostovia',
-			'name' => 'Starostovia obcí',
+			'name' => 'Starosta obce',
 			'short_name' => 'Starosta',
-			'description' => 'Starostovia obcí Slovenska',
+			'description' => 'Starostovia obcí Slovenska.',
 			'parliament_kind_code' => 'mayors',
 			'country_code' => 'sk',
 			'time_zone' => 'Europe/Bratislava',

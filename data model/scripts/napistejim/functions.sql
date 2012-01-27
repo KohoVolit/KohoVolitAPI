@@ -147,7 +147,7 @@ as $$
 		mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation,
 		ma_e."value",
 		$2 || '/images/mp/' || ma_i."value",
-		split_part(o.address, '|', 4) || ', ' || round(acos(sin(radians(o.latitude)) * sin(radians($4)) + cos(radians(o.latitude)) * cos(radians($4)) * cos(radians($5 - o.longitude))) * 6371) || ' km',
+		split_part(o.address, '|', 4),
 		coalesce(ga_n."value", g."name") as political_group_name,
 		coalesce(ga_sn."value", g.short_name),
 		$2 || '/images/group/' || ga_i."value"
@@ -192,7 +192,7 @@ as $$
 			mp.id, mp.first_name, mp.middle_names, mp.last_name, mp.disambiguation,
 			ma_e."value" as email,
 			$2 || '/images/mp/' || ma_i."value" as image,
-			ma_loc."value" || ', ' || round(acos(sin(radians(cast(ma_lat."value" as double precision))) * sin(radians($4)) + cos(radians(cast(ma_lat."value" as double precision))) * cos(radians($4)) * cos(radians($5 - cast(ma_lng."value" as double precision)))) * 6371) || ' km' as additional_info,
+			ma_loc."value" as additional_info,
 			coalesce(ga_n."value", g."name") as political_group_name,
 			coalesce(ga_sn."value", g.short_name) as political_group_short_name,
 			$2 || '/images/group/' || ga_i."value" as political_group_logo,

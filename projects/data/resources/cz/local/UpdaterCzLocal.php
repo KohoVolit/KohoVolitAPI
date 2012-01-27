@@ -467,7 +467,7 @@ class UpdaterCzLocal
 		{
 			$this->log->write("Updating parliament '{$src_parliament['parliament_code']}'.", Log::DEBUG);
 
-			$description = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'Starostové obcí s rozšířenou působností.' : 'Zastupitelstvo ' . $src_parliament['parliament_name'];
+			$description = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'Starostové obcí s rozšířenou působností.' : 'Zastupitelstvo ' . $src_parliament['parliament_name'] . '.';
 			$kind = $src_parliament['parliament_kind_code'];
 
 			// if parliament does not exist yet, insert it
