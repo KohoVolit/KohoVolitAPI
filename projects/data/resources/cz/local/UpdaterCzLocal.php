@@ -182,33 +182,29 @@ class UpdaterCzLocal
 	*/
 	private function updateGroup($mp, $term_id, $group_kind_code = 'political group')
 	{
-		// if group exists
-		$group_name = trim($mp['political_group:long_name']);
-		// correct for 'full name' (error in cz/starostove)
-		if (trim($mp['political_group:full_name']) != '')
+		if (isset($mp['political_group:full_name']))
 			$group_name = trim($mp['political_group:full_name']);
-
-		if (isset($group_name) and (!empty($group_name))) {
-			$group_db = $this->api->readOne('Group', array('name' => $group_name, 'group_kind_code' => $group_kind_code, 'term_id' => $term_id, 'parliament_code' => $mp['parliament_code']));
-			if ($group_db)
-				$group_id = $group_db['id'];
-			else {  // insert new group
-				$this->log->write("Inserting new group '{$group_name}' ({$mp['parliament_code']})", Log::DEBUG);
-				$data = array(
-					'name' => $group_name,
-					'group_kind_code' => $group_kind_code,
-					'term_id' => $term_id,
-					'parliament_code' => $mp['parliament_code']
-				);
-				$group_short_name = $mp['political_group:short_name'];
-				if (isset($group_short_name) and (!empty($group_short_name)))
-					$data['short_name'] = $group_short_name;
-				$group_pkey = $this->api->create('Group', $data);
-				$group_id = $group_pkey['id'];
-			}
-			return $group_id;
-		} else
-			return null;
+		else if (isset($mp['political_group:long_name']))	// wrong column title in some data sets
+			$group_name = trim($mp['political_group:long_name']);
+		if (!isset($group_name) || empty($group_name)) return null;
+		
+		$group_db = $this->api->readOne('Group', array('name' => $group_name, 'group_kind_code' => $group_kind_code, 'term_id' => $term_id, 'parliament_code' => $mp['parliament_code']));
+		if ($group_db)
+			$group_id = $group_db['id'];
+		else {  // insert new group
+			$this->log->write("Inserting new group '{$group_name}' ({$mp['parliament_code']})", Log::DEBUG);
+			$data = array(
+				'name' => $group_name,
+				'group_kind_code' => $group_kind_code,
+				'term_id' => $term_id,
+				'parliament_code' => $mp['parliament_code']
+			);
+			if (isset($mp['political_group:short_name']) && !empty($mp['political_group:short_name']))
+				$data['short_name'] = trim($mp['political_group:short_name']);
+			$group_pkey = $this->api->create('Group', $data);
+			$group_id = $group_pkey['id'];
+		}
+		return $group_id;
 	}
 
 	/**
