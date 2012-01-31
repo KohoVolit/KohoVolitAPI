@@ -486,8 +486,8 @@ class UpdaterCzLocal
 				// english translation
 				if ($src_parliament['parliament_code'] == 'cz/starostove')
 					$this->api->create('ParliamentAttribute', array(
-						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'name', 'value' => 'Mayors'),
-						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'short_name', 'value' => 'Mayors'),
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'name', 'value' => 'Mayor of town'),
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'short_name', 'value' => 'Mayor'),
 						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'description', 'value' => 'Mayors of towns and cities.')
 					));
 

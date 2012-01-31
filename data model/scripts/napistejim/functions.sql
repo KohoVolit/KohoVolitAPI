@@ -260,7 +260,7 @@ returns table(
 	mp_id integer, first_name varchar, middle_names varchar, last_name varchar, disambiguation varchar, sex char,
 	mp_image varchar,
 	political_group varchar,
-	parliament_code varchar, parliament_name varchar,
+	parliament_code varchar, parliament varchar,
 	subject varchar, "body" varchar, received_on timestamp
 )
 as $$
