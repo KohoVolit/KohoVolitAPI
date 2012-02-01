@@ -185,9 +185,9 @@ class UpdaterCzLocal
 	*/
 	private function updateGroup($mp, $term_id, $group_kind_code = 'political group')
 	{
-		if (isset($mp['political_group:full_name']) && !empty(trim($mp['political_group:full_name'])))
+		if (isset($mp['political_group:full_name']) && !empty($mp['political_group:full_name']))
 			$group_name = trim($mp['political_group:full_name']);
-		else if (isset($mp['political_group:long_name']))	// wrong column title in some data sets
+		if (empty($group_name) && isset($mp['political_group:long_name']))	// wrong column title in some data sets
 			$group_name = trim($mp['political_group:long_name']);
 		if (!isset($group_name) || empty($group_name)) return null;
 
