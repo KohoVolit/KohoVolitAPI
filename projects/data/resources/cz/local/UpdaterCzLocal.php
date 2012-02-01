@@ -557,7 +557,10 @@ class UpdaterCzLocal
 			  }
 			}
 		}
-		$params['conflict_mps'] .= rtrim($conflict_mps,',');
+		if (isset($params['conflict_mps'])
+		  $params['conflict_mps'] .= rtrim($conflict_mps,',');
+		else 
+		  $params['conflict_mps'] = rtrim($conflict_mps,',');
 
 		// set the effective date which the update process actually runs to
 		$this->update_date = 'now';
