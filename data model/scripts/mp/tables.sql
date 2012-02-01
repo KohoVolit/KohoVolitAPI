@@ -14,7 +14,7 @@ create table mp
 	born_on date,
 	died_on date,
 	last_updated_on timestamp not null default current_timestamp,
-	name_data tsvector not null,
+	name_data tsvector,
 	unique (last_name, first_name, middle_names, disambiguation),
 	check (born_on <= died_on)
 );

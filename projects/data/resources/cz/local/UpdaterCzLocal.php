@@ -46,17 +46,16 @@ class UpdaterCzLocal
 	 * The mapping is expected as a string in the form <em>pair1,pair2,...</em> where each pair is either <em>mp_src_code->parliament_code/mp_src_code</em> or
 	 *<em>mp_src_code-></em>.
 	 *
-	 * \return Result of the update process.
+	 * \return Name of the log file with update report.
 	 */
 	public function update($params)
 	{
 		$this->log->write('Started with parameters: ' . print_r($params, true));
 
-		//update parliaments and terms
-		$this->parliaments = $this->updateParliamentsAndTermsAndGroups($params);
-		//treat conflict MPs
-		//$this->log->write(print_r($params,1));
 		$this->conflict_mps = $this->parseConflictMps($params);
+
+		//update parliaments and terms
+		$this->parliaments = $this->updateParliamentsAndTermsAndGroups();
 
 		// read list of all MPs in the term of office to update data for
 		$src_mps = $this->api->read('Scraper', array('parliament' => 'cz/local', 'remote_resource' => 'mp'));
@@ -183,33 +182,29 @@ class UpdaterCzLocal
 	*/
 	private function updateGroup($mp, $term_id, $group_kind_code = 'political group')
 	{
-		// if group exists
-		$group_name = trim($mp['political_group:long_name']);
-		// correct for 'full name' (error in cz/starostove)
-		if (trim($mp['political_group:full_name'] != ''))
+		if (isset($mp['political_group:full_name']))
 			$group_name = trim($mp['political_group:full_name']);
-
-		if (isset($group_name) and (!empty($group_name))) {
-			$group_db = $this->api->readOne('Group', array('name' => $group_name, 'group_kind_code' => $group_kind_code, 'term_id' => $term_id, 'parliament_code' => $mp['parliament_code']));
-			if ($group_db)
-				$group_id = $group_db['id'];
-			else {  // insert new group
-				$this->log->write("Inserting new group '{$group_name}' ({$mp['parliament_code']})", Log::DEBUG);
-				$data = array(
-					'name' => $group_name,
-					'group_kind_code' => $group_kind_code,
-					'term_id' => $term_id,
-					'parliament_code' => $mp['parliament_code']
-				);
-				$group_short_name = $mp['political_group:short_name'];
-				if (isset($group_short_name) and (!empty($group_short_name)))
-					$data['short_name'] = $group_short_name;
-				$group_pkey = $this->api->create('Group', $data);
-				$group_id = $group_pkey['id'];
-			}
-			return $group_id;
-		} else
-			return null;
+		else if (isset($mp['political_group:long_name']))	// wrong column title in some data sets
+			$group_name = trim($mp['political_group:long_name']);
+		if (!isset($group_name) || empty($group_name)) return null;
+		
+		$group_db = $this->api->readOne('Group', array('name' => $group_name, 'group_kind_code' => $group_kind_code, 'term_id' => $term_id, 'parliament_code' => $mp['parliament_code']));
+		if ($group_db)
+			$group_id = $group_db['id'];
+		else {  // insert new group
+			$this->log->write("Inserting new group '{$group_name}' ({$mp['parliament_code']})", Log::DEBUG);
+			$data = array(
+				'name' => $group_name,
+				'group_kind_code' => $group_kind_code,
+				'term_id' => $term_id,
+				'parliament_code' => $mp['parliament_code']
+			);
+			if (isset($mp['political_group:short_name']) && !empty($mp['political_group:short_name']))
+				$data['short_name'] = trim($mp['political_group:short_name']);
+			$group_pkey = $this->api->create('Group', $data);
+			$group_id = $group_pkey['id'];
+		}
+		return $group_id;
 	}
 
 	/**
@@ -246,7 +241,7 @@ class UpdaterCzLocal
 			'administrative_area_level_2' => $area['administrative_area_level_2'],
 			'administrative_area_level_3' => '*',
 			'locality' => $area['locality'],
-			'sublocality' => (isset($area['sublocality']) && trim($area['sublocality'] != '')) ? $area['sublocality'] : '*',
+			'sublocality' => (isset($area['sublocality']) && trim($area['sublocality']) != '') ? $area['sublocality'] : '*',
 			'neighborhood' => '*',
 			'route' => '*',
 			'street_number' => '*',
@@ -417,19 +412,19 @@ class UpdaterCzLocal
 			$data['first_name'] = trim($src_mp['first_name']);
 		if (isset($src_mp['last_name']))
 			$data['last_name'] = trim($src_mp['last_name']);
-		if (isset($src_mp['middle_names']) && trim($src_mp['middle_names'] != ''))
+		if (isset($src_mp['middle_names']) && trim($src_mp['middle_names']) != '')
 			$data['middle_names'] = trim($src_mp['middle_names']);
-		if (isset($src_mp['sex']) && trim($src_mp['sex'] != ''))
+		if (isset($src_mp['sex']) && trim($src_mp['sex']) != '')
 			$data['sex'] = self::correctSex(trim($src_mp['sex']));
-		if (isset($src_mp['disambiguation']) && trim($src_mp['disambiguation'] != ''))
+		if (isset($src_mp['disambiguation']) && trim($src_mp['disambiguation']) != '')
 			$data['disambiguation'] = trim($src_mp['disambiguation']);
 		if (isset($src_mp['born_on']) && preg_match('/^\d\d\d\d-\d\d-\d\d$/', trim($src_mp['born_on'])) > 0)
 			$data['born_on'] = trim($src_mp['born_on']);
 		if (isset($src_mp['died_on']) && preg_match('/^\d\d\d\d-\d\d-\d\d$/', trim($src_mp['died_on'])) > 0)
 			$data['died_on'] = trim($src_mp['died_on']);
-		if (isset($src_mp['pre_title']))
+		if (isset($src_mp['pre_title']) && trim($src_mp['pre_title']) != '')
 			$data['pre_title'] = trim($src_mp['pre_title']);
-		if (isset($src_mp['post_title']))
+		if (isset($src_mp['post_title']) && trim($src_mp['post_title']) != '')
 			$data['post_title'] = trim($src_mp['post_title']);
 		$data['last_updated_on'] = $this->update_date;
 
@@ -459,10 +454,8 @@ class UpdaterCzLocal
 	 *
 	 * @return array of parliaments and terms
 	 */
-	private function updateParliamentsAndTermsAndGroups(&$params)
+	private function updateParliamentsAndTermsAndGroups()
 	{
-		//conflict mps
-		$conflict_mps = '';
 		//read list of parliaments
 		$src_parliaments = $this->api->read('Scraper', array('parliament' => 'cz/local', 'remote_resource' => 'parliament_list'));
 
@@ -470,7 +463,7 @@ class UpdaterCzLocal
 		{
 			$this->log->write("Updating parliament '{$src_parliament['parliament_code']}'.", Log::DEBUG);
 
-			$description = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'Starostové obcí s rozšířenou působností.' : 'Zastupitelstvo ' . $src_parliament['parliament_name'];
+			$description = ($src_parliament['parliament_code'] == 'cz/starostove') ? 'Starostové obcí s rozšířenou působností.' : 'Zastupitelstvo ' . $src_parliament['parliament_name'] . '.';
 			$kind = $src_parliament['parliament_kind_code'];
 
 			// if parliament does not exist yet, insert it
@@ -488,16 +481,14 @@ class UpdaterCzLocal
 
 				// english translation
 				if ($src_parliament['parliament_code'] == 'cz/starostove')
-				{
 					$this->api->create('ParliamentAttribute', array(
-						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'name', 'value' => 'Mayors'),
-						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'short_name', 'value' => 'Mayors'),
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'name', 'value' => 'Mayor of town'),
+						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'short_name', 'value' => 'Mayor'),
 						array('parliament_code' => $src_parliament['parliament_code'], 'lang' => 'en', 'name' => 'description', 'value' => 'Mayors of towns and cities.')
 					));
 
-				// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
+				// a function to show appropriate info about representatives of this parliament for use by NapisteJim application
 				$this->api->create('ParliamentAttribute', array('parliament_code' => $src_parliament['parliament_code'], 'name' => 'napistejim_repinfo_function', 'value' => 'napistejim_repinfo_politgroup'));
-				}
 			}
 
 			// update the timestamp the parliament has been last updated on
@@ -547,20 +538,23 @@ class UpdaterCzLocal
 				  'next_term_since' => 'infinity',
 				  'src_parliament' => $src_parliament
 			);
-			
-			//conflict mps (if set)
+
+			// collect conflict_mps from individual parliaments in the parliament list
 			if ($src_parliament['conflict_mps'] != '') {
-			  $tmp_mps = explode(',',$src_parliament['conflict_mps']);
+			  $tmp_mps = explode(',', $src_parliament['conflict_mps']);
 			  foreach($tmp_mps as $tmp_mp) {
-			    $tmp_m = explode('->',$tmp_mp);
-			    $conflict_mps .= str_replace('/','_',$src_parliament['parliament_code']).'_'.str_replace(' ','',$src_parliament['term']).'_'.$tmp_m[0] . '->' . (isset($tmp_m[1]) ? $tmp_m[1] : '') . ',';
+			    $tmp_m = explode('->', $tmp_mp);
+			    $this->conflict_mps[str_replace('/', '_', $src_parliament['parliament_code']) . '_' . str_replace(' ', '', $src_parliament['term']) . '_' . trim($tmp_m[0])] = isset($tmp_m[1]) ? trim($tmp_m[1]) : '';
 			  }
 			}
 		}
+
 		if (isset($params['conflict_mps'])
 		  $params['conflict_mps'] .= rtrim($conflict_mps,',');
 		else 
 		  $params['conflict_mps'] = rtrim($conflict_mps,',');
+		  
+		$this->log->write("Parameter conflict_mps extended by individual parliaments' values : " . print_r($this->conflict_mps, true));
 
 		// set the effective date which the update process actually runs to
 		$this->update_date = 'now';

@@ -121,6 +121,9 @@ class Reply
 	 */
 	private static function updateMessageFulltextData($replies)
 	{
+		if (!is_array(reset($replies)))
+			$replies = array($replies);
+
 		// prepare reply codes of all created/updated replies
 		$reply_codes = array();
 		foreach ($replies as $reply)

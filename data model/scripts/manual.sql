@@ -4,5 +4,6 @@
 -- must be connected to the database kohovolit
 set role to kohovolit;
 
+\i manual/sex.sql
 \i manual/disambiguate.sql
 \i manual/group_attributes.sql

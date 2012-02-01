@@ -14,7 +14,7 @@ class ScraperSkStarostovia
 	 */
 
 	public static function scrape($params)
-	{ 
+	{
 		$remote_resource = $params['remote_resource'];
 		switch ($remote_resource)
 		{
@@ -24,7 +24,7 @@ class ScraperSkStarostovia
 				throw new Exception("Scraping of the remote resource <em>$remote_resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
 	}
-	
+
 	/**
 	* get list of mayors and parliaments (cities) from scraperwiki
 	* @return array of mayors and parliaments
@@ -35,7 +35,7 @@ class ScraperSkStarostovia
 	  $array = json_decode($json);
 	  return array('list' => $array);
 	}
-	
+
 	/**
 	* get list of mayors and parliaments (cities) from scraperwiki
 	* @return array of mayors and parliaments
@@ -82,8 +82,8 @@ class ScraperSkStarostovia
 		curl_close ($ch);
 		return $out;
 	}
-	
-	
+
+
 }
 
 ?>

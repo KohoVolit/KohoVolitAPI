@@ -66,7 +66,7 @@ class UpdaterCzPsp
 	 * The mapping is expected as a string in the form <em>pair1,pair2,...</em> where each pair is either <em>mp_src_code->parliament_code/mp_src_code</em> or
 	 *<em>mp_src_code-></em>.
 	 *
-	 * \return Result of the update process.
+	 * \return Name of the log file with update report.
 	 */
 	public function update($params)
 	{
@@ -201,7 +201,7 @@ class UpdaterCzPsp
 				array('parliament_code' => $this->parliament_code, 'lang' => 'en', 'name' => 'description', 'value' => 'Lower house of the Czech republic parliament.')
 			));
 
-			// a function to show appropriate info about representatives of this parliament for use by WriteToThem application
+			// a function to show appropriate info about representatives of this parliament for use by NapisteJim application
 			$this->api->create('ParliamentAttribute', array(array('parliament_code' => $this->parliament_code, 'name' => 'napistejim_repinfo_function', 'value' => 'napistejim_repinfo_politgroup_office')));
 		}
 

@@ -69,7 +69,7 @@ class Utils
 				throw new \InvalidArgumentException("Formatting an array into an uknown format <em>$format</em>.");
 		}
 	}
-	
+
 	/**
 	 * ...
 	 */
@@ -101,7 +101,7 @@ class Utils
 	{
  		$xml = new SimpleXMLElement('<'.'?'.'xml version="1.0" encoding="UTF-8"'.'?'.'><'.$root_name.'></'.$root_name.'>');
 		if (!is_array($array)) return $xml->asXML();
-		
+
 		$key = key($array);
 		$val = current($array);
 		if (is_array($val))
@@ -137,6 +137,46 @@ class Utils
 					$element->addChild($tag, $value);
 			}
 		}
+	}
+
+	/**
+	* Parse a CSV file.
+	* The first row is considered a header.
+	*
+	* \internal http://php.net/manual/en/function.str-getcsv.php (Rob 07-Nov-2008 04:54) + prev. note.
+	* We cannot use str_getscv(), because of a problem with locale settings en_US / utf-8.
+	*
+	* \param file CSV file contents
+	* \param options parsing options
+	* \returns array(row => array(header1 => item1 ...
+	*/
+	public static function parseCsv($file, $options = null)
+	{
+		$delimiter = !isset($options['delimiter']) || empty($options['delimiter']) ? "," : $options['delimiter'];
+		$to_object = !isset($options['to_object']) || empty($options['to_object']) ? false : true;
+		$expr = "/$delimiter(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/"; // added
+		$str = $file;
+		$lines = explode("\n", $str);
+		$field_names = explode($delimiter, array_shift($lines));
+		foreach ($lines as $line) {
+			if (empty($line)) continue;
+			$fields = preg_split($expr, trim($line));
+			$fields = preg_replace("/^\"(.*)\"$/s", "$1", $fields);
+			$fields = preg_replace('/("")/', '"', $fields);
+			$_res = $to_object ? new stdClass : array();
+			foreach ($field_names as $key => $f)
+			{
+				if (isset($options['header_replace']) && $options['header_replace'])
+					$f = str_replace(' ', '_', trim($f));
+				$val = isset($fields[$key]) ? $fields[$key] : null;
+				if ($to_object)
+					$_res->{$f} = $val;
+				else
+					$_res[$f] = $val;
+			}
+			$res[] = $_res;
+		}
+		return $res;
 	}
 }
 

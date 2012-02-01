@@ -16,8 +16,10 @@ create table message
 	confirmation_code varchar not null unique,
 	approval_code varchar,
 	last_reply_on timestamp,
-	text_data tsvector not null,
-	sender_data tsvector not null
+	text_data tsvector,
+	sender_data tsvector,
+	remote_addr inet,
+	typing_duration real
 );
 
 create table message_to_mp

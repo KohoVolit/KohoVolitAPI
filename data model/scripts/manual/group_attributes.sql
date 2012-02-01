@@ -23,5 +23,13 @@ select insert_political_group_attribute('cz/senat', 'Nezařazení', 'logo', 'nez
 select insert_political_group_attribute('cz/senat', 'ODS', 'logo', 'ods.gif');
 select insert_political_group_attribute('cz/senat', 'TOP09-S', 'logo', 'top09.gif');
 
+-- parliament sk/nrsr
+select insert_political_group_attribute('sk/nrsr', 'KDH', 'logo', 'kdh.png');
+select insert_political_group_attribute('sk/nrsr', 'MOST-HÍD', 'logo', 'most-hid.png');
+select insert_political_group_attribute('sk/nrsr', 'SaS', 'logo', 'sas.png');
+select insert_political_group_attribute('sk/nrsr', 'SDKÚ-DS', 'logo', 'sdku-ds.png');
+select insert_political_group_attribute('sk/nrsr', 'SMER-SD', 'logo', 'smer-sd.png');
+select insert_political_group_attribute('sk/nrsr', 'SNS', 'logo', 'sns.png');
+select insert_political_group_attribute('sk/nrsr', 'nezaradení', 'logo', 'nezaradeni.gif');
 
 drop function insert_political_group_attribute(parliament_code varchar, group_short_name varchar, attr_name varchar, attr_value varchar);

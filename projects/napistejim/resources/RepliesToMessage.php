@@ -12,6 +12,7 @@ class RepliesToMessage
 	 *
 	 * \param $params An array of pairs <em>parameter => value</em> specifying the message to get replies to. Available parameters are:
 	 * - \c message_id specifying id of the message
+	 * - \c lang [optional] specifying language code to return information in
 	 *
 	 * \return Details of the replies and of their authors. Authors are ordered by date of their (first) reply.
 	 *
@@ -36,7 +37,7 @@ class RepliesToMessage
 	 *                     [mp_image] => 5292_6.jpg
 	 *                     [political_group] => ČSSD
 	 *                     [parliament_code] => cz/psp
-	 *                     [parliament_name] => Sněmovna
+	 *                     [parliament] => Sněmovna
 	 *                     [reply] => Array
 	 *                         (
 	 *                             [0] => Array
@@ -58,8 +59,14 @@ class RepliesToMessage
 	public function read($params)
 	{
 		$query = new Query();
-		$query->setQuery('select * from replies_to_message($1)');
 		$query->appendParam($params['message_id']);
+		if (isset($params['lang']) && !empty($params['lang']))
+		{
+			$query->appendParam($params['lang']);
+			$query->setQuery('select * from replies_to_message($1, $2)');
+		}
+		else
+			$query->setQuery('select * from replies_to_message($1)');		
 		$replies = $query->execute();
 
 		// aggregate replies by MPs
