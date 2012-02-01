@@ -114,9 +114,12 @@ class UpdaterCzLocal
 
 			if ($src_mp['parliament_code'] == 'cz/starostove') continue;		// ignore political group 'starosta' that is erroneously filled for all members of this parliament
 
-			$data['group_id'] = $group_id;
-			$data['constituency_id'] = null;
-			$this->updateMembership($data, $term_id);
+			if (isset($group_id))
+			{
+				$data['group_id'] = $group_id;
+				$data['constituency_id'] = null;
+				$this->updateMembership($data, $term_id);
+			}
 		}
 
 		$this->log->write('Completed.');
@@ -182,7 +185,7 @@ class UpdaterCzLocal
 	*/
 	private function updateGroup($mp, $term_id, $group_kind_code = 'political group')
 	{
-		if (isset($mp['political_group:full_name']))
+		if (isset($mp['political_group:full_name']) && !empty(trim($mp['political_group:full_name'])))
 			$group_name = trim($mp['political_group:full_name']);
 		else if (isset($mp['political_group:long_name']))	// wrong column title in some data sets
 			$group_name = trim($mp['political_group:long_name']);
