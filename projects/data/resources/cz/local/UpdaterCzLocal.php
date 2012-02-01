@@ -190,7 +190,7 @@ class UpdaterCzLocal
 		else if (isset($mp['political_group:long_name']))	// wrong column title in some data sets
 			$group_name = trim($mp['political_group:long_name']);
 		if (!isset($group_name) || empty($group_name)) return null;
-		
+
 		$group_db = $this->api->readOne('Group', array('name' => $group_name, 'group_kind_code' => $group_kind_code, 'term_id' => $term_id, 'parliament_code' => $mp['parliament_code']));
 		if ($group_db)
 			$group_id = $group_db['id'];
