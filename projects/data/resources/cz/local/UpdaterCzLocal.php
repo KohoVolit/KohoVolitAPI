@@ -26,6 +26,7 @@ class UpdaterCzLocal
 	const MP_INSERT_SOURCE_CODE = 0x2;
 	const MP_DISAMBIGUATE = 0x4;
 	const MP_UPDATE = 0x8;
+	const MP_UPDATE_SOURCE_CODE_BINDING = 0x10;
 
 	/**
 	 * Creates API client reference to use during the whole update process.
@@ -63,6 +64,9 @@ class UpdaterCzLocal
 
 		// update (or insert) all MPs in the list
 		foreach($src_mps as $src_mp) {
+			// trim whitespace on both ends of all MP's data fields
+			$src_mp = array_map('trim', $src_mp);
+
 			// update the MP personal details
 			$mp_id = $this->updateMp($src_mp);
 			if (is_null($mp_id)) continue;		// skip conflicting MPs with no given conflict resolution
@@ -186,9 +190,9 @@ class UpdaterCzLocal
 	private function updateGroup($mp, $term_id, $group_kind_code = 'political group')
 	{
 		if (isset($mp['political_group:full_name']) && !empty($mp['political_group:full_name']))
-			$group_name = trim($mp['political_group:full_name']);
+			$group_name = $mp['political_group:full_name'];
 		if (empty($group_name) && isset($mp['political_group:long_name']))	// wrong column title in some data sets
-			$group_name = trim($mp['political_group:long_name']);
+			$group_name = $mp['political_group:long_name'];
 		if (!isset($group_name) || empty($group_name)) return null;
 
 		$group_db = $this->api->readOne('Group', array('name' => $group_name, 'group_kind_code' => $group_kind_code, 'term_id' => $term_id, 'parliament_code' => $mp['parliament_code']));
@@ -203,7 +207,7 @@ class UpdaterCzLocal
 				'parliament_code' => $mp['parliament_code']
 			);
 			if (isset($mp['political_group:short_name']) && !empty($mp['political_group:short_name']))
-				$data['short_name'] = trim($mp['political_group:short_name']);
+				$data['short_name'] = $mp['political_group:short_name'];
 			$group_pkey = $this->api->create('Group', $data);
 			$group_id = $group_pkey['id'];
 		}
@@ -360,18 +364,58 @@ class UpdaterCzLocal
 		$src_code = $src_mp['source_code'];
 	  	$this->log->write("Updating MP '{$src_mp['first_name']} {$src_mp['last_name']}' (parliament {$src_mp['parliament_name']}).", Log::DEBUG);
 
-	  	// if MP is already in the database, update his data
+	  	// if MP is already in the database, his data will be updated
 		$src_code_in_db = $this->api->readOne('MpAttribute', array('name' => 'source_code', 'value' => $src_code, 'parl' => $src_mp['parliament_code']));
 		if ($src_code_in_db)
 		{
 			$mp_id = $src_code_in_db['mp_id'];
 			$action = self::MP_UPDATE;
+
+			// if MP's name has changed, check for an MP in database with the new name
+			$mp_in_db = $this->api->readOne('Mp', array('id' => $mp_id));
+			if ($src_mp['first_name'] != $mp_in_db['first_name'] || $src_mp['last_name'] != $mp_in_db['last_name'])
+			{
+				$other_mp = $this->api->read('Mp', array('first_name' => $src_mp['first_name'], 'last_name' => $src_mp['last_name']));
+				if (count($other_mp) > 0)
+				{
+					// if other person with the same name exists and conflict resolution is not set for this MP on input, report a warning and skip him
+					if (!isset($this->conflict_mps[$src_code]))
+					{
+						$this->log->write("New name {$src_mp['first_name']} {$src_mp['last_name']} of MP {$mp_in_db['first_name']} {$mp_in_db['last_name']} already exists in database while updating! MP (source id = {$src_code}) skipped. Rerun the update process with the parameters specifying how to resolve the conflict for this MP.", Log::WARNING);
+						return null;
+					}
+					else
+					{
+						// if conflict_mps indicates that this MP is already in the database, his data will be updated and his source code inserted for this parliament
+						if (!empty($this->conflict_mps[$src_code]))
+						{
+							$pmp_code = $this->conflict_mps[$src_code];
+							$p = strrpos($pmp_code, '/');
+							$parliament_code = substr($pmp_code, 0, $p);
+							$mp_src_code = substr($pmp_code, $p + 1);
+							$mp_id_attr = $this->api->readOne('MpAttribute', array('name' => 'source_code', 'value' => $mp_src_code, 'parl' => $parliament_code));
+							if ($mp_id_attr)
+								$mp_id = $mp_id_attr['mp_id'];
+							else
+							{
+								$this->log->write("Wrong parliament code and source code '$pmp_code' of an MP existing in the database specified in the \$conflict_mps parameter. MP {$src_mp['first_name']} {$src_mp['last_name']} (source id/code = {$src_code}) skipped.", Log::ERROR);
+								return null;
+							}
+							if ($parliament_code != $src_mp['parliament_code'])
+								$action |= self::MP_UPDATE_SOURCE_CODE_BINDING;
+						}
+						else
+							// if null is given instead of an existing MP in database, a value for disambigation column of this MP will be generated besides the update
+							$action |= self::MP_DISAMBIGUATE;
+					}
+				}
+			}
 		}
-		// if MP is not in the database, insert him and his source code for this parliament
+		// if MP is not in the database, he and his source code for this parliament will be inserted
 		else
 		{
 		    // check for an MP in database with the same name
-			$other_mp = $this->api->read('Mp', array('first_name' => trim($src_mp['first_name']), 'last_name' => trim($src_mp['last_name'])));
+			$other_mp = $this->api->read('Mp', array('first_name' => $src_mp['first_name'], 'last_name' => $src_mp['last_name']));
 			if (count($other_mp) == 0)
 				$action = self::MP_INSERT | self::MP_INSERT_SOURCE_CODE;
 			else
@@ -379,12 +423,12 @@ class UpdaterCzLocal
 				// if there is a person in the database with the same name as the MP and conflict resolution is not set for him on input, report a warning and skip this MP
 				if (!isset($this->conflict_mps[$src_code]))
 				{
-					$this->log->write("MP {$src_mp['first_name']} {$src_mp['last_name']} already exists in database! MP (source id = {$src_code}) skipped. Rerun the update process with the parameters specifying how to resolve the conflict for this MP.", Log::WARNING);
+					$this->log->write("MP {$src_mp['first_name']} {$src_mp['last_name']} already exists in database while inserting! MP (source id = {$src_code}) skipped. Rerun the update process with the parameters specifying how to resolve the conflict for this MP.", Log::WARNING);
 					return null;
 				}
 				else
 				{
-					// if conflict_mps indicates that this MP is already in the database, update his data and insert his source code for this parliament
+					// if conflict_mps indicates that this MP is already in the database, his data will be updated and his source code inserted for this parliament
 					if (!empty($this->conflict_mps[$src_code]))
 					{
 						$pmp_code = $this->conflict_mps[$src_code];
@@ -404,7 +448,7 @@ class UpdaterCzLocal
 							$action |= self::MP_INSERT_SOURCE_CODE;
 					}
 					else
-						// if null is given instead of an existing MP in database, insert MP as a new one, insert his source code for this parliament and generate a value for his disambigation column
+						// if null is given instead of an existing MP in database, the MP will be inserted as a new one, his source code for this parliament will be inserted and a value for his disambigation column generated
 						$action = self::MP_INSERT | self::MP_INSERT_SOURCE_CODE | self::MP_DISAMBIGUATE;
 				}
 			}
@@ -412,31 +456,31 @@ class UpdaterCzLocal
 
 	  	// extract column values to update or insert from the scraped MP
 		if (isset($src_mp['first_name']))
-			$data['first_name'] = trim($src_mp['first_name']);
+			$data['first_name'] = $src_mp['first_name'];
 		if (isset($src_mp['last_name']))
-			$data['last_name'] = trim($src_mp['last_name']);
-		if (isset($src_mp['middle_names']) && trim($src_mp['middle_names']) != '')
-			$data['middle_names'] = trim($src_mp['middle_names']);
-		if (isset($src_mp['sex']) && trim($src_mp['sex']) != '')
-			$data['sex'] = self::correctSex(trim($src_mp['sex']));
-		if (isset($src_mp['disambiguation']) && trim($src_mp['disambiguation']) != '')
-			$data['disambiguation'] = trim($src_mp['disambiguation']);
-		if (isset($src_mp['born_on']) && preg_match('/^\d\d\d\d-\d\d-\d\d$/', trim($src_mp['born_on'])) > 0)
-			$data['born_on'] = trim($src_mp['born_on']);
-		if (isset($src_mp['died_on']) && preg_match('/^\d\d\d\d-\d\d-\d\d$/', trim($src_mp['died_on'])) > 0)
-			$data['died_on'] = trim($src_mp['died_on']);
-		if (isset($src_mp['pre_title']) && trim($src_mp['pre_title']) != '')
-			$data['pre_title'] = trim($src_mp['pre_title']);
-		if (isset($src_mp['post_title']) && trim($src_mp['post_title']) != '')
-			$data['post_title'] = trim($src_mp['post_title']);
+			$data['last_name'] = $src_mp['last_name'];
+		if (isset($src_mp['middle_names']) && $src_mp['middle_names'] != '')
+			$data['middle_names'] = $src_mp['middle_names'];
+		if (isset($src_mp['sex']) && $src_mp['sex'] != '')
+			$data['sex'] = self::correctSex($src_mp['sex']);
+		if (isset($src_mp['disambiguation']) && $src_mp['disambiguation'] != '')
+			$data['disambiguation'] = $src_mp['disambiguation'];
+		if (isset($src_mp['born_on']) && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $src_mp['born_on']) > 0)
+			$data['born_on'] = $src_mp['born_on'];
+		if (isset($src_mp['died_on']) && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $src_mp['died_on']) > 0)
+			$data['died_on'] = $src_mp['died_on'];
+		if (isset($src_mp['pre_title']) && $src_mp['pre_title'] != '')
+			$data['pre_title'] = $src_mp['pre_title'];
+		if (isset($src_mp['post_title']) && $src_mp['post_title'] != '')
+			$data['post_title'] = $src_mp['post_title'];
 		$data['last_updated_on'] = $this->update_date;
 
 		// perform appropriate actions to update or insert MP
 		if ($action & self::MP_INSERT)
 		{
 			if ($action & self::MP_DISAMBIGUATE)
-			  if (!isset($data['disambiguation']) || empty($data['disambiguation']))
-				$data['disambiguation'] = $src_code;
+				if (!isset($data['disambiguation']) || empty($data['disambiguation']))
+					$data['disambiguation'] = $src_code;
 			$mp_pkey = $this->api->create('Mp', $data);
 			$mp_id = $mp_pkey['id'];
 			if ($action & self::MP_DISAMBIGUATE && $data['disambiguation'] == $src_code)
@@ -447,8 +491,19 @@ class UpdaterCzLocal
 			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => 'source_code', 'value' => $src_code, 'parl' => $src_mp['parliament_code']));
 
 		if ($action & self::MP_UPDATE)
+		{
+			if ($action & self::MP_DISAMBIGUATE)
+				$data['disambiguation'] = (isset($data['disambiguation']) ? $data['disambiguation'] : '') . '; ' . $src_code;
 			$this->api->update('Mp', array('id' => $mp_id), $data);
+			if ($action & self::MP_DISAMBIGUATE)
+				$this->log->write("Disambiguation of MP {$data['first_name']} {$data['last_name']} (id = $mp_id) set automatically. Refine his disambiguation by hand.", Log::WARNING);
+		}
 
+		if ($action & self::MP_UPDATE_SOURCE_CODE_BINDING)
+		{
+			$this->api->update('MpAttribute', array('name' => 'source_code', 'value' => $src_code, 'parl' => $src_mp['parliament_code']), array('mp_id' => $mp_id));
+			$this->log->write("MP {$mp_in_db['first_name']} {$mp_in_db['last_name']} (id = {$mp_in_db['id']}) renamed and merged into another one (id = $mp_id). Check this one for eventual delete.", Log::WARNING);
+		}
 		return $mp_id;
 	}
 

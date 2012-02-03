@@ -61,6 +61,9 @@ select set_mp_disambiguation('cz/velke-mezirici', 'cz_velke-mezirici_2010-2014_4
 select set_mp_disambiguation('cz/psp', '5021', 'PSP ČR 2006-2010');
 select set_mp_disambiguation('cz/starostove', 'cz_starostove_2010-2014_204', 'Ústí n. Orlicí, starosta 2010-');
 
+select set_mp_disambiguation('cz/jihomoravsky', 'cz_jihomoravsky_2008-2012_37', 'JM kraj 2008-');
+select set_mp_disambiguation('cz/nepomuk', 'cz_nepomuk_2010-2014_4', 'Nepomuk 2010-');
+
 
 -- parliament sk/starostovia
 select set_mp_disambiguation('sk/starostovia', '514349-Stanislav-Bartoš', 'Radobica, starosta 2010-');
