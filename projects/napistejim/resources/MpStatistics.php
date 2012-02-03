@@ -73,7 +73,7 @@ class MpStatistics
 			"			sum(case m.is_public when 'no' then 1 else 0 end) as received_private_messages,\n" .
 			"			coalesce(sum(r.count), 0) as sent_public_replies,\n" .
 			"			sum(case when m.is_public = 'yes' and r.count > 0 then 1 else 0 end) as replied_public_messages,\n" .
-			"			avg(extract(epoch from r.received_on - m.sent_on)) / 86400 as average_days_to_reply\n" .
+			"			median_from_sorted(remove_nulls(array_agg(extract(epoch from r.received_on - m.sent_on) order by r.received_on - m.sent_on))) / 86400 as average_days_to_reply\n" .
 			"		from\n" .
 			"			mp\n" .
 			"			join message_to_mp as mtm on mtm.mp_id = mp.id" . (isset($parl_index) ? ' and parliament_code = $' . $parl_index : '') . "\n"
