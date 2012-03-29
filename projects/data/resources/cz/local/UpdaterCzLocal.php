@@ -35,6 +35,7 @@ class UpdaterCzLocal
 	{
 		$this->api = new ApiDirect('data');
 		$this->log = new Log(API_LOGS_DIR . '/update/cz/local/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
+		//$this->log->setMinLogLevel(10);
 	}
 
 	/**
@@ -249,7 +250,7 @@ class UpdaterCzLocal
 			'administrative_area_level_3' => '*',
 			'locality' => $area['locality'],
 			'sublocality' => (isset($area['sublocality']) && trim($area['sublocality']) != '') ? $area['sublocality'] : '*',
-			'neighborhood' => '*',
+			'neighborhood' => (isset($area['neighborhood']) && trim($area['neighborhood']) != '') ? $area['neighborhood'] : '*',
 			'route' => '*',
 			'street_number' => '*',
 		);
@@ -617,9 +618,11 @@ class UpdaterCzLocal
     private function correctSex ($sex) {
       switch ($sex) {
         case 'muž':
+        case 'M':
           $sex = 'm';
           break;
         case 'žena':
+        case 'F':
           $sex = 'f';
           break;
       }
