@@ -417,7 +417,7 @@ class UpdaterCzLocal
 		{
 		    // check for an MP in database with the same name
 			$other_mp = $this->api->read('Mp', array('first_name' => $src_mp['first_name'], 'last_name' => $src_mp['last_name']));
-			if (count($other_mp) == 0)
+			if ((count($other_mp) == 0) or ((isset($src_mp['disambiguation'])) and ($src_mp['disambiguation'] != '')))
 				$action = self::MP_INSERT | self::MP_INSERT_SOURCE_CODE;
 			else
 			{
