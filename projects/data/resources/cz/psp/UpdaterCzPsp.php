@@ -50,6 +50,7 @@ class UpdaterCzPsp
 		$this->parliament_code = $params['parliament'];
 		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
+		//$this->log->setMinLogLevel(10);
 	}
 
 	/**
@@ -119,7 +120,12 @@ class UpdaterCzPsp
 					$src_group['kind'] == 'european parliament' || $src_group['kind'] == 'president') continue;
 
 				// skip wrong groups on the official cz/psp parliament website
-				if (($src_group['id'] == 864 && $this->term_src_code != '6') ||
+				if (($src_group['id'] == 988 && $this->term_src_code == '6') || //twice the same name
+					($src_group['id'] == 989 && $this->term_src_code == '6') || //twice the same name
+					($src_group['id'] == 990 && $this->term_src_code == '6') || //twice the same name
+					($src_group['id'] == 992 && $this->term_src_code == '6') || //twice the same name
+					($src_group['id'] == 993 && $this->term_src_code == '6') || //twice the same name
+					($src_group['id'] == 864 && $this->term_src_code != '6') ||
 					($src_group['id'] == 728 && $this->term_src_code == '4') ||
 					(strcmp($src_group['since'] . self::NOON, $this->term_until) > 0 ||
 						isset($src_group['until']) && strcmp($src_group['until'] . self::NOON, $this->term_since) < 0))
@@ -166,11 +172,120 @@ class UpdaterCzPsp
 
 		// resolve the parentship relation for collected groups having a parent group
 		$this->updateParentship();
+		
+		//update divisions and mps' votes 
+		$this->updateDivisionsAndVotes();
 
 		$this->log->write('Completed.');
 		return array('log' => $this->log->getFilename());
 	}
+	
+	private function updateDivisionsAndVotes() {
+	  $this->log->write("Updating divisions and votes: '{$this->parliament_code}'.", Log::DEBUG);
+	  //get last source division id from database
+	  $query = new Query();
+	  $query->setQuery("
+	    SELECT max(CAST (da.value as INT)) FROM division_attribute as da
+		LEFT JOIN division as d
+		ON da.division_id = d.id
+		WHERE da.name='source_code' and d.parliament_code = '{$this->parliament_code}'");
+	  $maxs_db = $query->execute();
+	  $this->log->write("Last division in db: " . $maxs_db[0]['max'], Log::DEBUG);
+	  
+	  //get last source division from scraperwiki
+	  $maxs_scraper = $this->api->read('Scraper', array('remote_resource' => 'last_division'));
+	  $this->log->write("Last division in scraper: " . $maxs_scraper['division_id'], Log::DEBUG);
+	  
+	  //vote2vote_kind_code
+		//cz_psp
+	  $vote2vote_kind_code = array (
+		  'A' => 'y',
+		  'N' => 'n',
+		  'Z' => 'a',
+		  'X' => 'b',
+		  '0' => 'm',
+		  'M' => 'e'
+	  );
+	  //division attributes
+		//cz_psp
+	  $attributes = array(
+		  array('name' => 'division in session','src' => 'division'),
+		  array('name' => 'session','src' => 'session'),
+		  array('name' => 'needed','src' => 'needed'),
+		  array('name' => 'passed','src' => 'passed'),
+		  array('name' => 'source_code','src' => 'id'),
+		  array('name' => 'present','src' => 'present'),
+	  );
+	  
+	  //insert new divisions and votes, from last in db to last in scraperwiki
+	  for ($i = $maxs_db[0]['max']+1; $i <= $maxs_scraper['division_id']; $i++) {
+	    $division_src = $this->api->read('Scraper', array('remote_resource' => 'division', 'id' => $i));
+	    
+	    //create new division in db
+	    $division_pkey = $this->api->create('Division', array(
+	      'name' => $division_src['info'][0]->name,
+	      'divided_on' => $division_src['info'][0]->date . ' ' . $division_src['info'][0]->time . ':00',
+	      'parliament_code' => $this->parliament_code,
+	      'division_kind_code' => $this->division_kind_code($division_src['info'][0]->present,$division_src['info'][0]->needed)
+	    ));
+	    //create attributes
+	    foreach ($attributes as $attribute) {
+	      $new_attribute = array(
+	        'name' => $attribute['name'],
+	        'value' => $division_src['info'][0]->$attribute['src'],
+	        'division_id' => $division_pkey['id'],
+	      );
+	      $this->api->create('DivisionAttribute',$new_attribute);
+	    }
+	    
+	    
+	    //insert votes
+	    if (count($division_src['votes']) > 0) {
+	          // MPs already in the database, get them
+		  $db_mps = $this->api->read('MpAttribute',array('name' => 'source_code','parl' => $this->parliament_code));
+		  $mps = array();
+		  foreach ($db_mps as $db_mp) {
+			  $mps[$db_mp['value']] = $db_mp['mp_id'];
+		  }
+		  	  //add known errors
+		  $mps['287'] = 388;
+		  $mps['5253'] = 388;
+		  $mps['223'] = 256;
+		  $mps['388'] = 256;
+		  $mps['189'] = 193;
+		  $mps['329'] = 193;
+		  
+	      foreach($division_src['votes'] as $mp_src) {
+	        //check for the mp, get mp_id
+	        if (isset($mps[$mp_src->mp_id]))
+	          $mp_id = $mps[$mp_src->mp_id];
+	        else 
+			  $this->log->write("When updating divisions from parliament '{$this->parliament_code}' found MP, which is not in DB:" . print_r($mp_src,1), Log::FATAL_ERROR);
+			//insert vote
+			$this->api->create("MpVote",array(
+			  'mp_id' => $mp_id,
+			  'division_id' => $division_pkey['id'],
+			  'vote_kind_code' => $vote2vote_kind_code[$mp_src->vote]
+			));
+	      }
+	    }
+	  }
+	  
+	}
 
+	  /**
+	  * calculates division_kind_code in cz/psp
+	  *
+	  * \param present mps
+	  * \param needed to pass the division
+	  */
+	  private function division_kind_code ($present, $needed) {
+		  if ($needed >= 120) $out = '3/5';
+		  else if (($needed == 101) and ($present != 200)) $out = 'absolute';
+		  else $out = 'simple';
+		  return $out;
+	  }
+  
 	/**
 	 * Update the last_updated timestamp for this parliament. If the parliament is not present in database yet, insert it.
 	 *

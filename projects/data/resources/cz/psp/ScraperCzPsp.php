@@ -23,9 +23,53 @@ class ScraperCzPsp
 			case 'mp': return self::scrapeMp($params);
 			case 'group': return self::scrapeGroup($params);
 			case 'geocode': return self::scrapeGeocode($params);
+			case 'division': return self::scrapeDivision($params);
+			case 'last_division': return self::scrapeLastDivision($params);
 			default:
 				throw new Exception("Scraping of the remote resource <em>$remote_resource</em> is not implemented for parliament <em>{$params['parliament']}</em>.", 400);
 		}
+	}
+	
+	/**
+	* Gets the last division (the highest id)
+	* 
+	* \return array('division_id'=>id)
+	*
+	* \example: Scraper?parliament=cz/psp&remote_resource=last_division
+	*/
+	public function scrapeLastDivision($params) {
+	  $url = "https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=jsondict&name=cz_parliament_voting_records_retrieval&query=select%20*%20from%20%60swvariables%60";
+	  $ar = json_decode(file_get_contents($url));
+	  if (count($ar) == 0) throw new Exception("Scraping last_division from scraperwiki returns nothing, probably timed-out", 503);
+	  if (isset($ar['error'])) throw new Exception("Scraping last_division from scraperwiki returns error", 500);
+	  else
+	  return array('division_id' => $ar[0]->value_blob);
+	}
+	/**
+	* Gets info and votes for one division
+	*
+	* \param id source division id
+	* 
+	* \return array('info' => stdClass object, 'votes' => array())
+	*
+	* \example: Scraper?parliament=cz/psp&remote_resource=division&id=28000
+	*/	
+	public function scrapeDivision($params) {
+	  $out = array();
+	  
+	  //info
+	  $url = 'https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=jsondict&name=cz_parliament_voting_records_retrieval&query=select%20*%20from%20%60info%60%20where%20id%3D' . $params['id'];
+	  $info = json_decode(file_get_contents($url));
+	  if (count($info) == 0) throw new Exception("Scraping info from scraperwiki returns nothing, probably timed-out", 503);
+	  $out['info'] = $info;
+	  
+	  //votes
+	  $url = 'https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=jsondict&name=cz_parliament_voting_records_retrieval&query=select%20*%20from%20%60vote%60%20where%20division_id%3D' . $params['id'];
+	  $votes = json_decode(file_get_contents($url));
+	  if (count($votes) == 0) throw new Exception("Scraping votes from scraperwiki returns nothing, probably timed-out", 503);
+	  $out['votes'] = $votes;
+	  
+	  return $out;
 	}
 
 	/**
