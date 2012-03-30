@@ -14,7 +14,8 @@ class MpVoteDbCzPsp
 		$this->parliament_code = $params['parliament'];
 		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
 		$this->log = new Log(API_LOGS_DIR . '/mp_vote_db/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
-				error_reporting(E_ALL);
+		error_reporting(E_ALL);
+		set_time_limit(0);
 	}
 
   /**
@@ -94,7 +95,7 @@ class MpVoteDbCzPsp
 		  'parliament_code' => $this->parliament_code,
 		  'divided_on' => $src_division['date'] . ' ' . $src_division['time'] . ':00',
 		  'division_kind_code' => $division_kind_code,
-		  'name' => $src_division['name'],
+		  'name' => (($src_division['name'] == '') ? '-' : $src_division['name']),
 		);	
 	    $division_pkey = $this->api->create('Division',$new_division);
 	    

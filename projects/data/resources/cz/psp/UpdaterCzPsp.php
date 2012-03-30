@@ -130,7 +130,7 @@ class UpdaterCzPsp
 					(strcmp($src_group['since'] . self::NOON, $this->term_until) > 0 ||
 						isset($src_group['until']) && strcmp($src_group['until'] . self::NOON, $this->term_since) < 0))
 				{
-					$this->log->write('Skipping wrong group (' . print_r($src_group, true) . ") in MP (source id = {$src_mp['id']}).", Log::ERROR);
+					$this->log->write('Skipping wrong group (' . print_r($src_group, true) . ") in MP (source id = {$src_mp['id']}).", Log::DEBUG);
 					continue;
 				}
 

@@ -140,6 +140,7 @@ $report .= update(array('parliament' => 'corrections'));
 
 if (!empty($report))
 	mail(API_ADMIN_EMAIL, 'Warnings or errors occured in data update', $report);
+mail(API_ADMIN_EMAIL, 'API: Update report', $report);
 
 exit;
 
