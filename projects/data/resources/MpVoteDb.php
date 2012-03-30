@@ -52,8 +52,10 @@ class MpVoteDb
 		$parliament = $params['parliament'];
 		$transfer = 'MpVoteDb' . str_replace(' ', '', ucwords(strtr($parliament, '/-', '  ')));
 		$ok = include_once API_ROOT . "/projects/data/resources/$parliament/$transfer.php";
+		//correct empty parliament
+		if ($parliament == '') $ok = false;
 		if (!$ok)
-			throw new Exception("The API resource <em>MpVoteDb</em> is not implemented for parliament <em>$parliament</em>.", 400);
+			throw new Exception("The API resource <em>MpVoteDb</em> is not implemented for parliament: <em>$parliament</em>.", 400);
 
 		$params['check'] = true;
 		$transfer_class = new $transfer($params);
