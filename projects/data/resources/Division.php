@@ -23,7 +23,7 @@ class Division
 	{
 		$this->entity = new Entity(array(
 			'name' => 'division',
-			'columns' => array('id', 'name', 'division_kind_code', 'voted_on', 'parliament_code'),
+			'columns' => array('id', 'name', 'division_kind_code', 'divided_on', 'parliament_code'),
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id')
 		));
