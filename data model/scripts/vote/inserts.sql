@@ -98,3 +98,59 @@ insert into division_kind_attribute("name", division_kind_code, lang, "value") v
 ('description', 'absolute', 'sk', 'Viac než polovica všetkých poslancov.'),
 ('description', '3/5', 'sk', 'Viac než tri pätiny všetkých poslancov.'),
 ('description', 'unknown', 'sk', 'Neznámy druh hlasovania.');
+
+INSERT INTO vote_meaning(code, "name", description) VALUES
+('for','for','Vote for notion'),
+('against','against','Vote against notion'),
+('neutral','neutral','Vote neutral to notion'),
+('unknown','unknown','Unknown vote');
+
+INSERT INTO vote_meaning_attribute("name", vote_meaning_code, lang, "value") values
+('name','for','cs','pro'),
+('name','against','cs','proti'),
+('name','neutral','cs','neutrální'),
+('name','unknown','cs','neznámý'),
+('description','for','cs','Hlas pro návrh'),
+('description','against','cs','Hlas proti návrhu'),
+('description','neutral','cs','Neutrální hlas k návrhu'),
+('description','unknown','cs','Neznámý hlas k návrhu');
+
+INSERT INTO vote_meaning_attribute("name", vote_meaning_code, lang, "value") values
+('name','for','sk','za'),
+('name','against','sk','proti'),
+('name','neutral','sk','neutrálny'),
+('name','unknown','sk','neznámy'),
+('description','for','sk','Hlas za návrh'),
+('description','against','sk','Hlas proti návrhu'),
+('description','neutral','sk','Neutrálny hlas k návrhu'),
+('description','unknown','sk','Neznámy hlas k návrhu');
+
+INSERT INTO vote_meaning_attribute("name", vote_meaning_code, lang, "value") values
+('color','for','-','008000'),
+('color','against','-','FF0000'),
+('color','neutral','-','808080'),
+('color','unknown','-','B0B0B0');
+
+INSERT INTO vote_kind_meaning(vote_kind_code, division_kind_code, vote_meaning_code) VALUES
+('y','simple','for'),
+('y','absolute','for'),
+('y','3/5','for'),
+('y','unknown','for'),
+('n','simple','against'),
+('n','absolute','against'),
+('n','3/5','against'),
+('n','unknown','against'),
+('a','simple','against'),
+('a','absolute','against'),
+('a','3/5','against'),
+('m','simple','neutral'),
+('m','absolute','against'),
+('m','3/5','against'),
+('e','simple','neutral'),
+('e','absolute','against'),
+('e','3/5','against'),
+('b','simple','against'),
+('b','absolute','against'),
+('b','3/5','against');
+
+

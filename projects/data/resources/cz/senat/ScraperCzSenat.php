@@ -470,6 +470,7 @@ class ScraperCzSenat
 	//there are 4 types of groups, par_1=
 	$group_kinds = array('S','V','M','D','K','O','P');
 	foreach ((array) $group_kinds as $group_kind) {
+	  try{
 		$url = 'http://www.senat.cz/organy/index.php?lng=cz&ke_dni='.$d.'&par_1='.$group_kind;
 		$html = self::download($url);
 		$url_en = 'http://www.senat.cz/organy/index.php?lng=en&ke_dni='.$d.'&par_1='.$group_kind;
@@ -494,6 +495,7 @@ class ScraperCzSenat
 			$i++;
 		  }
 		}
+	  } catch (Exception $e) {}
 
 	}
 

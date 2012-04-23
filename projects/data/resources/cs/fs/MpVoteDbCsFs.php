@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This class transfer data for mp_vote from scraperwiki's sqlite for Parliament of the Czech republic - Chamber of deputies.
+ * This class transfer data for mp_vote from scraperwiki's sqlite for Parliament of Czechoslovakia.
  */
-class MpVoteDbCzPsp
+class MpVoteDbCsFs
 {
 
 	/**
@@ -41,20 +41,20 @@ class MpVoteDbCzPsp
 	  $mps['388'] = 256;
 	  $mps['189'] = 193;
 	  $mps['329'] = 193;
+	  $mps['4147'] = 278;
 	  
 	//vote2vote_kind_code
-	//cz_psp
+	//cs_fs
 	$vote2vote_kind_code = array (
-	  'A' => 'y',
-	  'N' => 'n',
-	  'Z' => 'a',
-	  'X' => 'b',
-	  '0' => 'm',
-	  'M' => 'e'
-	);
+		  'A' => 'y',
+		  'N' => 'n',
+		  'Z' => 'a',
+		  'X' => 'm',
+		  'I' => 'b',
+	  );
 	
 	//division attributes
-	//cz_psp
+	//cs_fs
 	$attributes = array(
 	  array('name' => 'division in session','src' => 'division'),
 	  array('name' => 'session','src' => 'session'),
@@ -112,6 +112,7 @@ class MpVoteDbCzPsp
 	    //mps' votes
 	    $src_votes = $db->query("SELECT * FROM vote WHERE division_id=".$src_division['id']);
         if (count($src_votes) > 0) {
+        	$unique = array();
 			foreach ($src_votes as $src_vote) {
 	
 			  //check MP
@@ -120,9 +121,11 @@ class MpVoteDbCzPsp
   				$this->log->write('Stopping!');
   				return array('log' => $this->log->getFilename());
   			  }
-			  
-			  $row = $division_pkey['id'] . "," . $mps[$src_vote['mp_id']] . "," . '"'.$vote2vote_kind_code[$src_vote['vote']] . '"' . "\n";
-			  fwrite($file, $row);			  
+			  if (!isset($unique[$mps[$src_vote['mp_id']]])) {
+			    $row = $division_pkey['id'] . "," . $mps[$src_vote['mp_id']] . "," . '"'.$vote2vote_kind_code[$src_vote['vote']] . '"' . "\n";
+			    fwrite($file, $row);			  
+			    $unique[$mps[$src_vote['mp_id']]] = true;
+			  }
 			}
 		}
 	  }
@@ -156,10 +159,10 @@ class MpVoteDbCzPsp
   * \param needed to pass the division
   */
   public function division_kind_code ($present, $needed) {
-	  if ($needed >= 120) $out = '3/5';
+	  /*if ($needed >= 120) $out = '3/5';
 	  else if (($needed == 101) and ($present != 200)) $out = 'absolute';
-	  else $out = 'simple';
-	  return $out;
+	  else $out = 'simple';*/
+	  return 'unknown';
   }
   
   /**

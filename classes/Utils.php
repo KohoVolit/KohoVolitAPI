@@ -6,9 +6,17 @@
 class Utils
 {
 	// remove accents
-	public static function unaccent($text)
+	// for locale see http://www.php.net/manual/en/function.iconv.php#77315
+	public static function unaccent($text, $locale = null)
 	{
-		return preg_replace('/[\'^"~]/', '', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text));
+		if (!is_null($locale)) {
+		  $old = setlocale(LC_TYPE,0);
+		  setlocale(LC_CTYPE, $locale);
+		}
+		$unaccented = preg_replace('/[\'^"~]/', '', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text));
+		if (!is_null($locale))
+		  setlocale(LC_CTYPE, $old);
+		return $unaccented;
 	}
 
 	/**
@@ -19,9 +27,9 @@ class Utils
 	 * All accents and punctuation are removed and the text is converted to lowercase.
 	 * The individual lexemes are adjusted to be searched as prefixes and combined by logical AND.
 	 */
-	public static function makeTsQuery($text)
+	public static function makeTsQuery($text, $locale = null)
 	{
-		$res = strtolower(self::unaccent($text));
+		$res = strtolower(self::unaccent($text,$locale));
 		$res = preg_replace('/\W+/', ' ', $res);
 		$res = preg_replace('/(\S)\s/', '$1:* ', $res . ' ');
 		$res = preg_replace('/(\S)\s+(\S)/', '$1 & $2', $res);

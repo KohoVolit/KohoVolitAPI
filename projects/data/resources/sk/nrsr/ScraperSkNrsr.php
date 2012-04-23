@@ -173,6 +173,37 @@ class ScraperSkNrsr
 		  $dd['image-url'] = array('label' => 'URL obrázku', 'value' => 'http://www.nrsr.sk/web/dynamic/PoslanecPhoto.aspx?PoslanecID=' . $dd['id']['value']);
 		  $data['mp'][] = $dd;
 		}
+		//add errors=missing mps
+		/*$data['mp'][] = array(
+		  'term' => array('label' => 'term', 'value' => '3'),
+		  'priezvisko' => array('label' => 'priezvisko', 'value' => 'Danko'),
+		  'meno' => array('label' => 'meno', 'value' => 'Anton'),
+		  'id' => array('label' => 'meno', 'value' => '248'),
+		);
+		$data['mp'][] = array(
+		  'term' => array('label' => 'term', 'value' => '3'),
+		  'priezvisko' => array('label' => 'priezvisko', 'value' => 'Demeterová'),
+		  'meno' => array('label' => 'meno', 'value' => 'Mária'),
+		  'id' => array('label' => 'meno', 'value' => '249'),
+		);
+		$data['mp'][] = array(
+		  'term' => array('label' => 'term', 'value' => '3'),
+		  'priezvisko' => array('label' => 'priezvisko', 'value' => 'Drgonec'),
+		  'meno' => array('label' => 'meno', 'value' => 'Ján'),
+		  'id' => array('label' => 'meno', 'value' => '251'),
+		);
+		$data['mp'][] = array(
+		  'term' => array('label' => 'term', 'value' => '3'),
+		  'priezvisko' => array('label' => 'priezvisko', 'value' => 'Džupa'),
+		  'meno' => array('label' => 'meno', 'value' => 'Karol'),
+		  'id' => array('label' => 'meno', 'value' => '252'),
+		);
+		$data['mp'][] = array(
+		  'term' => array('label' => 'term', 'value' => '3'),
+		  'priezvisko' => array('label' => 'priezvisko', 'value' => 'Dlhopolček'),
+		  'meno' => array('label' => 'meno', 'value' => 'Ján'),
+		  'id' => array('label' => 'meno', 'value' => '252'),
+		);*/
 		return $data;
 	}
 
@@ -186,7 +217,8 @@ class ScraperSkNrsr
 			array('id' => '2', 'name' => '1998 - 2002', 'since' => '1998-09-26', 'until' => '2002-09-21'),
 			array('id' => '3', 'name' => '2002 - 2006', 'since' => '2002-09-21', 'until' => '2006-06-17'),
 			array('id' => '4', 'name' => '2006 - 2010', 'since' => '2006-06-17', 'until' => '2010-06-12'),
-			array('id' => '5', 'name' => 'od 2010', 'since' => '2010-06-12'),
+			array('id' => '5', 'name' => '2010 - 2012', 'since' => '2010-06-12', 'until' => '2012-03-12'),
+			array('id' => '6', 'name' => 'od 2012', 'since' => '2012-03-12', ),
 		);
 		return array('term' => $out);
 	}

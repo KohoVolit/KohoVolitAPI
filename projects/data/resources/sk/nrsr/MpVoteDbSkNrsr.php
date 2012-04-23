@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This class transfer data for mp_vote from scraperwiki's sqlite for Parliament of the Czech republic - Chamber of deputies.
+ * This class transfer data for mp_vote from scraperwiki's sqlite for Parliament of Slovakia
  */
-class MpVoteDbCzPsp
+class MpVoteDbSkNrsr
 {
 
 	/**
@@ -13,7 +13,10 @@ class MpVoteDbCzPsp
 	{
 		$this->parliament_code = $params['parliament'];
 		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
-		$this->log = new Log(API_LOGS_DIR . '/mp_vote_db/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
+		if (isset($params['debug']))
+		  $this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w', 10); 
+		else
+		  $this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
 		//error_reporting(E_ALL);
 		set_time_limit(0);
 	}
@@ -35,33 +38,30 @@ class MpVoteDbCzPsp
 	  $mps[$db_mp['value']] = $db_mp['mp_id'];
 	}
 	  //add errors
-	  $mps['287'] = 388;
+	  /*$mps['287'] = 388;
 	  $mps['5253'] = 388;
 	  $mps['223'] = 256;
 	  $mps['388'] = 256;
 	  $mps['189'] = 193;
-	  $mps['329'] = 193;
+	  $mps['329'] = 193;*/
 	  
 	//vote2vote_kind_code
-	//cz_psp
+	//sk_nrsr
 	$vote2vote_kind_code = array (
-	  'A' => 'y',
-	  'N' => 'n',
-	  'Z' => 'a',
-	  'X' => 'b',
+	  'Z' => 'y',
+	  'P' => 'n',
+	  '?' => 'a',
+	  'N' => 'b',
 	  '0' => 'm',
-	  'M' => 'e'
+	  'X' => 'i'
 	);
 	
 	//division attributes
-	//cz_psp
+	//sk_nrsr
 	$attributes = array(
-	  array('name' => 'division in session','src' => 'division'),
+	  array('name' => 'division in session','src' => 'division_number'),
 	  array('name' => 'session','src' => 'session'),
-	  array('name' => 'needed','src' => 'needed'),
-	  array('name' => 'passed','src' => 'passed'),
 	  array('name' => 'source_code','src' => 'id'),
-	  array('name' => 'present','src' => 'present'),
 	);
 	
 	//sqlite
@@ -88,7 +88,7 @@ class MpVoteDbCzPsp
 	  $src_divisions = $db->query("SELECT * FROM info WHERE id>={$i} AND id<{$hi}");
 	  foreach ($src_divisions as $src_division) {
 	    //division_kind_code
-		$division_kind_code = $this->division_kind_code($src_division['present'],$src_division['needed']);
+		$division_kind_code = $this->division_kind_code();
 		
 	    //create new division	
 		$new_division = array(
@@ -111,7 +111,8 @@ class MpVoteDbCzPsp
 	    
 	    //mps' votes
 	    $src_votes = $db->query("SELECT * FROM vote WHERE division_id=".$src_division['id']);
-        if (count($src_votes) > 0) {
+        if ((count($src_votes) > 0) and ($src_division['id'] != 1857) and ($src_division['id'] != 1858)) //errors in nrsr.sk in 1857, 1858
+        {
 			foreach ($src_votes as $src_vote) {
 	
 			  //check MP
@@ -155,11 +156,11 @@ class MpVoteDbCzPsp
   * \param present mps
   * \param needed to pass the division
   */
-  public function division_kind_code ($present, $needed) {
-	  if ($needed >= 120) $out = '3/5';
+  public function division_kind_code () {
+	  /*if ($needed >= 120) $out = '3/5';
 	  else if (($needed == 101) and ($present != 200)) $out = 'absolute';
-	  else $out = 'simple';
-	  return $out;
+	  else $out = 'simple';*/
+	  return 'unknown';
   }
   
   /**

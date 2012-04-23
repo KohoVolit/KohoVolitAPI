@@ -31,9 +31,9 @@ class Log
 	/**
 	 * ...
 	 */
-	public function __construct($filename, $mode = 'a')
+	public function __construct($filename, $mode = 'a', $minLogLevel = self::NOTICE)
 	{
-		$this->minLogLevel = self::NOTICE;
+		$this->minLogLevel = $minLogLevel;
 		$this->filename = $filename;
 	
 		// check if the given path exists and if not, create it

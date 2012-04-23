@@ -8,3 +8,5 @@ www/projects/kohovolit/api/br/
 www/projects/kohovolit/api/cl/
 www/projects/kohovolit/api/mx/
 config/settings.php
+config/db/
+projects/data/scraperwiki/database/

@@ -12,7 +12,8 @@ insert into country (code, "name", short_name, description) values
 ('-', 'any country', 'any', 'This country is referenced as a foreign key by attributes that are country independent.'),
 ('eu', 'European Union', 'EU', null),
 ('sk', 'Slovak republic', 'Slovakia', null),
-('cz', 'Czech republic', 'Czechia', null);
+('cz', 'Czech republic', 'Czechia', null),
+('cs', 'Czech and Slovak Federal Republic', 'Czechoslovakia', null);
 
 insert into country_attribute (country_code, lang, "name", "value") values
 ('eu', 'sk', 'name', 'Európska únia'),
@@ -20,7 +21,9 @@ insert into country_attribute (country_code, lang, "name", "value") values
 ('sk', 'sk', 'name', 'Slovenská republika'),
 ('sk', 'sk', 'short_name', 'Slovensko'),
 ('cz', 'sk', 'name', 'Česká republika'),
-('cz', 'sk', 'short_name', 'Česko');
+('cz', 'sk', 'short_name', 'Česko'),
+('cs', 'sk', 'name', 'Česká a Slovenská Federatívna Republika'),
+('cs', 'sk', 'short_name', 'Česko-Slovensko');
 
 insert into country_attribute (country_code, lang, "name", "value") values
 ('eu', 'cs', 'name', 'Evropská unie'),
@@ -28,4 +31,6 @@ insert into country_attribute (country_code, lang, "name", "value") values
 ('sk', 'cs', 'name', 'Slovenská republika'),
 ('sk', 'cs', 'short_name', 'Slovensko'),
 ('cz', 'cs', 'name', 'Česká republika'),
-('cz', 'cs', 'short_name', 'Česko');
+('cz', 'cs', 'short_name', 'Česko'),
+('cs', 'cs', 'name', 'Česká a Slovenská Federativní Republika'),
+('cs', 'cs', 'short_name', 'Československo');

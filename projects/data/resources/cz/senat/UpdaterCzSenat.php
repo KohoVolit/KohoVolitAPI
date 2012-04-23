@@ -43,7 +43,10 @@ class UpdaterCzSenat
 	{
 		$this->parliament_code = $params['parliament'];
 		$this->api = new ApiDirect('data', array('parliament' => $this->parliament_code));
-		$this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
+		if (isset($params['debug']))
+		  $this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w', 10); 
+		else
+		  $this->log = new Log(API_LOGS_DIR . '/update/' . $this->parliament_code . '/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w'); 
 
 		date_default_timezone_set(self::TIME_ZONE);
 
@@ -84,23 +87,27 @@ class UpdaterCzSenat
 		$this->term_id = $this->updateTerm($params);
 		$this->conflict_mps = $this->parseConflictMps($params);
 
+		$this->update_date_cs = $this->date->format('d.m.Y');
+
 		// read list of all MPs in the term of office to update data for
-		$src_mps = $this->api->read('Scraper', array('remote_resource' => 'mp_list'));
+		$src_mps = $this->api->read('Scraper', array('remote_resource' => 'mp_list', 'date' => $this->update_date_cs));
 		$src_mps = $src_mps['mp_list'];
+		$this->log->write('Read MPs list, date: '.$this->update_date_cs, Log::DEBUG);
 
 		//prepare variable to mark (still valid) memberships
 		$marked = array();
 
 		//update group_kinds and groups
-		$src_groups = $this->api->read('Scraper', array('remote_resource' => 'group_list'));
+		$src_groups = $this->api->read('Scraper', array('remote_resource' => 'group_list', 'date' => $this->update_date_cs));
 		$this->updateGroups($src_groups);
+		$this->log->write('Read groups list, date: '.$this->update_date_cs, Log::DEBUG);
 
 
 		// update (or insert) all MPs in the list
 		foreach((array) $src_mps as $src_mp)
 		{
 			// scrape details of the MP
-			$src_mp = $this->api->read('Scraper', array('remote_resource' => 'mp', 'id' => $src_mp['source_code']));
+			$src_mp = $this->api->read('Scraper', array('remote_resource' => 'mp', 'id' => $src_mp['source_code'],'date' => $this->update_date_cs));
 
 			// update the MP personal details
 			$mp_id = $this->updateMp($src_mp['mp']);
@@ -172,7 +179,7 @@ class UpdaterCzSenat
 		$this->closeOffice($marked);
 
 		//update areas only if param 'area' is set (approx. 2 hours of updating)
-		if (isset($params['area']))
+		if (isset($params['area']) and $params['area'])
 		  $this->updateAreas();
 
 		$this->log->write('Completed.');
@@ -600,7 +607,7 @@ class UpdaterCzSenat
 
 		  //add short_name for political groups:
 		  if ($src_group_kind_code == 'caucuses')
-		    $data['short_name'] = $this->senateShortName($src_group['name']);
+		    $data['short_name'] = $this->senateShortName(html_entity_decode($src_group['name']));
 
 	      if (isset($group_id))
 	        //update
@@ -639,6 +646,18 @@ class UpdaterCzSenat
 	      return 'TOP09-S';
 	    case 'Senátoři nezařazení do klubu':
 	      return 'Nezařazení';
+	    case 'Senátorský klub Unie svobody - Občanské demokratické aliance':
+	      return 'US-ODA';
+	    case 'Senátorský klub Občanské demokratické aliance':
+	      return 'ODA';
+	    case 'Klub otevřené demokracie':
+	      return 'KOD';
+	    case 'Senátorský klub "Nezávislí"':
+	      return 'N';
+	    case 'Senátorský klub "Nezařazení"':
+	      return 'K-Nezař.';
+	    case 'Senátorský klub SNK':
+	      return 'SNK';
 	    default:
 	      $this->log->write("New political group found: {$name}'. Add its short name into senateShortName() in UpdaterCzSenat.", Log::WARNING);
 	      return $name;
@@ -688,7 +707,7 @@ class UpdaterCzSenat
 	{
 		$this->log->write("Updating constituency '{$region_code}'.", Log::DEBUG);
 
-		$src_constituency = $this->api->read('Scraper', array('remote_resource' => 'constituency', 'id' => $region_code));
+		$src_constituency = $this->api->read('Scraper', array('remote_resource' => 'constituency', 'id' => $region_code, 'date' => $this->update_date_cs));
 		$src_constituency = $src_constituency['constituency'];
 
 		$constituency = $this->api->readOne('Constituency', array('parliament_code' => $this->parliament_code, 'name' => $src_constituency['name'] . ' (' .$region_code.')'));
@@ -837,7 +856,7 @@ class UpdaterCzSenat
 			{
 				// if there is a person in the database with the same name as the MP and conflict resolution is not set for him on input, report a warning and skip this MP
 				if (!isset($this->conflict_mps[$src_code]))
-				{
+				{	
 					$this->log->write("MP {$src_mp['name']['first_name']} {$src_mp['name']['last_name']} already exists in database! MP (source id = {$src_code}) skipped. Rerun the update process with the parameters specifying how to resolve the conflict for this MP.", Log::WARNING);
 					return null;
 				}

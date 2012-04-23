@@ -92,3 +92,9 @@ insert into parliament_kind_attribute (parliament_kind_code, cntry, "name", lang
 
 insert into parliament (code, "name", short_name, description) values
 ('-', 'any parliament', 'any', 'This parliament is referenced as a foreign key by attributes that are parliament independent.');
+
+INSERT INTO parliament_attribute ("name","value",parliament_code) VALUES
+('default language', 'cs', 'cz/psp'),
+('default language', 'cs', 'cz/senat'),
+('default language', 'sk', 'sk/nrsr'),
+('default language', 'cs', 'cs/fs');
