@@ -106,6 +106,8 @@ class Query
 		$this->query = "select $columns from \"$table\"";
 		$this->params = array();
 		$this->addWhereCondition($filter, $table_columns);
+		if (isset($filter['_order']))
+		  $this->addOrderBy($filter['_order'], $table_columns);
 		if (isset($filter['_limit']))
 		{
 			$this->params[] = $filter['_limit'];
@@ -181,21 +183,27 @@ class Query
 			$this->query .= ' returning "' . implode('", "', $return_columns) . '"';
 	}
 
-	private function addWhereCondition($filter, $table_columns)
+	public function addWhereCondition($filter, $table_columns)
 	{
 		$this->query .= ' where true';
 		if (!is_array($filter) || !is_array($table_columns)) return;
 
 		foreach ($filter as $column => $value)
 		{
+			//add '"', mind p.code -> "p"."code"
+			$col_ar = explode('.',$column);
+			foreach ($col_ar as $key=>$ca)
+			  $col_ar[$key] = '"' . trim($col_ar[$key],'"') . '"';
+			$c = implode('.',$col_ar);
+		
 			if (!in_array($column, $table_columns, true)) continue;
 
 			if (is_null($value))
-				$this->query .= " and \"$column\" is null";
+				$this->query .= " and $c is null";
 			else
 			{
 				$this->params[] = $value;
-				$this->query .= " and \"$column\" = $" . count($this->params);
+				$this->query .= " and $c = $" . count($this->params);
 			}
 		}
 		if (isset($filter['_datetime']) && in_array('since', $table_columns, true) && in_array('until', $table_columns, true))
@@ -204,6 +212,28 @@ class Query
 			$n = count($this->params);
 			$this->query .= ' and since <= $' . $n . ' and until > $' . $n;
 		}
+	}
+	
+	//$orders = array(array($column1,'ASC'),array($column2,'DESC'));
+	public function addOrderBy($orders, $table_columns) {
+	  if (!is_array($orders) || !is_array($table_columns)) return;
+
+	  $bits = array();
+	  foreach ($orders as $order) {
+	    if (!is_array($order)) continue;
+
+	    if (!isset($order[0]) or !in_array($order[0], $table_columns, true)) continue;
+	    
+	    //add '"', mind p.code -> "p"."code"
+		$col_ar = explode('.',$order[0]);
+		foreach ($col_ar as $key=>$ca)
+		  $col_ar[$key] = '"' . trim($col_ar[$key],'"') . '"';
+		$c = implode('.',$col_ar);
+    
+	    if (isset($order[1]) and ($order[1]) == 'DESC') $bits[] = $c . ' DESC';
+	    else $bits[] = $c . ' ASC';
+	  }
+	  if (count($bits) > 0) $this->query .= ' order by ' . implode(',',$bits);
 	}
 }
 
