@@ -126,6 +126,7 @@ class Table {
         foreach ($hr_ar as $cell) {
           $header .= "<td class='hcolumn hcolumn-". $j . "'" . ((count($hr_ar) == 1) ? ' colspan="'.count($col_ar).'"' : '') . ">";
           if (isset($source['account']['info'][$cell])) $header .= $source['account']['info'][$cell];
+          else if (($cell == 'last_row_ammount') and (isset($source['account']['last_row']['ammount']))) $header .= $source['account']['last_row']['ammount'];
           else $header .= $cell;
           $header .= '</td>';
           $j++;
