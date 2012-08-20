@@ -77,17 +77,25 @@ class MpInGroupInfo
 		);		
 		$filter = $params;		
 		$query->addWhereCondition($filter, $table_columns);
+		//rewrite where conddition as there are more columns with the same name, as 'since'
+		if (isset($filter['__datetime'])) {
+			$query->appendParam ($filter['__datetime']);
+			$n = count($query->getParams());
+			$query->appendQuery(' and mig.since <= $' . $n . ' and mig.until > $' . $n);
+		}
+		
+		
 		if (isset($filter['_order']))
 		  $query->addOrderBy($filter['_order'], $table_columns);
 		if (isset($filter['_limit']))
 		{
-			$query->params[] = $filter['_limit'];
-			$query->query .= ' limit $' . count($this->params);
+			$query->appendParam ($filter['_limit']);
+			$query->appendQuery( ' limit $' . count($query->getParams()));
 		}
 		if (isset($filter['_offset']))
 		{
-			$query->params[] = $filter['_offset'];
-			$query->query .= ' offset $' . count($this->params);
+			$query->appendParam ($filter['_offset']);
+			$query->appendQuery( ' offset $' . count($query->getParams()));
 		}
 		return $query->execute();
 	}
