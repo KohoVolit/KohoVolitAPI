@@ -33,6 +33,7 @@
    * \return scrape($params)
    */
    public function read($params) {
+     error_reporting(E_ALL);
      return self::scrape($params);
    }
    
@@ -144,7 +145,7 @@
        array(CURLOPT_USERAGENT,'Greetings to FIO (-:'), //'Googlebot/2.1 (+http://www.google.com/bot.html)'
     );
 	  $html = str_replace('&nbsp;',' ',iconv("cp1250", "UTF-8//TRANSLIT//IGNORE", ScraperUtils::grabber($url,$options)));
-	
+
 	  //get dom
       $dom = new simple_html_dom();
       $dom->load($html);
@@ -161,30 +162,34 @@
       $out['info']['account'] = (isset($params['account']) ? $params['account'] : '') .
        (isset($params['ID_ucet']) ? $params['ID_ucet'] : '');
     
-      $tables = $dom->find('table[class=table_prm]');
-      if (count($tables) > 0) {
-		$trs = $tables[0]->find('tr');
-		$out['info']['value_since'] = str_replace(',','.',str_replace(' ','',str_replace($out['info']['currency'],'',$trs[1]->plaintext)));
-		$trs = $tables[1]->find('tr');
-		$out['info']['value_until'] = str_replace(',','.',str_replace(' ','',str_replace($out['info']['currency'],'',$trs[1]->plaintext)));
+      $table = $dom->find('table[class=summary]',0);
+      if ($table) {
+		$tds = $table->find('td');
+		$out['info']['value_since'] = str_replace(',','.',str_replace(' ','',str_replace($out['info']['currency'],'',$tds[0]->plaintext)));
+		$trs = $table->find('tr');
+		$out['info']['value_until'] = str_replace(',','.',str_replace(' ','',str_replace($out['info']['currency'],'',$tds[1]->plaintext)));
 		
 		//rows
-		$trs = $tables[2]->find('tr');
-		array_pop($trs);
+		$maintable = $dom->find('table[class=main]',0);
+		$trs = $maintable->find('tr');
+		//array_pop($trs);
 		array_shift($trs);
 		foreach ($trs as $tr) {
 		  $tds = $tr->find('td');
-		  $row = array(
-		    'date' => Utils::dateToIso($tds[0]->innertext,'cs'),
-		    'ammount' => str_replace(',','.',str_replace(' ','',$tds[1]->innertext)),
-		    'type' => trim($tds[2]->innertext),
-		    'ks' => trim($tds[3]->innertext),
-		    'vs' => trim($tds[4]->innertext),
-		    'ss' => trim($tds[5]->innertext),
-		    'user_identification' => trim($tds[6]->innertext),
-		    'message' => trim($tds[7]->innertext),  
-		  );
-		  $out['rows']['row'][] = $row;
+		  if (count($tds)>1) {
+			  $row = array(
+				'date' => Utils::dateToIso($tds[0]->innertext,'cs'),
+				'ammount' => str_replace(',','.',str_replace(' ','',$tds[1]->innertext)),
+				'type' => trim($tds[2]->innertext),
+				'ks' => trim($tds[3]->innertext),
+				'vs' => trim($tds[4]->innertext),
+				'ss' => trim($tds[5]->innertext),
+				'user_identification' => trim($tds[6]->innertext),
+				'message' => trim($tds[7]->innertext),  
+			  );
+			  $out['rows']['row'][] = $row;
+			  $out['last_row'] = $row;
+		  }
 		}
       }
 	  return array('account' => $out); 
