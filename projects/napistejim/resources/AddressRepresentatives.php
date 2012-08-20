@@ -163,12 +163,13 @@ class AddressRepresentatives
 	 * \endcode
 	 */
 	public function read($params)
-	{
+	{print_r($params);
 		// get the list of representatives to the given address
 		$query = new Query();
-		$query->setQuery('select * from address_representative($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)');
+		$query->setQuery('select * from address_representative($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)');
 		$query->appendParam(isset($params['parliament']) ? Db::arrayOfStringsArgument(explode('|', $params['parliament'])) : null);
-		$query->appendParam(isset($params['lang']) ? $params['lang'] : null);
+		$query->appendParam(isset($params['latitude']) ? $params['latitude'] : null);
+		$query->appendParam(isset($params['longitude']) ? $params['longitude'] : null);
 		$query->appendParam(isset($params['country']) ? $params['country'] : null);
 		$query->appendParam(isset($params['administrative_area_level_1']) ? $params['administrative_area_level_1'] : null);
 		$query->appendParam(isset($params['administrative_area_level_2']) ? $params['administrative_area_level_2'] : null);
@@ -179,7 +180,7 @@ class AddressRepresentatives
 		$query->appendParam(isset($params['route']) ? $params['route'] : null);
 		$query->appendParam(isset($params['street_number']) ? $params['street_number'] : null);
 		$reps = $query->execute();
-
+print_r($reps);
 		// distribute the MPs among parliaments and make a MP.id->consituency mapping
 		$parliaments = $constituencies = array();
 		foreach ($reps as $rep)

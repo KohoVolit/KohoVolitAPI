@@ -47,7 +47,7 @@ class MpInGroupInfo
 			c.name as constituency_name,c.short_name as constituency_short_name, c.description as constituency_description,
 			r.male_name as role_male_name, r.female_name as role_female_name,
 			p.code as parliament_code, p.name as parliament_name, p.short_name as parliament_short_name, p.description as parliament_description,
-			p.time_zone as parliament_time_zone, p.weight as parliament_weight,
+			p.time_zone as parliament_time_zone,
 			gk.code as group_kind_code, gk.name as group_kind_name, gk.short_name as group_kind_short_name, gk.description as group_kind_description,
 			t.id as term_id, t.name as term_name, t.short_name as term_short_name, t.description as term_description,t.since as term_since,t.until as term_until,
 			co.code as country_code, co.name as country_name, co.short_name as country_short_name, co.description as country_description

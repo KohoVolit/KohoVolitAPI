@@ -7,6 +7,7 @@ www/files
 www/projects/kohovolit/api/br/
 www/projects/kohovolit/api/cl/
 www/projects/kohovolit/api/mx/
+www/projects/data/resources/cl
 config/settings.php
 config/db/
 projects/data/scraperwiki/database/
