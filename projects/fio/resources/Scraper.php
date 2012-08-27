@@ -33,7 +33,8 @@
    * \return scrape($params)
    */
    public function read($params) {
-     error_reporting(E_ALL);
+     error_reporting('E_NONE');
+     //error_reporting('E_ALL');
      return self::scrape($params);
    }
    
@@ -144,7 +145,7 @@
       $options = array(
        array(CURLOPT_USERAGENT,'Greetings to FIO (-:'), //'Googlebot/2.1 (+http://www.google.com/bot.html)'
     );
-	  $html = str_replace('&nbsp;',' ',iconv("cp1250", "UTF-8//TRANSLIT//IGNORE", ScraperUtils::grabber($url,$options)));
+	  $html = str_replace('&nbsp;',' ',iconv("cp1250", "UTF-8//IGNORE", ScraperUtils::grabber($url,$options))); //see http://www.php.net/manual/ru/function.iconv.php#95296
 
 	  //get dom
       $dom = new simple_html_dom();
