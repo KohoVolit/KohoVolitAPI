@@ -296,8 +296,8 @@ class ScraperCzSenat
   	//get html
 	$url = 'http://senat.cz/datum/datum.php';
 	$html = self::download($url);
-	$text_part = ScraperUtils::getFirstString($html,'<h2>Aktuální nastavení je','</ul>');
-	  $term_lines = ScraperUtils::returnSubstrings($text_part,'<li','</li>');
+	$text_part = ScraperUtils::getFirstString($html,'<input type="submit" value="Vlož datum" />','</ul>');
+	$term_lines = ScraperUtils::returnSubstrings($text_part,'<li','</li>');
 	  if (strlen($term_lines[0]) > 1) {
 	    foreach ((array) $term_lines as $line) {
 		  $line = str_replace('&nbsp;',' ',$line);
