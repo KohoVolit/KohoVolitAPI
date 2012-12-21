@@ -506,10 +506,14 @@ class ScraperCzSenat
 
 	}
 	// add group of verifiers
+	$result['group_kind']['group_kind_O']['group_kind_plural'] = 'Ověřovatelé Senátu';
+	$result['group_kind']['group_kind_O']['group_kind_plural_en'] = 'Senate Verifiers';
 	$result['group_kind']['group_kind_O']['group']['group_303']['source_code'] = 303;
 	$result['group_kind']['group_kind_O']['group']['group_303']['name'] = 'Ověřovatelé Senátu';
 	$result['group_kind']['group_kind_O']['group']['group_303']['name_en'] = 'Senate Verifiers';
 	// and the whole Senate
+	$result['group_kind']['group_kind_S']['group_kind_plural'] = 'Senát';
+	$result['group_kind']['group_kind_S']['group_kind_plural_en'] = 'Senate';
 	$result['group_kind']['group_kind_S']['group']['group_285']['source_code'] = 285;
 	$result['group_kind']['group_kind_S']['group']['group_285']['name'] = 'Senát';
 	$result['group_kind']['group_kind_S']['group']['group_285']['name_en'] = 'Senate';

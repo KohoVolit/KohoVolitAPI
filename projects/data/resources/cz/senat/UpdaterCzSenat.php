@@ -658,6 +658,10 @@ class UpdaterCzSenat
 	      return 'K-Nezař.';
 	    case 'Senátorský klub SNK':
 	      return 'SNK';
+	    case 'Klub pro obnovu demokracie - KDU-ČSL a nezávislí':
+	      return 'KOD-KaN';
+	    case 'Klub Starostové a Ostravak':
+	      return 'KSO';
 	    default:
 	      $this->log->write("New political group found: {$name}'. Add its short name into senateShortName() in UpdaterCzSenat.", Log::WARNING);
 	      return $name;
