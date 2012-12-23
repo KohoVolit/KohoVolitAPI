@@ -1,6 +1,6 @@
 <?php
 
-$private_resources = array('Message', 'Reply');
+$private_resources = array('Message', 'MessageToMp', 'Reply');
 
 function api_data_autoload($class_name)
 {

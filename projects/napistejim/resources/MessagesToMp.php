@@ -18,7 +18,7 @@ class MessagesToMp
 	 *
 	 * \ex
 	 * \code
-	 * read(array('id' => 809, 'parliament_code' => 'cz/senat'))
+	 * read(array('mp_id' => 809, 'parliament_code' => 'cz/senat'))
 	 * \endcode returns something like
 	 * \code
 	 * Array
