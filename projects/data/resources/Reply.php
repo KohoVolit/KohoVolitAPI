@@ -131,7 +131,7 @@ class Reply
 		foreach ($read_result as $element)
 		{
 			foreach ($this->public_fields as $field)
-				$restricted_element[$field] = element[$field];
+				$restricted_element[$field] = $element[$field];
 			$restricted_result[] = $restricted_element;
 		}
 		return $restricted_result;

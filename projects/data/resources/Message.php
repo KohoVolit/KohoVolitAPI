@@ -145,9 +145,9 @@ class Message
 		$restricted_result = array();
 		foreach ($read_result as $element)
 		{
-			if (!($element['is_public'] && $element['state'] == 'sent')) continue;
+			if (!($element['is_public'] == 'yes' && $element['state'] == 'sent')) continue;
 			foreach ($this->public_fields as $field)
-				$restricted_element[$field] = element[$field];
+				$restricted_element[$field] = $element[$field];
 			$restricted_result[] = $restricted_element;
 		}
 		return $restricted_result;
