@@ -12,12 +12,16 @@
  *
  * Primary key is column <code>id</code>.
  *
- * \note Messages are not accessible through API from remote due to privacy and security reasons.
+ * \note Due to privacy and security reasons only the following columns are accessible from remote: <code>id, subject, body, sender_name, sent_on</code>.
+ * Furthermore, only the public, sent messages are accessible from remote.
  */
 class Message
 {
 	/// instance holding a list of table columns and table handling functions
 	private $entity;
+	
+	// fields of the resource (here columns of the table) that are publicly accessible from remote
+	private $public_fields;
 
 	/**
 	 * Initialize information about the underlying database table.
@@ -30,6 +34,7 @@ class Message
 			'pkey_columns' => array('id'),
 			'readonly_columns' => array('id', 'text_data', 'sender_data')
 		));
+		$this->public_fields = array('id', 'subject', 'body', 'sender_name', 'sent_on');
 	}
 
 	/**
@@ -126,6 +131,26 @@ class Message
 	public function delete($params)
 	{
 		return $this->entity->delete($params);
+	}
+	
+	/**
+	 * Remove all information that is not accessible from remote from result of the read method.
+	 *
+	 * \param $read_result Result of the read method.
+	 *
+	 * \return Result of the read method with private information removed.
+	 */
+	public function restrict($read_result)
+	{
+		$restricted_result = array();
+		foreach ($read_result as $element)
+		{
+			if (!($element['is_public'] && $element['state'] == 'sent')) continue;
+			foreach ($this->public_fields as $field)
+				$restricted_element[$field] = element[$field];
+			$restricted_result[] = $restricted_element;
+		}
+		return $restricted_result;
 	}
 
 	/**

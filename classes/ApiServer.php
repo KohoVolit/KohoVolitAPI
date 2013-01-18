@@ -25,16 +25,12 @@ class ApiServer
 		@include_once API_ROOT . "/projects/$project/config/settings.php";
 		@include_once API_ROOT . "/projects/$project/setup.php";
 
-		// block access to the API resources that are private
-		$resource = $_GET['resource'];
-		if (isset($private_resources) && in_array($resource, $private_resources, true))
-			throw new Exception("The API resource <em>$resource</em> is not accessible from remote.", 403);
-
 		// include the underlying class of the requested API resource
+		$resource = $_GET['resource'];
 		$ok = @include API_ROOT . "/projects/$project/resources/$resource.php";
 		if (!$ok)
 			throw new Exception("There is no API resource <em>$resource</em> in project <em>$project</em>.", 404);
-		$resource_class = new $resource;
+		$resource_instance = new $resource;
 
 		// get the search criteria for the record to work with
 		$params = self::decodeNullValues($_GET);
@@ -43,9 +39,14 @@ class ApiServer
 		switch ($request_method)
 		{
 			case 'GET':
-				if (method_exists($resource_class, 'read'))
+				if (method_exists($resource_instance, 'read'))
 				{
-					$result = $resource_class->read($params);
+					$result = $resource_instance->read($params);
+					
+					// block access to the fields and elements of the resource that are not accessible from remote
+					if (method_exists($resource_instance, 'restrict'))
+						$result = $resource_instance->restrict($result);
+
 					if (isset($params['_limit']) && $params['_limit'] == 1 && !empty($result))
 						$result = current($result);
 					return array($resource => $result);
@@ -55,18 +56,18 @@ class ApiServer
 The public API access is read-only.
 Data modifying request methods are not allowed from remote, on localhost use ApiDirect class instead.
 			case 'POST':
-				if (method_exists($resource_class, 'create'))
-					return array($resource => $resource_class->create(self::decodeNullValues($_POST)));
+				if (method_exists($resource_instance, 'create'))
+					return array($resource => $resource_instance->create(self::decodeNullValues($_POST)));
 				break;
 
 			case 'PUT':
-				if (method_exists($resource_class, 'update'))
-					return array($resource => $resource_class->update($params, self::decodeNullValues($this->put_request_data)));
+				if (method_exists($resource_instance, 'update'))
+					return array($resource => $resource_instance->update($params, self::decodeNullValues($this->put_request_data)));
 				break;
 
 			case 'DELETE':
-				if (method_exists($resource_class, 'delete'))
-					return array($resource => $resource_class->delete($params));
+				if (method_exists($resource_instance, 'delete'))
+					return array($resource => $resource_instance->delete($params));
 				break;
 */
 		}

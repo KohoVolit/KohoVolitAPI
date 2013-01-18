@@ -1,7 +1,5 @@
 <?php
 
-$private_resources = array('Message', 'MessageToMp', 'Reply');
-
 function api_data_autoload($class_name)
 {
     if (file_exists(API_ROOT . "/projects/data/classes/$class_name.php"))

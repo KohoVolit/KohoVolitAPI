@@ -9,14 +9,17 @@
  *
  * All columns are allowed to write to.
  *
- * Primary key consists of columns <code>message_id, mp_id, parliament_code</code>.
+ * Primary key consists of columns <code>reply_code, received_on</code>.
  *
- * \note Replies are not accessible through API from remote due to privacy and security reasons.
+ * \note Due to privacy and security reasons only the following columns are accessible from remote: <code>subject, body, received_on</code>.
  */
 class Reply
 {
 	/// instance holding a list of table columns and table handling functions
 	private $entity;
+
+	// fields of the resource (here columns of the table) that are publicly accessible from remote
+	private $public_fields;
 
 	/**
 	 * Initialize information about the underlying database table.
@@ -28,6 +31,7 @@ class Reply
 			'columns' => array('reply_code', 'subject', 'body', 'full_email_data', 'received_on'),
 			'pkey_columns' => array('reply_code', 'received_on')
 		));
+		$this->public_fields = array('subject', 'body', 'received_on');
 	}
 
 	/**
@@ -112,6 +116,25 @@ class Reply
 	public function delete($params)
 	{
 		return $this->entity->delete($params, 'reply');
+	}
+
+	/**
+	 * Remove all information that is not accessible from remote from result of the read method.
+	 *
+	 * \param $read_result Result of the read method.
+	 *
+	 * \return Result of the read method with private information removed.
+	 */
+	public function restrict($read_result)
+	{
+		$restricted_result = array();
+		foreach ($read_result as $element)
+		{
+			foreach ($this->public_fields as $field)
+				$restricted_element[$field] = element[$field];
+			$restricted_result[] = $restricted_element;
+		}
+		return $restricted_result;
 	}
 
 	/**
