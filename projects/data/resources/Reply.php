@@ -18,7 +18,7 @@ class Reply
 	/// instance holding a list of table columns and table handling functions
 	private $entity;
 
-	// fields of the resource (here columns of the table) that are publicly accessible from remote
+	/// fields of the resource (here columns of the table) that are publicly accessible from remote
 	private $public_fields;
 
 	/**

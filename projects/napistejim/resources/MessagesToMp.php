@@ -4,9 +4,23 @@
  * \ingroup napistejim
  *
  * Lists all messages sent to a given MP.
- */
+ *
+ * \note Due to privacy and security reasons only the following columns are accessible from remote: <code>id, subject, body, sender_name, mp_id, first_name, middle_names, last_name, disambiguation</code>.
+ * Furthermore, only the public, sent messages are listed from remote.
+*/
 class MessagesToMp
 {
+	/// fields of the resource that are publicly accessible from remote
+	private $public_fields;
+
+	/**
+	 * Initialize information about the fields accessible from remote.
+	 */
+	public function __construct()
+	{
+		$this->public_fields = array('id', 'subject', 'body', 'sender_name', 'mp_id', 'first_name', 'middle_names', 'last_name', 'disambiguation');
+	}
+
 	/**
 	 * Returns all messages sent to a given MP.
 	 *
@@ -59,6 +73,26 @@ class MessagesToMp
 		$query->appendParam($params['mp_id']);
 		$query->appendParam($params['parliament_code']);
 		return $query->execute();
+	}
+
+	/**
+	 * Remove all information that is not accessible from remote from result of the read method.
+	 *
+	 * \param $read_result Result of the read method.
+	 *
+	 * \return Result of the read method with private information removed.
+	 */
+	public function restrict($read_result)
+	{
+		$restricted_result = array();
+		foreach ($read_result as $element)
+		{
+			if ($element['is_public'] == 'no') continue;
+			foreach ($this->public_fields as $field)
+				$restricted_element[$field] = $element[$field];
+			$restricted_result[] = $restricted_element;
+		}
+		return $restricted_result;
 	}
 }
 
