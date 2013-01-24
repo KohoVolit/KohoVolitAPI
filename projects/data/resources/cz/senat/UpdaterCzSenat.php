@@ -408,6 +408,7 @@ class UpdaterCzSenat
 	  foreach((array) $data as $key => $d) {
 	    $data_full[$key] = $d;
 	  }
+	  $this->log->write("Checking area: {$data_full['administrative_area_level_1']}, {$data_full['administrative_area_level_2']}, {$data_full['locality']}, {$data_full['sublocality']}, {$data_full['neighborhood']}", Log::DEBUG);
 	  //get area from db
 	  $area_db = $this->api->read('Area', $data);
 	  //insert area if not in db
@@ -661,7 +662,9 @@ class UpdaterCzSenat
 	    case 'Klub pro obnovu demokracie - KDU-ČSL a nezávislí':
 	      return 'KOD-KaN';
 	    case 'Klub Starostové a Ostravak':
-	      return 'KSO';
+	      return 'STAN+O';
+	    case 'Senátorský klub SPOZ+KSČM+Severočech':
+	      return 'SPOZ+KSČM+SČ';
 	    default:
 	      $this->log->write("New political group found: {$name}'. Add its short name into senateShortName() in UpdaterCzSenat.", Log::WARNING);
 	      return $name;
