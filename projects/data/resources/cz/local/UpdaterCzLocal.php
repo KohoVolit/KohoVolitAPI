@@ -35,7 +35,8 @@ class UpdaterCzLocal
 	{
 		$this->api = new ApiDirect('data');
 		$this->log = new Log(API_LOGS_DIR . '/update/cz/local/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
-		//$this->log->setMinLogLevel(10);
+		if (isset($params['debug']))
+		  $this->log->setMinLogLevel(10);
 	}
 
 	/**
