@@ -35,7 +35,8 @@ class UpdaterCzLocal
 	{
 		$this->api = new ApiDirect('data');
 		$this->log = new Log(API_LOGS_DIR . '/update/cz/local/' . strftime('%Y-%m-%d %H-%M-%S') . '.log', 'w');
-		//$this->log->setMinLogLevel(10);
+		if (isset($params['debug']))
+			$this->log->setMinLogLevel(Log::DEBUG);
 	}
 
 	/**
@@ -444,9 +445,7 @@ class UpdaterCzLocal
 							$this->log->write("Wrong parliament code and source code '$pmp_code' of an MP existing in the database specified in the \$conflict_mps parameter. MP {$src_mp['first_name']} {$src_mp['last_name']} (source id/code = {$src_code}) skipped.", Log::ERROR);
 							return null;
 						}
-						$action = self::MP_UPDATE;
-						if ($parliament_code != $src_mp['parliament_code'])
-							$action |= self::MP_INSERT_SOURCE_CODE;
+						$action = self::MP_UPDATE | self::MP_INSERT_SOURCE_CODE;
 					}
 					else
 						// if null is given instead of an existing MP in database, the MP will be inserted as a new one, his source code for this parliament will be inserted and a value for his disambigation column generated
@@ -489,7 +488,7 @@ class UpdaterCzLocal
 		}
 
 		if ($action & self::MP_INSERT_SOURCE_CODE)
-			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => 'source_code', 'value' => $src_code, 'parl' => $src_mp['parliament_code']));
+			$this->updateMpAttribute($src_mp, $mp_id, 'source_code');
 
 		if ($action & self::MP_UPDATE)
 		{

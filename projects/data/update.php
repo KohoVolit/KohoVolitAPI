@@ -15,14 +15,14 @@ $report .= update(array('parliament' => 'cz/psp', 'term' => '4', 'conflict_mps' 
 $report .= update(array('parliament' => 'cz/psp', 'term' => '5', 'conflict_mps' => '5455->, 5775->, 5505->'));
 $report .= update(array('parliament' => 'cz/psp', 'term' => '6', 'conflict_mps' => '5991->, 5992->, 5993->, 5964->'));
 */
-$report .= update(array('parliament' => 'cz/psp', 'conflict_mps' => '5991->, 5992->, 5993->, 5964->'));
+//$report .= update(array('parliament' => 'cz/psp', 'conflict_mps' => '5991->, 5992->, 5993->, 5964->'));
 
 // Czech parliament - Senate
 /*
 // areas are updated only when running the update for the first time
 $report .= update(array('parliament' => 'cz/senat', 'area' => 'true', 'conflict_mps' => '14->, 215->cz/psp/5265, 216->cz/psp/335, 236->cz/psp/5256, 253->cz/psp/1016, 226->cz/psp/5302, 246->cz/psp/5514, 247->cz/psp/124, 66->cz/psp/5471, 248->cz/psp/5865, 252->cz/psp/239'));
 */
-$report .= update(array('parliament' => 'cz/senat', 'conflict_mps' => '14->, 215->cz/psp/5265, 216->cz/psp/335, 236->cz/psp/5256, 253->cz/psp/1016, 226->cz/psp/5302, 246->cz/psp/5514, 247->cz/psp/124, 66->cz/psp/5471, 248->cz/psp/5865, 252->cz/psp/239'));
+$report .= update(array('parliament' => 'cz/senat', 'conflict_mps' => '14->, 215->cz/psp/5265, 216->cz/psp/335, 236->cz/psp/5256, 253->cz/psp/1016, 226->cz/psp/5302, 246->cz/psp/5514, 247->cz/psp/124, 66->cz/psp/5471, 248->cz/psp/5865, 252->cz/psp/239, 266->cz/velke-mezirici/cz_velke-mezirici_2010-2014_3'));
 
 // Czech local assemblies
 $report .= update(array('parliament' => 'cz/local'));
@@ -140,7 +140,6 @@ $report .= update(array('parliament' => 'corrections'));
 
 if (!empty($report))
 	mail(API_ADMIN_EMAIL, 'Warnings or errors occured in data update', $report);
-mail(API_ADMIN_EMAIL, 'API: Update report', $report);
 
 exit;
 
@@ -157,7 +156,7 @@ function update($params)
 	}
 	catch (Exception $e)
 	{
-		return "An exception occured during the update of parliament {$params['parliament']}: " . $e->getMessage() . "\n\n";
+		return "An exception occured during the update of parliament {$params['parliament']}: " . $e . "\n\n";
 	}
 }
 
