@@ -403,7 +403,8 @@ class ScraperCzSenat
 			$result['division']['print_term'] = $matches[2];
 		  }
 		}
-		$text_part = trim(str_replace($matches[0] . ' -','',$text_part));
+		if (isset($matches[0]))
+		  $text_part = trim(str_replace($matches[0] . ' -','',$text_part));
 		$tp_ar = explode('<br />',$text_part);
 		$result['division']['name'] = $tp_ar[0];
 		$result['division']['action'] = trim(strip_tags($tp_ar[2]));
@@ -637,7 +638,7 @@ class ScraperCzSenat
 	{
 		$html = ScraperUtils::grabber($url,$curl_options);
 		if ((strlen($html) < 7500) and strlen($html >= $lo_limit))
-			throw new Exception('Downloaded file too short.', 503);
+			throw new Exception('Downloaded file too short: ' . $url, 503);
 		return $html;
 	}
 
