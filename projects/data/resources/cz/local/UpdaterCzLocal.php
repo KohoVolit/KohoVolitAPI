@@ -98,19 +98,19 @@ class UpdaterCzLocal
 				}
 				$this->updateArea($area, $constituency_id);
 			} else { // others
-				$area = $this->parliaments[$src_mp['parliament_code']]['src_parliament'];
+				$area = $this->parliaments[$src_mp['parliament_code']][$src_mp['term_name']]['src_parliament'];
 				$this->updateArea($area, $constituency_id);
 			}
 
 			// update groups (political groups = kluby/strany)
-			$term_id = $this->parliaments[$src_mp['parliament_code']]['term_id'];
+			$term_id = $this->parliaments[$src_mp['parliament_code']][$src_mp['term_name']]['term_id'];
 			if ($src_mp['parliament_code'] != 'cz/starostove')		// ignore political group 'starosta' that is erroneously filled for all members of this parliament
 				$group_id = $this->updateGroup($src_mp, $term_id);
 
 			// update memberships in groups(=parliament) and 'political groups'
 			$data = array(
 				'mp_id' => $mp_id,
-				'group_id' => $this->parliaments[$src_mp['parliament_code']]['group_id'],
+				'group_id' => $this->parliaments[$src_mp['parliament_code']][$src_mp['term_name']]['group_id'],
 				'role_code' => 'member',
 				'constituency_id' => $constituency_id,
 				'since' => $src_mp['since'],
@@ -316,7 +316,7 @@ class UpdaterCzLocal
 
 		// and insert a new one
 		if (isset($src_value))
-			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'value' => $src_value, 'parl' => $src_mp['parliament_code'], 'since' => $this->update_date, 'until' => $this->parliaments[$src_mp['parliament_code']]['next_term_since']));
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => $attr_name, 'value' => $src_value, 'parl' => $src_mp['parliament_code'], 'since' => $this->update_date, 'until' => $this->parliaments[$src_mp['parliament_code']][$src_mp['term_name']]['next_term_since']));
 	}
 
 	/**
@@ -334,15 +334,15 @@ class UpdaterCzLocal
 		$this->log->write("Updating MP's image.", Log::DEBUG);
 
 		// check for existing image in the database and if it is not present, insert its filename and download the image file
-		$image_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'parl' => $src_mp['parliament_code'], 'since' => $this->parliaments[$src_mp['parliament_code']]['term_since']));
+		$image_in_db = $this->api->readOne('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'parl' => $src_mp['parliament_code'], 'since' => $this->parliaments[$src_mp['parliament_code']][$src_mp['term_name']]['term_since']));
 		if (!$image_in_db)
 		{
 			// close record for image from previous term-of-office
-			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'parl' => $src_mp['parliament_code'], 'until' => 'infinity'), array('until' => $this->parliaments[$src_mp['parliament_code']]['term_since']));
+			$this->api->update('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'parl' => $src_mp['parliament_code'], 'until' => 'infinity'), array('until' => $this->parliaments[$src_mp['parliament_code']][$src_mp['term_name']]['term_since']));
 
 			// insert current image
-			$db_image_filename = $mp_id . '_' . $this->parliaments[$src_mp['parliament_code']]['term_id'] . '.jpg';
-			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'value' => $db_image_filename, 'parl' => $src_mp['parliament_code'], 'since' => $this->parliaments[$src_mp['parliament_code']]['term_since'], 'until' => $this->parliaments[$src_mp['parliament_code']]['next_term_since']));
+			$db_image_filename = $mp_id . '_' . $this->parliaments[$src_mp['parliament_code']][$src_mp['term_name']]['term_id'] . '.jpg';
+			$this->api->create('MpAttribute', array('mp_id' => $mp_id, 'name' => 'image', 'value' => $db_image_filename, 'parl' => $src_mp['parliament_code'], 'since' => $this->parliaments[$src_mp['parliament_code']][$src_mp['term_name']]['term_since'], 'until' => $this->parliaments[$src_mp['parliament_code']][$src_mp['term_name']]['next_term_since']));
 
 			// if the directory for MP images does not exist, create it
 			$path = API_FILES_DIR . '/' . $src_mp['parliament_code'] . '/images/mp';
@@ -588,7 +588,7 @@ class UpdaterCzLocal
 			$group = $group[0];
 
 			//save parliament and term and group=parliament into array
-			$out[$src_parliament['parliament_code']] = array(
+			$out[$src_parliament['parliament_code']][$src_parliament['term']] = array(
 				  'parliament_code' => $src_parliament['parliament_code'],
 				  'group_id' => $group['id'],
 				  'term_id' => $term['id'],
